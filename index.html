@@ -298,6 +298,29 @@ header h1{margin-top:2px}
 .sig .sl{min-width:0} .sig .sl b{display:block;font-size:15.5px} .sig .sl span{display:block;font-size:13px;color:var(--muted);line-height:1.35;margin-top:1px}
 .sig .sv{flex:none;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:3px} .sig .sv b{font-size:18px;font-variant-numeric:tabular-nums}
 .dtab{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}.dtab th,.dtab td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line,rgba(127,127,127,.25))}.dtab th{font-weight:600;color:var(--muted,#777);font-size:12px}
+/* ===== version épurée ===== */
+:root{--bg:#f5f6f8}
+body{background:var(--bg)}
+.stack,.tabpanel{gap:16px}
+.card{border-radius:26px;padding:20px 18px;box-shadow:0 1px 1px rgba(20,30,50,.03),0 10px 28px rgba(20,30,50,.05)}
+h1{font-size:31px;font-weight:700;letter-spacing:-.03em}
+.kicker{font-size:12px;letter-spacing:.09em;font-weight:600}
+h2{font-size:16px;font-weight:600}
+.ico{width:26px;height:26px;border-radius:50%;background:var(--soft)!important;color:var(--muted);box-shadow:none}
+.ico svg{width:15px;height:15px;stroke-width:2}
+.chip{font-weight:500}
+.syncchip{font-weight:500;background:transparent;box-shadow:inset 0 0 0 1px var(--line)}
+.btn{background:transparent;color:var(--accent);padding:12px 0 0;border-radius:0;text-align:left;font-size:14.5px}
+.vwhy{color:var(--muted)}
+.facts{margin:14px 0 0;font-size:13px;line-height:1.45;color:var(--muted);text-align:center}
+.minis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.mini span{display:block;font-size:12px;color:var(--muted)} .mini b{display:block;font-size:17px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums} .mini small{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
+.hero{gap:14px} .herotop{display:flex;align-items:center;gap:16px}
+.heroring{flex:none;width:92px;text-align:center} .heroring svg{width:92px;height:92px;display:block} .heroring small{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.heroti{min-width:0}
+.hero .vtitle{font-size:21px;font-weight:700}
+.hero .vwhy{margin:0}
+.hero .minis{margin-top:2px}
 /* ===== vues d'ensemble visuelles (anneaux, listes) ===== */
 .heroline{font-size:18px;font-weight:700;line-height:1.3;margin:0 0 14px}
 .rings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
@@ -409,7 +432,7 @@ var APP=document.getElementById("app"),NOTE=document.getElementById("appnote"),F
 var cfg=null,loaded=null,busy=false,shown=false,status="loading";
 (function(){var dark=false,h=+new Date().toLocaleString("fr-FR",{timeZone:"Europe/Paris",hour:"2-digit",hour12:false}).slice(0,2);
   try{dark=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches}catch(e){}
-  document.documentElement.classList.toggle("dark",dark||h>=21||h<7)})();
+  document.documentElement.classList.toggle("dark",false)})();
 function ls(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
 function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
@@ -569,7 +592,7 @@ var TZ = "Europe/Paris", H = 3600000, DAY = 86400000;
 var NOW = DATA.now ? new Date(DATA.now).getTime() : Date.now();
 (function(){var h=+new Date(NOW).toLocaleString("fr-FR",{timeZone:"Europe/Paris",hour:"2-digit",hour12:false}).slice(0,2),pref=false;
   try{pref=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches}catch(e){}
-  var dark=DATA.theme==="dark"||(DATA.theme!=="light"&&(pref||h>=21||h<7));document.documentElement.classList.toggle("dark",dark)})();
+  var dark=DATA.theme==="dark";document.documentElement.classList.toggle("dark",dark)})();
 /* ---------- journal (retour du matin, étiquettes, douleurs) ---------- */
 var JR={};
 (function(){
@@ -1236,16 +1259,24 @@ var vWhy=(last?(remNow<0.5?"Tes muscles sont récupérés":"Il te reste "+hTxt(r
 if(vFlags.length)vWhy+=(remNow<0.5&&last?", mais attention : ":". À surveiller : ")+vFlags.slice(0,2).join(" ; ")+".";
 else if(level==="green")vWhy+=(remNow<0.5||!last?", et ta VFC comme ton sommeil sont bons.":". VFC et sommeil sont bons.");
 else vWhy+=".";
+var RFS='-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif';
+function ringSvg(pct,col,txt){
+  var r=42,c=2*Math.PI*r,p=Math.max(0,Math.min(100,pct))/100*c;
+  return '<svg viewBox="0 0 100 100" role="img" aria-label="'+esc(txt)+'"><circle cx="50" cy="50" r="42" fill="none" stroke="var(--line)" stroke-width="9"/>'+
+    '<circle cx="50" cy="50" r="42" fill="none" stroke="'+col+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+p.toFixed(1)+' '+c.toFixed(1)+'" transform="rotate(-90 50 50)"/>'+
+    '<text x="50" y="59" text-anchor="middle" style="font:800 '+(String(txt).length>=4?21:27)+'px '+RFS+';fill:var(--fg)">'+esc(txt)+'</text></svg>';
+}
 var VICON={green:'<path d="M20 6 9 17l-5-5"/>',orange:'<path d="M12 8v5"/><path d="M12 16.5h.01"/><circle cx="12" cy="12" r="9"/>',red:'<path d="M12 7v6"/><path d="M12 16.5h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>'};
 var vIdx=out.length+1;
-out.push('<section class="card verdict tap" role="button" tabindex="0" data-sheet="reflexion" aria-label="Pourquoi ce verdict"><span class="chev">›</span>'+
-  '<div class="vhead"><div class="vdot" style="--c:var(--'+level+')"><svg viewBox="0 0 24 24" aria-hidden="true">'+VICON[level]+'</svg></div><div><div class="vlab c-'+level+'">Feu '+LBL[level].toLowerCase()+'</div><div class="vtitle">'+esc(vTitle)+'</div></div></div>'+
+var heroPct=Math.round(Math.max(0,Math.min(100,pctNow))),heroCol=LVC[level]||"var(--green)",heroSc=!nn(TODAY.sleepScore)?TODAY.sleepScore:SLP;
+function mini(l,v,s){return '<div class="mini"><span>'+l+'</span><b>'+v+'</b>'+(s?'<small>'+s+'</small>':'')+'</div>'}
+var heroLoad=LW?Math.round(LW.a):(ST&&ST.ok?Math.round(ST.acute):null);
+out.push('<section class="card verdict hero tap" role="button" tabindex="0" data-sheet="reflexion" aria-label="Pourquoi ce verdict"><span class="chev">›</span>'+
+  '<div class="herotop"><div class="heroring">'+ringSvg(heroPct,heroCol,heroPct+"%")+'<small>récupération</small></div><div class="heroti"><div class="vlab c-'+level+'">Feu '+LBL[level].toLowerCase()+'</div><div class="vtitle">'+esc(vTitle)+'</div></div></div>'+
   '<p class="vwhy">'+esc(vWhy)+'</p>'+
-  '<div class="vtiles"><div class="vtile '+(last?freshLvl:"green")+'"><span>Récupération</span><b>'+(remNow<0.5?"Prêt":esc(hTxt(remNow)))+'</b></div>'+
-  (function(){var LV=lwVerdict();if(!LV)return '<div class="vtile '+vRatioLv+'"><span>Charge 7 jours</span><b>'+(nn(vRatio)?"–":"× "+fr1(vRatio))+'</b></div>';
-    var mxT=Math.max(LW.h*1.75,LW.a*1.12,LW.red*1.15),pc=function(v){return Math.min(v,mxT)/mxT*100};
-    return '<div class="vtile '+LV.lv+'" data-sheet="charge" role="button" tabindex="0" aria-label="Ta fenêtre de charge"><span>Charge 7 jours · '+({under:"sous ta fenêtre",in:"dans ta fenêtre",high:"au-dessus",over:"trop haute"})[LW.pos]+'</span><b>'+Math.round(LW.a)+' <small style="font-size:12px;font-weight:600">/ '+Math.round(LW.lov)+'–'+Math.round(LW.hiv)+'</small></b>'+
-      meter([{to:pc(LW.lov),c:"var(--deep)"},{to:pc(LW.hiv),c:"var(--green)"},{to:pc(LW.red),c:"var(--orange)"},{to:100,c:"var(--red)"}],[{p:pc(LW.a)}])+'</div>'})()+'</div></section>');
+  '<div class="minis">'+mini("Sommeil",nn(TODAY.sleepSec)?"–":hmSec(TODAY.sleepSec),nn(heroSc)?"":"score "+Math.round(heroSc))+
+    mini("VFC",nn(HRV)?"–":Math.round(HRV)+" ms",hrvB?"base "+Math.round(hrvB):"")+
+    mini("Charge 7 j",heroLoad==null?"–":String(heroLoad),LW?"fenêtre "+Math.round(LW.lov)+"–"+Math.round(LW.hiv):"")+'</div></section>');
 
 /* ----- plan de ta journée (coach du matin) ----- */
 (function(){
@@ -2069,7 +2100,7 @@ TB.ttop=[];
         steps.map(function(s){return pr(s[0],s[1],s[2])}).join("")+(hasT?"":'<p class="small muted" style="margin:6px 0 0">Calculé avec un premier match à 9 h par défaut.</p>')+'</details>';
     }
     var c0='<section class="card sec" id="matchcard"><div class="sechead">'+ico("flag",ICOL.flag)+'<h2>'+esc(nt2.name)+'</h2>'+(chipT?'<span class="chip orange" style="margin-left:auto">'+esc(chipT)+'</span>':'')+'</div>'+
-      '<p class="small muted" style="margin:-2px 0 10px">'+esc(lbl(nt2.start,{weekday:"long",day:"numeric",month:"long"}))+(n2>1?" au "+esc(lbl(nt2.end,{weekday:"long",day:"numeric",month:"long"})):"")+'</p>'+
+      '<p class="small muted" style="margin:-2px 0 10px">'+esc(lbl(nt2.start,{weekday:"long",day:"numeric",month:"long"}))+(n2>1?" au "+esc(lbl(nt2.end,{weekday:"long",day:"numeric",month:"long"})):"")+(dd<=1?" · réveil à "+ftm(fm-210)+", premier match à "+ftm(fm):"")+'</p>'+
       nx+'<h3>Heure de ton premier match</h3><div class="mlist">'+rows+'</div>'+full+'</section>';
     TB.ttop.splice(0,0,c0);
   })();
@@ -2287,13 +2318,6 @@ TB.suivi=[];
 
 /* ===== vues d'ensemble visuelles : Corps, Semaine, Suivi (anneaux et listes simples) ===== */
 (function(){
-  var FS='-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif';
-  function ringSvg(pct,col,txt){
-    var r=42,c=2*Math.PI*r,p=Math.max(0,Math.min(100,pct))/100*c;
-    return '<svg viewBox="0 0 100 100" role="img" aria-label="'+esc(txt)+'"><circle cx="50" cy="50" r="42" fill="none" stroke="var(--line)" stroke-width="9"/>'+
-      '<circle cx="50" cy="50" r="42" fill="none" stroke="'+col+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+p.toFixed(1)+' '+c.toFixed(1)+'" transform="rotate(-90 50 50)"/>'+
-      '<text x="50" y="59" text-anchor="middle" style="font:800 27px '+FS+';fill:var(--fg)">'+esc(txt)+'</text></svg>';
-  }
   function ringBox(pct,col,txt,label,sub){return '<div class="ringbox">'+ringSvg(pct,col,txt)+'<b>'+esc(label)+'</b><small>'+esc(sub||"")+'</small></div>'}
   var G="var(--green)",O="var(--orange)",R="var(--red)",B="var(--deep)";
 
@@ -2306,7 +2330,9 @@ TB.suivi=[];
     var sum='<p class="heroline">'+esc(line)+'</p><div class="rings">'+
       ringBox(rec,recCol,rec+"%","Récupération",remNow<0.5?"complète":"encore "+hTxt(remNow))+
       ringBox(nn(sc)?0:sc,slCol,nn(sc)?"–":String(Math.round(sc)),"Sommeil",nn(TODAY.sleepSec)?"pas de nuit":hmSec(TODAY.sleepSec))+
-      ringBox(hvPct,hvCol,nn(hv)?"–":String(Math.round(hv)),"VFC",hrvB?"base "+Math.round(hrvB)+" ms":"ms")+'</div>';
+      ringBox(hvPct,hvCol,nn(hv)?"–":String(Math.round(hv)),"VFC",hrvB?"base "+Math.round(hrvB)+" ms":"ms")+'</div>'+
+      '<div class="minis">'+mini("FC au repos",nn(TODAY.rhr)?"–":Math.round(TODAY.rhr)+" bpm",rhrB?"base "+Math.round(rhrB):"")+mini("Stress",nn(TODAY.stress)?"–":String(Math.round(TODAY.stress)),"moyenne du jour")+
+      mini("Body Battery",nn(TODAY.bbHigh)?"–":Math.round(TODAY.bbHigh)+" → "+Math.round(TODAY.bbLow),"réveil → minimum")+'</div>';
     TB.body.unshift(card({key:"ringsB",title:"Ton corps aujourd'hui",icon:"heart",sum:sum}));
   })();
 
@@ -2319,7 +2345,11 @@ TB.suivi=[];
     var sum='<div class="rings">'+
       ringBox(load==null||!LW?0:load/LW.hiv*100,lc,load==null?"–":String(Math.round(load)),"Charge",LW?"fenêtre "+Math.round(LW.lov)+"–"+Math.round(LW.hiv):"7 jours")+
       ringBox(sa==null?0:sa/(8*3600)*100,sCol,sa==null?"–":fr1(sa/3600).replace(",0",""),"Sommeil","heures par nuit")+
-      ringBox(me?gr/me*100:0,me?(gr/me>=0.6?G:gr/me>=0.4?O:R):"var(--line)",me?gr+"/"+me:"–","Matins verts","sur 7 jours")+'</div>';
+      ringBox(me?gr/me*100:0,me?(gr/me>=0.6?G:gr/me>=0.4?O:R):"var(--line)",me?gr+"/"+me:"–","Matins verts","sur 7 jours")+'</div>'+
+      (function(){var n7=SS.filter(function(x){return x.s>NOW-7*DAY&&x.s<=NOW}).length,nt3=null;EVTS.forEach(function(T){if(!nt3&&T.end>=todayKey)nt3=T});
+        var parts=[n7+" séance"+(n7>1?"s":"")+" cette semaine"];if(LW)parts.push("charge "+({under:"sous ta fenêtre",in:"dans ta fenêtre",high:"au-dessus de ta fenêtre",over:"trop haute"})[LW.pos]);
+        if(nt3){var dn=dDiff(nt3.start,todayKey);parts.push(dn>0?nt3.name.replace(/^Tournoi (national )?(d')?/i,"")+" dans "+dn+" jour"+(dn>1?"s":""):"tournoi en cours")}
+        return '<p class="facts">'+esc(parts.join(" · "))+'</p>'})();
     TB.wtop.push(card({key:"ringsW",title:"Cette semaine",icon:"cal",sum:sum}));
     var DOT=function(kd){return /^bad|^tournoi/.test(kd)?B:/^renfo/.test(kd)?"var(--rem)":/^velo|^course/.test(kd)?"var(--teal)":/^repos/.test(kd)?"var(--muted)":O};
     var rows="";
@@ -2356,7 +2386,11 @@ TB.suivi=[];
     var hab=avg(wl.filter(function(x){return x>0})),cur7=ST&&ST.ok?ST.acute:null;
     if(cur7!=null&&hab){var dp=Math.round((cur7/hab-1)*100);
       rows+='<div class="trow tap" role="button" tabindex="0" data-sheet="tend"><div class="tlab"><span>Charge 7 jours</span><b>'+Math.round(cur7)+'</b></div><span></span><span class="chip '+(Math.abs(dp)<=20?"green":dp>0?"orange":"")+'">'+(Math.abs(dp)<5?"habituelle":(dp>0?"+":"−")+Math.abs(dp)+" %")+'</span></div>'}
-    TB.suivi.push(card({key:"trends30",title:"Tes tendances (30 jours)",icon:"pulse",sum:'<div class="tlist">'+rows+'</div><p class="small muted" style="margin:8px 0 0">Comparé à ta moyenne des 30 derniers jours. Touche une ligne pour les courbes complètes.</p>'}));
+    TB.suivi.push(card({key:"trends30",title:"Tes tendances (30 jours)",icon:"pulse",sum:'<div class="tlist">'+rows+'</div>'+(function(){function av(key,a,b){var v=[];for(var i=a;i<b;i++){var x=(HIST[dkey(NOW-i*DAY)]||{})[key];if(!nn(x))v.push(x)}return v.length>=3?avg(v):null}
+      var p=[],h1=av("hrv",0,7),h0=av("hrv",7,14),s1=av("sleepSec",0,7),s0=av("sleepSec",7,14);
+      if(h1!=null&&h0!=null)p.push("VFC "+(Math.round(h1-h0)>=0?"+":"−")+Math.abs(Math.round(h1-h0))+" ms");
+      if(s1!=null&&s0!=null)p.push("sommeil "+(Math.round((s1-s0)/60)>=0?"+":"−")+Math.abs(Math.round((s1-s0)/60))+" min par nuit");
+      return p.length?'<p class="facts">7 derniers jours contre les 7 précédents : '+esc(p.join(" · "))+'.</p>':''})()+'<p class="small muted" style="margin:8px 0 0">Compare à ta moyenne des 30 derniers jours. Touche une ligne pour les courbes complètes.</p>'}));
   })();
 })();
 
