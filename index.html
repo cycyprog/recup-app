@@ -311,6 +311,12 @@ header h1{margin-top:2px}
 .ldprog{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .ldprog:last-child{border-bottom:0} .ldprog .ln{display:flex;flex-direction:column;gap:2px;min-width:0} .ldprog .ln b{font-size:14px;font-weight:600;line-height:1.3}
 .ldprog .spark{width:110px;height:30px;flex:none}
+/* ===== carte « À préparer » du tournoi ===== */
+.mlist{display:flex;flex-direction:column;margin-bottom:4px}
+.mrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.mrow:last-child{border-bottom:0}
+.mrow input{font:600 17px -apple-system,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+#matchcard h3 .chip{margin-left:6px;vertical-align:1px}
 /* ===== mode appli (page ouverte hors Scriptable) ===== */
 #ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 4px);transform:translate(-50%,-44px);z-index:60;padding:7px 14px;border-radius:99px;background:var(--card);color:var(--fg);box-shadow:0 2px 12px rgba(0,0,0,.18);font:600 13px -apple-system,system-ui,sans-serif;opacity:0;pointer-events:none;transition:opacity .15s,transform .2s;white-space:nowrap}
 #appnote{display:none;margin:0 0 10px;padding:9px 12px;border-radius:12px;background:var(--soft);color:var(--muted);font-size:13px;line-height:1.35;text-align:center}
@@ -1220,6 +1226,8 @@ out.push('<section class="card verdict tap" role="button" tabindex="0" data-shee
   var tom=(PLAN.days||[]).filter(function(x){return x.date===dkey(NOW+DAY)})[0];
   var wakeNext=wakeMed;
   evs.forEach(function(e){if(!e.allDay&&dkey(e.s)===dkey(NOW+DAY)){var m=tmin(hm(e.s))-90;if(m<wakeNext&&m>240)wakeNext=m}});
+  var tpTom=tourPhase(dkey(NOW+DAY));
+  if(tpTom&&tpTom.kind==="match"){var mTom=tmn((JR[dkey(NOW+DAY)]||{}).match||"09:00")-210;if(mTom<wakeNext&&mTom>240)wakeNext=mTom}
   var bed=wakeNext+1440-needH*60;bed=bed>=1440?bed-1440:bed;   /* heure de coucher en minutes dans la journée */
   var bedTxt=ft(bed);
   var lvTxt={green:"vert",orange:"orange",red:"rouge"}[level];
@@ -1449,7 +1457,7 @@ if(dowOf(todayKey)===0||dowOf(todayKey)===1)TB.week.push(bilanHtml());
     else if(what==="ep"){if(e.ep)delete e.ep;else e.ep=true}
     window.__reopen="day:"+date;commit(date,e);
   };
-  window.__jmatch=function(date,v){var e=JSON.parse(JSON.stringify(JR[date]||{}));if(!v||e.match===v)return;e.match=v;window.__reopen="day:"+date;commit(date,e)};
+  window.__jmatch=function(date,v){var e=JSON.parse(JSON.stringify(JR[date]||{}));if(!v||e.match===v)return;e.match=v;if(document.body.classList.contains("lock"))window.__reopen="day:"+date;commit(date,e)};
 })();
 
 /* ----- raccourcis de l'écran du jour vers les autres onglets ----- */
@@ -1502,10 +1510,12 @@ out=TB.tour;
     var col=j<0?"var(--light)":j<=dDiff(T.end,T.start)?"var(--orange)":"var(--teal)";
     chips+='<div class="dchip'+(isT?" today":"")+'" role="button" tabindex="0" data-day="'+dk2+'" style="min-width:44px"><span class="dw">'+esc(fmt(new Date(dk2+"T12:00:00Z").getTime(),{weekday:"short"}).replace(".",""))+'</span><b>'+parseInt(dk2.slice(8),10)+'</b><i style="background:'+col+'"></i><span class="dk">'+lab2+'</span></div>'}
   chips+='</div>';
-  var sum='<div class="tjd"><div class="jd">'+big+'</div><div style="flex:1;min-width:0"><b>'+esc(T.name)+'</b><div class="small muted">'+esc(focus)+'</div></div></div>'+chips+'<p class="small muted" style="margin:8px 0 0">Touche un jour pour son programme complet (sommeil, repas, entraînement, jour de match, récupération).</p>';
+  var todo="";
+  if(tp&&tp.kind==="match")todo='<h3 style="margin-top:12px">Aujourd\'hui</h3><p class="small" style="margin:0 0 4px;line-height:1.45">Jour de match : suis le programme heure par heure de la carte « À préparer » juste au-dessus.</p>';
+  else if(tp)todo='<h3 style="margin-top:12px">À faire aujourd\'hui</h3>'+tourSections(tp,todayKey).slice(0,4).map(function(x){return '<p class="small" style="margin:0 0 6px;line-height:1.45"><b>'+esc(x.t)+'</b> : '+esc(x.x)+'</p>'}).join("");
+  var sum='<div class="tjd"><div class="jd">'+big+'</div><div style="flex:1;min-width:0"><b>'+esc(T.name)+'</b><div class="small muted">'+esc(focus)+'</div></div></div>'+todo+'<h3>Les jours du tournoi</h3>'+chips+'<p class="small muted" style="margin:8px 0 0">Touche un jour pour son programme complet (sommeil, repas, entraînement, jour de match, récupération).</p>';
   var more='';
-  if(tp){var cur=tourSections(tp,todayKey).slice(0,3);more+='<h3 style="margin-top:0">Aujourd\'hui ('+esc(tp.label)+')</h3>'+cur.map(function(x){return '<p class="small" style="margin:0 0 6px"><b>'+esc(x.t)+'</b> : '+(/<b>|<label/.test(x.x)?"voir le détail du jour":esc(x.x))+'</p>'}).join("")}
-  more+='<h3>Les 10 jours</h3>';
+  more+='<h3 style="margin-top:0">Les 10 jours</h3>';
   for(var k=-7;k<=dDiff(T.end,T.start)+2;k++){var dk3=dAdd(T.start,k),p3=tourPhase(dk3);if(!p3)continue;
     more+='<div class="ev dayrow" role="button" tabindex="0" data-day="'+dk3+'" style="opacity:'+(dk3<todayKey?.55:1)+'"><div class="when">'+esc(fmt(new Date(dk3+"T12:00:00Z").getTime(),{weekday:"short",day:"numeric"}))+'</div><span class="dot '+(p3.kind==="match"?"orange":"none")+'"></span><div><b>'+esc(p3.label)+'</b><div class="small muted">'+esc(tourFocus(p3))+'</div></div></div>'}
   out.push(card({key:"tournoi",title:"Mode tournoi",icon:"flag",sum:sum,more:more}));
@@ -1974,6 +1984,40 @@ TB.ttop=[];
   s+='<path d="M'+(X(0)+px/2)+' '+(y+20)+' l-4 6 h8 z" fill="var(--fg)"/>';
   var tl=svg(w,y+40,s,"Frise jusqu'aux compétitions")+'<div class="legend"><span><i style="background:var(--light)"></i>préparation</span><span><i style="background:var(--awake)"></i>affûtage J-7</span><span><i style="background:var(--orange)"></i>compétition</span><span><i style="background:var(--teal)"></i>récupération</span></div>';
   TB.ttop.push('<section class="card sec">'+hero+'<h3>Ta route</h3>'+tl+'</section>');
+  /* ----- carte « À préparer » : heure du premier match de chaque jour + programme heure par heure ----- */
+  (function(){
+    var nt2=null;EVTS.forEach(function(T){if(!nt2&&T.end>=todayKey)nt2=T});if(!nt2)return;
+    if(dDiff(nt2.start,todayKey)>14)return;
+    var n2=dDiff(nt2.end,nt2.start)+1,days=[];for(var i2=0;i2<n2;i2++){var k2=dAdd(nt2.start,i2);if(k2>=todayKey)days.push(k2)}
+    if(!days.length)return;
+    function lbl(k,o){return fmt(new Date(k+"T12:00:00Z").getTime(),o||{weekday:"long",day:"numeric",month:"long"})}
+    var rows=days.map(function(k){var e=JR[k]||{},has=!!e.match;
+      return '<div class="mrow"><label for="jm-'+k+'"><b>'+esc(lbl(k,{weekday:"short",day:"numeric",month:"short"}))+'</b></label>'+
+        '<input type="time" id="jm-'+k+'" data-day="'+k+'" value="'+esc(e.match||"09:00")+'" aria-label="Heure du premier match le '+esc(lbl(k))+'">'+
+        (has?'<span class="chip green">Enregistrée</span>':'<button type="button" class="jchip" data-matchok="'+k+'">Garder 9 h</button>')+'</div>'}).join("");
+    var tg=days[0],dd=dDiff(tg,todayKey),fm=tmn((JR[tg]||{}).match||"09:00"),hasT=!!(JR[tg]||{}).match;
+    var tgName=dd===0?"aujourd'hui":dd===1?"demain":lbl(tg,{weekday:"long",day:"numeric",month:"long"});
+    function pr(m,t,x){return '<div class="prow"><div class="pt">'+ftm(m)+'</div><div class="pb"><b>'+esc(t)+'</b><span>'+esc(x)+'</span></div></div>'}
+    var plan="";
+    if(dd<=3){
+      plan='<h3>Programme '+(dd===0?"d'aujourd'hui":dd===1?"de demain":"du "+esc(tgName))+(hasT?"":' <span class="chip orange">avec 9 h par défaut</span>')+'</h3>'+
+        pr(fm-210,"Réveil","Un grand verre d'eau tout de suite.")+
+        pr(fm-180,"Petit-déjeuner","Riche en glucides, pauvre en graisses et en fibres (pain, flocons d'avoine, banane, miel, un œuf), avec 400 à 500 ml d'eau.")+
+        pr(fm-105,"Départ","Sac : raquettes, grips, chaussures, 2 tenues, élastique d'épaule, boisson, collations. Arrivée 1 h 15 avant le match.")+
+        pr(fm-45,"Échauffement","25 minutes : épaules, hanches, fentes marchées, jeu de pieds, smashs progressifs.")+
+        pr(fm,"Premier match","Dernière gorgée et respiration calme 10 minutes avant.");
+    }
+    var tonight="";
+    if(dd===1){var cb=window.__COACHB&&window.__COACHB.bed;
+      tonight='<h3>Ce soir</h3><div class="prow"><div class="pt">Sac</div><div class="pb"><b>Prépare le sac</b><span>Raquettes, grips, chaussures et chaussettes de rechange, tenues, serviette, élastique d\'épaule, boisson, collations.</span></div></div>'+
+        '<div class="prow"><div class="pt">Dîner</div><div class="pb"><b>Comme d\'habitude</b><span>Riche en féculents, sans nouveauté, pas d\'alcool, eau régulière.</span></div></div>'+
+        '<div class="prow"><div class="pt">'+(cb?esc(cb):"Tôt")+'</div><div class="pb"><b>Coucher</b><span>Même si tu t\'endors mal, se reposer compte. Réveil à '+ftm(fm-210)+'.</span></div></div>';
+    }
+    var intro='<p class="small" style="margin:0 0 6px;line-height:1.45">Indique l\'heure de ton <b>premier match</b> pour chaque jour : le programme ci-dessous, ton coucher et les notifications s\'y calent. Sans elle, c\'est 9 h.</p>';
+    var c0='<section class="card sec" id="matchcard"><div class="sechead">'+ico("flag",ICOL.flag)+'<h2>À préparer : '+esc(nt2.league?String(nt2.name):nt2.name)+'</h2></div>'+intro+'<div class="mlist">'+rows+'</div>'+plan+tonight+'</section>';
+    TB.ttop.splice(dDiff(nt2.start,todayKey)<=3?0:Math.min(1,TB.ttop.length),0,c0);
+  })();
+
   /* débrief du coach après un tournoi : ressenti physique et récupération */
   var ad2=anLatest("debrief",10);
   if(ad2){var D=ad2.debrief||{};
@@ -2044,6 +2088,8 @@ out=TB.body;
   var R=[],hr=+new Date(NOW).toLocaleString("fr-FR",{timeZone:TZ,hour:"2-digit",hour12:false}).slice(0,2),c=window.__COACHB,yk=dkey(NOW-DAY);
   var ye=JR[yk]||{},pdY=null;(PLAN.days||[]).forEach(function(x){if(x.date===yk)pdY=x});
   var hadY=SS.some(function(x){return dkey(x.s)===yk})||(pdY&&pdY.kind&&pdY.kind!=="repos"&&pdY.kind!=="tournoi");
+  var mk=null;for(var mi=0;mi<=3&&!mk;mi++){var kk=dkey(NOW+mi*DAY),pp=tourPhase(kk);if(pp&&pp.kind==="match"&&!(JR[kk]||{}).match)mk=kk}
+  if(mk){var md=dDiff(mk,todayKey);R.push(['Premier match '+(md===0?"aujourd'hui":md===1?"demain":"le "+fmt(new Date(mk+"T12:00:00Z").getTime(),{weekday:"long",day:"numeric",month:"long"}))+' : l\'heure n\'est pas indiquée (9 h par défaut).','Indiquer','match']);window.__MK=mk}
   if(hadY&&!ye.legs&&!ye.done)R.push(['Aucun retour saisi pour hier (jambes, séance).','Saisir','yesterday']);
   var te=JR[todayKey]||{};
   if(hr>=9&&hr<20&&!te.legs&&!nn((HIST[todayKey]||{}).sleepSec))R.push(['Pas encore de retour ce matin : comment sont tes jambes ?','Saisir','today']);
@@ -2051,7 +2097,9 @@ out=TB.body;
   if(!R.length)return;
   var html='<section class="card sec remind" aria-label="Rappels">'+R.map(function(r){return '<div class="rem"><span>'+r[0]+'</span>'+(r[1]?'<button type="button" class="jchip" data-remind="'+r[2]+'">'+r[1]+'</button>':'')+'</div>'}).join("")+'</section>';
   TB.today.splice(Math.min(1,TB.today.length),0,html);
-  window.__remind=function(w){window.__setTab("today");if(w==="yesterday"){window.__JDATE=yk;window.__JOPEN=true}else{window.__JDATE=null;window.__JOPEN=false}
+  window.__remind=function(w){
+    if(w==="match"){window.__setTab("tour");var m=document.getElementById("jm-"+window.__MK)||document.getElementById("matchcard");if(m&&m.scrollIntoView)m.scrollIntoView({block:"center"});if(m&&m.focus)m.focus();return}
+    window.__setTab("today");if(w==="yesterday"){window.__JDATE=yk;window.__JOPEN=true}else{window.__JDATE=null;window.__JOPEN=false}
     window.__rerun();var j=document.getElementById("journal");if(j&&j.scrollIntoView)j.scrollIntoView({block:"start"})};
 })();
 
@@ -2354,7 +2402,7 @@ SHEET.addEventListener("click",function(e){var t=e.target;if(!t.closest)return;i
   var ts=t.closest("[data-test-save]");if(ts){var tdk=ts.getAttribute("data-test-save"),vals={};SHEET.querySelectorAll('[data-test^="'+tdk+'|"]').forEach(function(inp){var v=parseFloat(String(inp.value).replace(",","."));if(isFinite(v)&&v>0)vals[inp.getAttribute("data-test").split("|")[1]]=v});window.__jexo(tdk,"tests",vals);return}
   if(x){var q=x.getAttribute("data-exo").split("|");window.__jexo(q[0],"exo",q[1],+q[2])}
   else if(y){var q2=y.getAttribute("data-exo-done").split("|");window.__jexo(q2[0],"done",q2[1])}});
-document.addEventListener("change",function(e){var t=e.target;if(!t||!t.id)return;if(t.id==="jnote")window.__jnote(t.value);if(t.id==="jmatch")window.__jmatch(t.getAttribute("data-day"),t.value);if(t.id==="jdate")window.__jdate(t.value);if(t.id==="wcmpa"||t.id==="wcmpb"){window[t.id==="wcmpa"?"__WCA":"__WCB"]=t.value;window.__rerun()}});
+document.addEventListener("change",function(e){var t=e.target;if(!t||!t.id)return;if(t.id==="jnote")window.__jnote(t.value);if(t.id==="jmatch"||t.id.indexOf("jm-")===0)window.__jmatch(t.getAttribute("data-day"),t.value);if(t.id==="jdate")window.__jdate(t.value);if(t.id==="wcmpa"||t.id==="wcmpb"){window[t.id==="wcmpa"?"__WCA":"__WCB"]=t.value;window.__rerun()}});
 document.addEventListener("keydown",function(e){
   if(e.key==="Escape"&&!SHEET.hidden)closeSheet();
   if((e.key==="Enter"||e.key===" ")&&e.target.getAttribute&&e.target.getAttribute("data-sheet")){e.preventDefault();window.__openSheet(e.target.getAttribute("data-sheet"))}
@@ -2363,6 +2411,7 @@ document.addEventListener("keydown",function(e){
 APP.addEventListener("click",function(e){
   var t=e.target,b=t.closest?t.closest("button"):null;
   var jb=t.closest?t.closest("[data-j]"):null;
+  var mok=t.closest?t.closest("[data-matchok]"):null;if(mok){window.__jmatch(mok.getAttribute("data-matchok"),"09:00");return}
   var rmb=t.closest?t.closest("[data-remind]"):null;if(rmb&&window.__remind){window.__remind(rmb.getAttribute("data-remind"));return}
   if(jb){window.__jclick(jb.getAttribute("data-j"));return}
   var tbn=t.closest?t.closest("[data-tab]"):null;
