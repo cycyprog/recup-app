@@ -338,6 +338,7 @@ header h1{margin-top:2px}
 .csetup input[type=password]{width:100%;box-sizing:border-box;font:16px/1.2 ui-monospace,Menlo,monospace;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
 .csetup .err{color:var(--red);font-weight:600} .csetup .ok{color:var(--green);font-weight:600} .csteps{margin:0;padding-left:20px;font-size:14.5px;line-height:1.5}
 .crow{display:flex;gap:8px} .crow button{flex:1;border:0;border-radius:12px;padding:12px;min-height:44px;font:700 15px -apple-system,system-ui,sans-serif;background:var(--fill,#f2f2f7);color:var(--fg);cursor:pointer} .crow button.main{background:var(--accent);color:#fff}
+.btnlink{flex:1;display:block;text-align:center;text-decoration:none;border-radius:12px;padding:12px;min-height:44px;box-sizing:border-box;font:700 15px -apple-system,system-ui,sans-serif;background:var(--fill,#f2f2f7);color:var(--accent)}
 .cmod{display:flex;gap:10px;align-items:flex-start;padding:8px 0} .cmod span{display:flex;flex-direction:column} .cmod small{color:var(--muted);font-size:12.5px;margin-top:1px}
 /* ===== mode appli (page ouverte hors Scriptable) ===== */
 #ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 4px);transform:translate(-50%,-44px);z-index:60;padding:7px 14px;border-radius:99px;background:var(--card);color:var(--fg);box-shadow:0 2px 12px rgba(0,0,0,.18);font:600 13px -apple-system,system-ui,sans-serif;opacity:0;pointer-events:none;transition:opacity .15s,transform .2s;white-space:nowrap}
@@ -2538,7 +2539,8 @@ function rich(t){
   return h.split("\n").map(function(l){return /^\s*[-•] /.test(l)?"• "+l.replace(/^\s*[-•] /,""):l}).join("<br>");
 }
 var st=ls(CH);if(!st||!Array.isArray(st.msgs))st={msgs:[],tools:{}};if(!st.tools)st.tools={};
-var apiKey=ls(KEY),model=ls(MD)||MODELS[0].id,view="chat",busy=false,draft="",keyMsg="";
+var apiKey=ls(KEY),model=ls(MD)||MODELS[0].id,view="chat",busy=false,draft="",keyMsg="",showKey=false,copied="";
+var FREE="Tu es mon coach récupération (badminton, tournois). Réponds en français, de façon courte et concrète ; tu n'es pas médecin. Voici l'état de mon application de récupération, puis ma question.\n\n";
 if(!MODELS.some(function(m){return m.id===model}))model=MODELS[0].id;
 function save(){
   if(st.msgs.length>40){var i=st.msgs.length-40;while(i<st.msgs.length&&st.msgs[i].role!=="user")i++;st.msgs=st.msgs.slice(i)}
@@ -2561,8 +2563,18 @@ function headHtml(title,back){
     (view==="chat"&&apiKey?'<button type="button" data-c="new" aria-label="Nouvelle conversation">Nouvelle</button><button type="button" data-c="settings" aria-label="Réglages du coach">⚙</button>':'')+
     '<button type="button" data-c="close">Fermer</button></div>';
 }
+function freeHtml(){
+  return headHtml("Coach")+'<div class="csetup"><p>Pose tes questions à Claude avec <b>ton abonnement</b>, sans rien payer en plus :</p>'+
+    '<ol class="csteps"><li>Touche « Copier mon état » : verdict du jour, 7 derniers jours, plan, tournois.</li><li>Ouvre Claude et colle (appui long › Coller), puis écris ta question.</li></ol>'+
+    '<div class="crow"><button type="button" class="main" data-c="copyctx">Copier mon état</button></div>'+
+    '<p id="cfree" role="status" class="'+(copied==="ok"?"ok":copied?"err":"")+'">'+(copied==="ok"?"Copié ✓ Colle-le dans Claude.":copied==="ko"?"Copie impossible : sélectionne le texte ci-dessous et copie-le.":"")+'</p>'+
+    (copied==="ko"?'<textarea id="cfreetxt" rows="8" readonly style="width:100%;box-sizing:border-box;font:13px/1.35 ui-monospace,Menlo,monospace;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--fg)">'+esc(FREE+(window.__chatCtx?window.__chatCtx():""))+'</textarea>':'')+
+    '<div class="crow"><a class="btnlink" href="https://claude.ai/new" target="_blank" rel="noopener">Ouvrir Claude ›</a></div>'+
+    '<p class="small muted">Pour qu\'une douleur, une maladie ou une info change ton plan, note-la dans le journal de l\'onglet « Aujourd\'hui » : le plan se recalcule tout de suite.</p>'+
+    '<p class="small"><button type="button" class="linkbtn" data-c="usekey">J\'ai une clé API Anthropic (option payante, chat intégré)</button></p></div>';
+}
 function setupHtml(){
-  return headHtml("Coach")+'<div class="csetup"><p>Pose tes questions au coach directement dans l\'appli. Il connaît ton verdict du jour, tes 7 derniers jours, ton plan et tes tournois, et peut noter une douleur ou une information dans ton journal pour adapter le plan.</p>'+
+  return headHtml("Coach",true)+'<div class="csetup"><p>Pose tes questions au coach directement dans l\'appli. Il connaît ton verdict du jour, tes 7 derniers jours, ton plan et tes tournois, et peut noter une douleur ou une information dans ton journal pour adapter le plan.</p>'+
     '<p>Il faut pour cela une <b>clé API Anthropic</b> : facturation à l\'usage, séparée de ton abonnement Claude.</p>'+
     '<ol class="csteps"><li>Sur <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> › API keys › Create key.</li>'+
     '<li>Ajoute quelques euros de crédit (Billing) et fixe une limite mensuelle (Limits).</li><li>Colle la clé ici : elle reste uniquement sur cet appareil.</li></ol>'+
@@ -2600,7 +2612,7 @@ function chatHtml(){
 }
 function render(){
   if(panel.hidden)return;
-  var h=!apiKey?setupHtml():view==="settings"?settingsHtml():chatHtml();
+  var h=!apiKey?(showKey?setupHtml():freeHtml()):view==="settings"?settingsHtml():chatHtml();
   panel.innerHTML=h;
   var m=document.getElementById("cmsgs");if(m)m.scrollTop=m.scrollHeight;
 }
@@ -2671,7 +2683,12 @@ panel.addEventListener("keydown",function(e){
 panel.addEventListener("click",async function(e){
   var b=e.target.closest?e.target.closest("[data-c]"):null;if(!b)return;var a=b.getAttribute("data-c");
   if(a==="close")closeChat();
-  else if(a==="back"){view="chat";render()}
+  else if(a==="back"){view="chat";showKey=false;render()}
+  else if(a==="usekey"){showKey=true;render()}
+  else if(a==="copyctx"){
+    var txt=FREE+(window.__chatCtx?window.__chatCtx():"");copied="ko";
+    try{await navigator.clipboard.writeText(txt);copied="ok"}catch(x){copied="ko"}
+    render();}
   else if(a==="settings"){view="settings";render()}
   else if(a==="new"){if(!st.msgs.length||window.confirm("Commencer une nouvelle conversation ?")){st={msgs:[],tools:{}};save();render()}}
   else if(a==="send")send(draft);
@@ -2680,8 +2697,8 @@ panel.addEventListener("click",async function(e){
     setKeyMsg("Test en cours…","");var r=await testKey(k);setKeyMsg(r.ok?"Clé valide ✓":r.t,r.ok?"ok":"err")}
   else if(a==="savekey"){var k2=(document.getElementById("ckey")||{}).value||"";k2=k2.trim();if(!k2){setKeyMsg("Colle d'abord la clé.","err");return}
     if(!lsSet(KEY,k2)){setKeyMsg("Impossible d'enregistrer la clé sur cet appareil (stockage bloqué).","err");return}
-    apiKey=k2;keyMsg="";view="chat";render()}
-  else if(a==="forgetkey"){if(window.confirm("Oublier la clé API sur cet appareil ?")){lsDel(KEY);lsDel(CH);apiKey=null;st={msgs:[],tools:{}};view="chat";keyMsg="";render()}}
+    apiKey=k2;keyMsg="";view="chat";showKey=false;render()}
+  else if(a==="forgetkey"){if(window.confirm("Oublier la clé API sur cet appareil ?")){lsDel(KEY);lsDel(CH);apiKey=null;st={msgs:[],tools:{}};view="chat";keyMsg="";showKey=false;render()}}
   else if(a==="tok"||a==="tno"){
     var id=b.getAttribute("data-id"),blk=null;st.msgs.forEach(function(m){if(m.role==="assistant")(m.content||[]).forEach(function(x){if(x.type==="tool_use"&&x.id===id)blk=x})});
     if(!blk)return;
