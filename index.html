@@ -2185,10 +2185,10 @@ TB.suivi=[];
   var bandHrv=null;for(var bk=lastDays(90,"hrv").length-1;bk>=0&&!bandHrv;bk--){var br=lastDays(90,"hrv")[bk].r;if(!nn(br.hrvLow)&&!nn(br.hrvHigh))bandHrv=[br.hrvLow,br.hrvHigh]}
   var sleepH=lastDays(90,"sleepSec").map(function(d){return {k:d.k,t:d.t,v:nn(d.v)?null:d.v/3600,r:d.r}});
   var hasMarks=MARKS.some(function(m){return m.end>=dkey(NOW-90*DAY)&&m.start<=todayKey});
-  var sumT='<h3 style="margin-top:0">Charge par semaine</h3>'+weekBars()+
-    '<h3>VFC nocturne (ms)</h3>'+lineSeries(lastDays(90,"hrv"),"hrv",{band:bandHrv,marks:MARKS,unit:"ms",label:"VFC nocturne sur 90 jours"})+
-    (hasMarks?'<div class="legend"><span><i style="background:var(--orange)"></i>jours de tournoi</span><span>bande verte : plage normale Garmin</span></div>':'<div class="legend"><span>bande verte : plage normale Garmin</span></div>');
-  var moreT='<h3 style="margin-top:0">Sommeil (heures)</h3>'+lineSeries(sleepH,"v",{color:"var(--deep)",marks:MARKS,ref:7,unit:"h",label:"Sommeil sur 90 jours"})+
+  var sumT='<h3 style="margin-top:0">Charge par semaine</h3>'+weekBars();
+  var moreT='<h3 style="margin-top:0">VFC nocturne (ms)</h3>'+lineSeries(lastDays(90,"hrv"),"hrv",{band:bandHrv,marks:MARKS,unit:"ms",label:"VFC nocturne sur 90 jours"})+
+    (hasMarks?'<div class="legend"><span><i style="background:var(--orange)"></i>jours de tournoi</span><span>bande verte : plage normale Garmin</span></div>':'<div class="legend"><span>bande verte : plage normale Garmin</span></div>')+
+    '<h3>Sommeil (heures)</h3>'+lineSeries(sleepH,"v",{color:"var(--deep)",marks:MARKS,ref:7,unit:"h",label:"Sommeil sur 90 jours"})+
     '<div class="legend"><span>ligne orange : 7 h</span></div>'+
     '<h3>FC au repos (bpm)</h3>'+lineSeries(lastDays(90,"rhr"),"rhr",{color:"var(--red)",marks:MARKS,unit:"bpm",label:"FC au repos sur 90 jours"});
   TB.suivi.push(card({key:"tend",title:"Tendances sur 90 jours",icon:"pulse",sum:sumT,more:moreT}));
@@ -2202,29 +2202,31 @@ TB.suivi=[];
     var d=(nn(va)||nn(vb))?null:vb-va,txt="–",cls="";
     if(d!=null){var r=Math.round(d);if(r===0)txt="=";else{txt=(r>0?"+":"−")+Math.abs(r)+(unit||"");if(good)cls=(good>0)===(r>0)?"c-green":"c-red"}}
     return '<tr><th>'+lab+'</th><td>'+fa+'</td><td>'+fb+'</td><td class="'+cls+'">'+txt+'</td></tr>'}
-  var cmp='<div class="cmpsel"><label>Semaine A<select id="wcmpa" class="jsel">'+opts(A)+'</select></label><label>Semaine B<select id="wcmpb" class="jsel">'+opts(B)+'</select></label></div>'+
-    '<table class="dtab"><thead><tr><th></th><th>A</th><th>B</th><th>B − A</th></tr></thead><tbody>'+
+  var head4='<table class="dtab"><thead><tr><th></th><th>A</th><th>B</th><th>B − A</th></tr></thead><tbody>';
+  var cmp='<div class="cmpsel"><label>Semaine A<select id="wcmpa" class="jsel">'+opts(A)+'</select></label><label>Semaine B<select id="wcmpb" class="jsel">'+opts(B)+'</select></label></div>'+head4+
     row("Charge",String(Math.round(A.load)),String(Math.round(B.load)),A.load,B.load,0)+
-    row("Séances",String(A.ns),String(B.ns),A.ns,B.ns,0)+
     row("Sommeil moyen",hmSec(A.sleep),hmSec(B.sleep),A.sleep==null?null:A.sleep/60,B.sleep==null?null:B.sleep/60,1," min")+
     row("VFC moyenne",show(A.hrv," ms"),show(B.hrv," ms"),A.hrv,B.hrv,1," ms")+
-    row("FC au repos",show(A.rhr," bpm"),show(B.rhr," bpm"),A.rhr,B.rhr,-1," bpm")+
     row("Matins verts",A.meas?A.greens+"/"+A.meas:"–",B.meas?B.greens+"/"+B.meas:"–",A.meas?A.greens/A.meas*100:null,B.meas?B.greens/B.meas*100:null,1," %")+
     row("Programme fait",A.planned?A.done+"/"+A.planned:"–",B.planned?B.done+"/"+B.planned:"–",A.planned?A.done/A.planned*100:null,B.planned?B.done/B.planned*100:null,1," %")+
+    '</tbody></table>';
+  var cmpMore=head4+row("Séances",String(A.ns),String(B.ns),A.ns,B.ns,0)+
+    row("FC au repos",show(A.rhr," bpm"),show(B.rhr," bpm"),A.rhr,B.rhr,-1," bpm")+
     row("Jambes fraîches",String(A.fresh),String(B.fresh),A.fresh,B.fresh,1)+
     row("Jambes lourdes",String(A.heavy),String(B.heavy),A.heavy,B.heavy,-1)+
     '</tbody></table><p class="small muted" style="margin:8px 0 0">Vert : mieux, rouge : moins bien. La charge n\'est ni bonne ni mauvaise en soi : regarde-la avec le sommeil et la VFC.</p>';
-  TB.suivi.push(card({key:"cmpw",title:"Comparer deux semaines",icon:"cal",sum:cmp}));
+  TB.suivi.push(card({key:"cmpw",title:"Comparer deux semaines",icon:"cal",sum:cmp,more:cmpMore}));
 
   /* --- historique du journal --- */
   var PAINL={epaule:"Épaule",genou:"Genou",mollet:"Mollet ou pied froid",dos:"Dos",autre:"Autre douleur"},LEGL={fresh:["Fraîches","green"],ok:["Normales",""],heavy:["Lourdes","red"]},DONEL={oui:"Programme fait",partiel:"En partie",non:"Pas fait"};
   var jd=Object.keys(JR).filter(function(k){var e=JR[k];return k<=todayKey&&(e.legs||e.done||(e.tags||[]).length||(e.pain||[]).length||e.note)}).sort().reverse();
-  var rows=jd.slice(0,14).map(function(k){var e=JR[k],ch=[];
+  var rowOf=function(k){var e=JR[k],ch=[];
     if(e.legs)ch.push('<span class="chip '+LEGL[e.legs][1]+'">'+LEGL[e.legs][0]+'</span>');
     if(e.done)ch.push('<span class="chip '+(e.done==="oui"?"green":e.done==="partiel"?"orange":"red")+'">'+DONEL[e.done]+'</span>');
     (e.pain||[]).forEach(function(p){ch.push('<span class="chip red">'+esc(PAINL[p]||p)+'</span>')});
     (e.tags||[]).forEach(function(t){ch.push('<span class="chip orange">'+esc(t)+'</span>')});
-    return '<div class="jrow tap" role="button" tabindex="0" data-day="'+k+'"><div class="jd">'+esc(fmt(new Date(k+"T12:00:00Z").getTime(),{weekday:"short",day:"numeric",month:"short"}))+'</div><div class="jb">'+(ch.length?'<div class="jchs">'+ch.join("")+'</div>':'')+(e.note?'<div class="small muted jn">'+esc(e.note)+'</div>':'')+'</div></div>'}).join("");
+    return '<div class="jrow tap" role="button" tabindex="0" data-day="'+k+'"><div class="jd">'+esc(fmt(new Date(k+"T12:00:00Z").getTime(),{weekday:"short",day:"numeric",month:"short"}))+'</div><div class="jb">'+(ch.length?'<div class="jchs">'+ch.join("")+'</div>':'')+(e.note?'<div class="small muted jn">'+esc(e.note)+'</div>':'')+'</div></div>'};
+  var rows=jd.slice(0,5).map(rowOf).join(""),rows2=jd.slice(5,14).map(rowOf).join("");
   /* effet des étiquettes sur la nuit (même convention que la base de VFC : l'étiquette du jour J décrit la nuit qui s'est terminée le jour J) */
   var hk=Object.keys(HIST).filter(function(k){return k>=dkey(NOW-90*DAY)&&k<=todayKey}),eff="";
   var TAGN=[["alcool","Alcool"],["mal dormi","Mal dormi"],["repas tardif","Repas tardif"],["stress","Stress"],["voyage","Voyage"],["malade","Malade"]];
@@ -2237,8 +2239,8 @@ TB.suivi=[];
   var pc={};Object.keys(JR).forEach(function(k){if(k>=dkey(NOW-30*DAY)&&k<=todayKey)(JR[k].pain||[]).forEach(function(p){pc[p]=(pc[p]||0)+1})});
   var pains=Object.keys(pc).sort(function(a,b){return pc[b]-pc[a]}).map(function(p){return '<span class="chip red">'+esc(PAINL[p]||p)+' · '+pc[p]+' j</span>'}).join(" ");
   var jh=rows?'<div class="jlist">'+rows+'</div>':'<p class="muted small" style="margin:0">Aucun retour saisi pour l\'instant.</p>';
-  var jm=(pains?'<h3 style="margin-top:0">Douleurs sur 30 jours</h3><p style="margin:0">'+pains+'</p>':'')+
-    '<h3'+(pains?'':' style="margin-top:0"')+'>Ce que ça change sur tes nuits</h3>'+(eff||'<p class="muted small" style="margin:0">Pas encore assez de jours étiquetés (il en faut au moins 2 par étiquette) pour mesurer un effet.</p>')+
+  var jm=(rows2?'<h3 style="margin-top:0">Plus anciens</h3><div class="jlist">'+rows2+'</div>':'')+(pains?(rows2?'<h3>':'<h3 style="margin-top:0">')+'Douleurs sur 30 jours</h3><p style="margin:0">'+pains+'</p>':'')+
+    '<h3'+(rows2||pains?'':' style="margin-top:0"')+'>Ce que ça change sur tes nuits</h3>'+(eff||'<p class="muted small" style="margin:0">Pas encore assez de jours étiquetés (il en faut au moins 2 par étiquette) pour mesurer un effet.</p>')+
     (jd.length>14?'<p class="small muted" style="margin:10px 0 0">Les 14 retours les plus récents sont affichés en haut ; '+(jd.length-14)+' plus anciens sont gardés dans le journal.</p>':'');
   TB.suivi.push(card({key:"jhist",title:"Historique du journal",icon:"pen",sum:jh,more:jm}));
 
@@ -2256,11 +2258,14 @@ TB.suivi=[];
   }
   var tr=[],none=0;
   Object.keys(PLAN.blocks||{}).forEach(function(b){var L=(PLAN.blocks[b]||{}).loads;if(!L)return;Object.keys(L).forEach(function(ix){var t=ldTrack(b,ix);if(!t)return;if(t.pts.length>1)tr.push(t);else none++})});
-  var lh=tr.length?tr.map(function(t){var dl=t.lv-t.start;
-    return '<div class="ldprog"><div class="ln"><b>'+esc(t.name)+'</b><span class="small muted">'+esc(t.L.steps[t.lv])+'</span><span class="small">Palier '+(t.lv+1)+'/'+(t.mx+1)+' · '+(dl>0?'+'+dl+' depuis le départ':dl<0?dl+' depuis le départ':'même palier qu\'au départ')+' · '+(t.pts.length-1)+' retour'+(t.pts.length>2?'s':'')+'</span></div>'+spark(t)+'</div>'}).join(""):
+  tr.sort(function(a,b){return b.pts.length-a.pts.length});
+  var lhItem=function(t){var dl=t.lv-t.start;
+    return '<div class="ldprog"><div class="ln"><b>'+esc(String(t.name).split(" : ")[0])+'</b><span class="small muted">'+esc(t.L.steps[t.lv])+'</span><span class="small">Palier '+(t.lv+1)+'/'+(t.mx+1)+' · '+(dl>0?'+'+dl+' depuis le départ':dl<0?dl+' depuis le départ':'même palier qu\'au départ')+' · '+(t.pts.length-1)+' retour'+(t.pts.length>2?'s':'')+'</span></div>'+spark(t)+'</div>'};
+  var lh=tr.length?tr.slice(0,4).map(lhItem).join(""):
     '<p class="muted small" style="margin:0">Dès que tu donnes un retour de charge (trop facile, bien, trop dur) sur un exercice, sa progression apparaît ici.</p>';
-  if(tr.length&&none)lh+='<p class="small muted" style="margin:8px 0 0">'+none+' autre'+(none>1?'s':'')+' exercice'+(none>1?'s':'')+' avec charge n\'a pas encore de retour.</p>';
-  TB.suivi.push(card({key:"ldprog",title:"Progression des charges",icon:"bars",sum:lh}));
+  var lhMore=tr.length>4?tr.slice(4).map(lhItem).join(""):"";
+  if(tr.length&&none)lhMore+='<p class="small muted" style="margin:8px 0 0">'+none+' autre'+(none>1?'s':'')+' exercice'+(none>1?'s':'')+' avec charge n\'a pas encore de retour.</p>';
+  TB.suivi.push(card({key:"ldprog",title:"Progression des charges",icon:"bars",sum:lh,more:lhMore||null}));
 })();
 
 var APP=document.getElementById("app");
@@ -2269,10 +2274,17 @@ var APP=document.getElementById("app");
   var nt=null;EVTS.forEach(function(T){if(!nt&&T.end>=todayKey)nt=T});
   var ntd=nt?dDiff(nt.start,todayKey):null;
   var tourLab=nt?((nt.league?"R1":"Tournoi")+(ntd>0?" J-"+ntd:"")):"Cycle";
+  function groupCards(items,titles,label){
+    var used={},main=[],rest=[];
+    titles.forEach(function(t){for(var i=0;i<items.length;i++){if(!used[i]&&items[i].indexOf('<h2>'+t)>=0){used[i]=1;main.push(items[i]);break}}});
+    items.forEach(function(x,i){if(!used[i])rest.push(x)});
+    return rest.length?main.concat(['<details class="moredet"><summary>'+label+'</summary><div class="stack" style="margin-top:12px">'+rest.join("")+'</div></details>']):main;
+  }
+  var bilanDay=dowOf(todayKey)<=1;
   var TABS=[
     {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:TB.today},
-    {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:(TB.wtop||[]).concat(TB.week,TB.wstat||[])},
-    {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:TB.body},
+    {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Tes 7 derniers jours"].concat(bilanDay?["Bilan de la semaine"]:[],["7 prochains jours","Ta fenêtre de charge","Le bilan du coach"]),bilanDay?"Plus de détails : statut d'entraînement":"Plus de détails : bilan de la semaine, statut d'entraînement")},
+    {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:groupCards(TB.body,["Ta récupération","Ton sommeil","Signaux du corps","Le coach propose"],"Plus de détails : leviers, VFC de journée, modèle ou Garmin, analyses, progrès, rappels")},
     {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:TB.suivi},
     {k:"tour",lab:tourLab,title:nt?"Tournoi":"Cycle",ic:'<path d="M5 22V3M5 4h13l-2 4 2 4H5"/>',items:(function(){var all=(TB.ttop||[]).concat(TB.tour),top=[],rest=[];all.forEach(function(x){(/id="matchcard"|Débrief du coach/.test(x)?top:rest).push(x)});
       return /id="matchcard"/.test(top.join(""))&&rest.length?top.concat(['<details class="moredet"><summary>Plus de détails : frise, jours du tournoi, cycle</summary><div class="stack" style="margin-top:12px">'+rest.join("")+'</div></details>']):all})()}
