@@ -311,13 +311,23 @@ header h1{margin-top:2px}
 .ldprog{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .ldprog:last-child{border-bottom:0} .ldprog .ln{display:flex;flex-direction:column;gap:2px;min-width:0} .ldprog .ln b{font-size:14px;font-weight:600;line-height:1.3}
 .ldprog .spark{width:110px;height:30px;flex:none}
+/* ===== carte du tournoi, détails repliables ===== */
+.nxt{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:16px;background:var(--orange-soft);margin-bottom:6px}
+.nxt .nt{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--orange-t)}
+.nxt .nb b{display:block;font-size:16px;line-height:1.3} .nxt .nb span{display:block;font-size:13.5px;line-height:1.4;color:var(--fg2,var(--fg));margin-top:1px}
+.moredet>summary{list-style:none;cursor:pointer;padding:13px;border-radius:14px;background:var(--soft);color:var(--accent);font-weight:600;text-align:center}
+.moredet>summary::-webkit-details-marker{display:none}
+.moredet.inner{margin-top:10px} .moredet.inner[open]>summary{margin-bottom:6px}
+.moredet:not(.inner)>summary{background:var(--card);box-shadow:0 1px 0 var(--line)}
 /* ===== carte « À préparer » du tournoi ===== */
 .mlist{display:flex;flex-direction:column;margin-bottom:4px}
 .mrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .mrow:last-child{border-bottom:0}
 .mrow input{font:600 17px -apple-system,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
 #matchcard h3 .chip{margin-left:6px;vertical-align:1px}
-/* ===== coach (chat) ===== */
+/* ===== message au coach ===== */
+.cwhen{font-size:11.5px;opacity:.75;margin-top:4px;text-align:right}
+.cflash{position:absolute;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:99px;font-size:13px;font-weight:600}
 #chatfab{position:fixed;right:14px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:45;width:54px;height:54px;border-radius:50%;border:0;background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;cursor:pointer}
 #chatfab[hidden],#chat[hidden]{display:none}
 #chatfab svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -334,12 +344,6 @@ header h1{margin-top:2px}
 .cform{display:flex;gap:8px;align-items:flex-end;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--card)}
 .cform textarea{flex:1;font:16px/1.35 -apple-system,system-ui,sans-serif;padding:10px 12px;border-radius:18px;border:1px solid var(--line);background:var(--bg);color:var(--fg);resize:none;max-height:120px}
 .cform button{flex:none;width:42px;height:42px;border:0;border-radius:50%;background:var(--accent);color:#fff;font-size:20px;font-weight:700;cursor:pointer} .cform button:disabled{opacity:.45}
-.csetup{padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto} .csetup p{margin:0;font-size:15px;line-height:1.45} .csetup h3{margin:6px 0 0}
-.csetup input[type=password]{width:100%;box-sizing:border-box;font:16px/1.2 ui-monospace,Menlo,monospace;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
-.csetup .err{color:var(--red);font-weight:600} .csetup .ok{color:var(--green);font-weight:600} .csteps{margin:0;padding-left:20px;font-size:14.5px;line-height:1.5}
-.crow{display:flex;gap:8px} .crow button{flex:1;border:0;border-radius:12px;padding:12px;min-height:44px;font:700 15px -apple-system,system-ui,sans-serif;background:var(--fill,#f2f2f7);color:var(--fg);cursor:pointer} .crow button.main{background:var(--accent);color:#fff}
-.btnlink{flex:1;display:block;text-align:center;text-decoration:none;border-radius:12px;padding:12px;min-height:44px;box-sizing:border-box;font:700 15px -apple-system,system-ui,sans-serif;background:var(--fill,#f2f2f7);color:var(--accent)}
-.cmod{display:flex;gap:10px;align-items:flex-start;padding:8px 0} .cmod span{display:flex;flex-direction:column} .cmod small{color:var(--muted);font-size:12.5px;margin-top:1px}
 /* ===== mode appli (page ouverte hors Scriptable) ===== */
 #ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 4px);transform:translate(-50%,-44px);z-index:60;padding:7px 14px;border-radius:99px;background:var(--card);color:var(--fg);box-shadow:0 2px 12px rgba(0,0,0,.18);font:600 13px -apple-system,system-ui,sans-serif;opacity:0;pointer-events:none;transition:opacity .15s,transform .2s;white-space:nowrap}
 #appnote{display:none;margin:0 0 10px;padding:9px 12px;border-radius:12px;background:var(--soft);color:var(--muted);font-size:13px;line-height:1.35;text-align:center}
@@ -1334,7 +1338,6 @@ out.push('<section class="card verdict tap" role="button" tabindex="0" data-shee
   if(ts!=null)sum+='<div class="prow"><div class="pt">'+ft(ts)+'</div><div class="pb"><b>'+esc(ad.head)+'</b><span>'+esc(intens+ad.text)+'</span></div></div>';
   else sum+='<div class="prow"><div class="pt">Jour</div><div class="pb"><b>'+esc(ad.head)+'</b><span>'+esc(intens+ad.text)+'</span></div></div>';
   sum+='<div class="prow"><div class="pt">'+bedTxt+'</div><div class="pb"><b>Au lit</b><span>'+esc(debt7H>0?fr1(debt7H)+" h de sommeil à rattraper":"Pour environ "+hh(needH*60)+" de sommeil")+'</span></div></div>';
-  if(pri[2])sum+='<p class="small" style="margin:8px 0 0;line-height:1.4">'+pri[2]+'</p>';
   if(planDay&&tagsT.indexOf("malade")<0&&((planDay.blocks||[]).length&&isRenfoK||ad.mult===0&&isRenfoK))sum+='<button class="bigbtn" type="button" data-day="'+todayKey+'">'+(ad.mult===0?"Voir la mobilité du jour":"Voir les exercices du "+esc(planDay.title))+'</button>';
 
   /* détail : planning heure par heure */
@@ -1379,12 +1382,12 @@ out.push('<section class="card verdict tap" role="button" tabindex="0" data-shee
   var head=String(A.title||"").replace(/^Forme du [^:]*:\s*/i,"");head=head.charAt(0).toUpperCase()+head.slice(1);
   var res=A.resume||[],con=A.conseils||[];
   var sum=(head?'<p style="margin:0 0 6px;font-size:17px;font-weight:700;line-height:1.3"'+(lv?' class="c-'+lv+'"':'')+'>'+esc(head)+'</p>':'')+
-    res.slice(0,2).map(function(x){return '<p class="small" style="margin:0 0 4px;line-height:1.4">'+esc(x)+'</p>'}).join("")+
+    (res[0]?'<p class="small" style="margin:0;line-height:1.4">'+esc(res[0])+'</p>':'');
+  var more=res.slice(1).map(function(x){return '<p class="small" style="margin:0 0 4px;line-height:1.4">'+esc(x)+'</p>'}).join("")+
     (con.length?'<h3>À faire aujourd\'hui</h3>'+con.map(function(x,i){return '<div class="prio"><i>'+(i+1)+'</i><span>'+esc(x)+'</span></div>'}).join(""):"")+
-    (A.surveiller?'<div class="banner" style="margin-top:10px;cursor:default"><span><b>À surveiller</b> · '+esc(A.surveiller)+'</span></div>':"");
-  var more=res.length>2?res.slice(2).map(function(x){return '<p class="small" style="margin:0 0 4px;line-height:1.4">'+esc(x)+'</p>'}).join(""):"";
-  if(more)more+='<p class="small muted" style="margin:8px 0 0">Analyse rédigée par Claude à partir de tes données ; ce n\'est pas un avis médical.</p>';
-  out.push(card({key:"analyse",title:"L'analyse du coach",icon:"bulb",chip:A.at?'<span class="chip">'+esc(hm(new Date(A.at).getTime()))+'</span>':"",sum:sum,more:more||null}));
+    (A.surveiller?'<div class="banner" style="margin-top:10px;cursor:default"><span><b>À surveiller</b> · '+esc(A.surveiller)+'</span></div>':"")+
+    '<p class="small muted" style="margin:8px 0 0">Analyse rédigée par Claude à partir de tes données ; ce n\'est pas un avis médical.</p>';
+  out.push(card({key:"analyse",title:"L'analyse du coach",icon:"bulb",chip:A.surveiller?'<span class="chip orange">À surveiller</span>':(A.at?'<span class="chip">'+esc(hm(new Date(A.at).getTime()))+'</span>':""),sum:sum,more:more||null}));
 })();
 
 /* ----- bilan de la semaine (dimanche et lundi : en haut de l'onglet Semaine, signalé sur l'écran du jour) ----- */
@@ -2010,38 +2013,48 @@ TB.ttop=[];
   s+='<path d="M'+(X(0)+px/2)+' '+(y+20)+' l-4 6 h8 z" fill="var(--fg)"/>';
   var tl=svg(w,y+40,s,"Frise jusqu'aux compétitions")+'<div class="legend"><span><i style="background:var(--light)"></i>préparation</span><span><i style="background:var(--awake)"></i>affûtage J-7</span><span><i style="background:var(--orange)"></i>compétition</span><span><i style="background:var(--teal)"></i>récupération</span></div>';
   TB.ttop.push('<section class="card sec">'+hero+'<h3>Ta route</h3>'+tl+'</section>');
-  /* ----- carte « À préparer » : heure du premier match de chaque jour + programme heure par heure ----- */
+  /* ----- carte du prochain tournoi : prochaine étape + heure du premier match ; le reste est replié ----- */
   (function(){
     var nt2=null;EVTS.forEach(function(T){if(!nt2&&T.end>=todayKey)nt2=T});if(!nt2)return;
     if(dDiff(nt2.start,todayKey)>14)return;
     var n2=dDiff(nt2.end,nt2.start)+1,days=[];for(var i2=0;i2<n2;i2++){var k2=dAdd(nt2.start,i2);if(k2>=todayKey)days.push(k2)}
     if(!days.length)return;
     function lbl(k,o){return fmt(new Date(k+"T12:00:00Z").getTime(),o||{weekday:"long",day:"numeric",month:"long"})}
+    function first(x){var m=String(x).match(/^[^.!?]*[.!?]/);return m?m[0]:String(x)}
+    var tg=days[0],dd=dDiff(tg,todayKey),fm=tmn((JR[tg]||{}).match||"09:00"),hasT=!!(JR[tg]||{}).match,tpN=tourPhase(todayKey);
+    var nowM=(function(){var p=new Date(NOW).toLocaleString("fr-FR",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hour12:false}).split(":");return (+p[0]%24)*60+(+p[1])})();
+    var chipT=dd===0?(n2>1&&tpN&&tpN.idx>0?"Jour "+(tpN.idx+1):"Jour J"):dd>0?"J-"+dd:(tpN&&tpN.kind==="match"?"Jour "+(tpN.idx+1):"");
     var rows=days.map(function(k){var e=JR[k]||{},has=!!e.match;
       return '<div class="mrow"><label for="jm-'+k+'"><b>'+esc(lbl(k,{weekday:"short",day:"numeric",month:"short"}))+'</b></label>'+
         '<input type="time" id="jm-'+k+'" data-day="'+k+'" value="'+esc(e.match||"09:00")+'" aria-label="Heure du premier match le '+esc(lbl(k))+'">'+
         (has?'<span class="chip green">Enregistrée</span>':'<button type="button" class="jchip" data-matchok="'+k+'">Garder 9 h</button>')+'</div>'}).join("");
-    var tg=days[0],dd=dDiff(tg,todayKey),fm=tmn((JR[tg]||{}).match||"09:00"),hasT=!!(JR[tg]||{}).match;
-    var tgName=dd===0?"aujourd'hui":dd===1?"demain":lbl(tg,{weekday:"long",day:"numeric",month:"long"});
+    var steps=[[fm-210,"Réveil","Un grand verre d'eau tout de suite."],
+      [fm-180,"Petit-déjeuner","Riche en glucides, pauvre en graisses et en fibres (pain, flocons d'avoine, banane, miel, un œuf), avec 400 à 500 ml d'eau."],
+      [fm-105,"Départ","Sac : raquettes, grips, chaussures, 2 tenues, élastique d'épaule, boisson, collations. Arrivée 1 h 15 avant le match."],
+      [fm-45,"Échauffement","25 minutes : épaules, hanches, fentes marchées, jeu de pieds, smashs progressifs."],
+      [fm,"Premier match","Dernière gorgée et respiration calme 10 minutes avant."]];
+    var cb=window.__COACHB&&window.__COACHB.bed,nx="";
+    function nextBox(tag,title,text){return '<div class="nxt"><div class="nt">'+esc(tag)+'</div><div class="nb"><b>'+esc(title)+'</b><span>'+esc(text)+'</span></div></div>'}
+    if(dd===0){
+      var st=null;steps.forEach(function(s){if(!st&&s[0]>=nowM-10)st=s});
+      var dm=st?st[0]-nowM:0,when=!st?"":dm<=5?"maintenant":dm<60?"dans "+dm+" min":"dans "+Math.floor(dm/60)+" h"+(dm%60?" "+String(dm%60).padStart(2,"0"):"");
+      nx=st?nextBox("Prochaine étape · "+when,ftm(st[0])+" · "+st[1],st[2])
+        :nextBox("Pendant le tournoi","Entre deux matchs","Quelques gorgées, une banane ou une pâte de fruits, reste au chaud, mobilité des mollets et de l'épaule.");
+    }else if(dd===1){
+      nx=nextBox("Ce soir","Sac prêt, dîner de féculents, coucher tôt","Pas d'alcool, rien de nouveau"+(cb?". Coucher avant "+cb:"")+". Réveil demain à "+ftm(fm-210)+" pour un premier match à "+ftm(fm)+".");
+    }else if(dd>1&&tpN&&tpN.kind==="pre"){
+      nx='<div class="nxt"><div class="nt">Aujourd\'hui · '+esc(tourFocus(tpN))+'</div>'+tourSections(tpN,todayKey).slice(0,3).map(function(x){return '<div class="nb"><b>'+esc(x.t)+'</b><span>'+esc(first(x.x))+'</span></div>'}).join("")+'</div>';
+    }
     function pr(m,t,x){return '<div class="prow"><div class="pt">'+ftm(m)+'</div><div class="pb"><b>'+esc(t)+'</b><span>'+esc(x)+'</span></div></div>'}
-    var plan="";
+    var full="";
     if(dd<=3){
-      plan='<h3>Programme '+(dd===0?"d'aujourd'hui":dd===1?"de demain":"du "+esc(tgName))+(hasT?"":' <span class="chip orange">avec 9 h par défaut</span>')+'</h3>'+
-        pr(fm-210,"Réveil","Un grand verre d'eau tout de suite.")+
-        pr(fm-180,"Petit-déjeuner","Riche en glucides, pauvre en graisses et en fibres (pain, flocons d'avoine, banane, miel, un œuf), avec 400 à 500 ml d'eau.")+
-        pr(fm-105,"Départ","Sac : raquettes, grips, chaussures, 2 tenues, élastique d'épaule, boisson, collations. Arrivée 1 h 15 avant le match.")+
-        pr(fm-45,"Échauffement","25 minutes : épaules, hanches, fentes marchées, jeu de pieds, smashs progressifs.")+
-        pr(fm,"Premier match","Dernière gorgée et respiration calme 10 minutes avant.");
+      full='<details class="moredet inner"><summary>Toute la journée du '+esc(dd===0?"jour J":lbl(tg,{weekday:"long",day:"numeric",month:"long"}))+', heure par heure</summary>'+
+        steps.map(function(s){return pr(s[0],s[1],s[2])}).join("")+(hasT?"":'<p class="small muted" style="margin:6px 0 0">Calculé avec un premier match à 9 h par défaut.</p>')+'</details>';
     }
-    var tonight="";
-    if(dd===1){var cb=window.__COACHB&&window.__COACHB.bed;
-      tonight='<h3>Ce soir</h3><div class="prow"><div class="pt">Sac</div><div class="pb"><b>Prépare le sac</b><span>Raquettes, grips, chaussures et chaussettes de rechange, tenues, serviette, élastique d\'épaule, boisson, collations.</span></div></div>'+
-        '<div class="prow"><div class="pt">Dîner</div><div class="pb"><b>Comme d\'habitude</b><span>Riche en féculents, sans nouveauté, pas d\'alcool, eau régulière.</span></div></div>'+
-        '<div class="prow"><div class="pt">'+(cb?esc(cb):"Tôt")+'</div><div class="pb"><b>Coucher</b><span>Même si tu t\'endors mal, se reposer compte. Réveil à '+ftm(fm-210)+'.</span></div></div>';
-    }
-    var intro='<p class="small" style="margin:0 0 6px;line-height:1.45">Indique l\'heure de ton <b>premier match</b> pour chaque jour : le programme ci-dessous, ton coucher et les notifications s\'y calent. Sans elle, c\'est 9 h.</p>';
-    var c0='<section class="card sec" id="matchcard"><div class="sechead">'+ico("flag",ICOL.flag)+'<h2>À préparer : '+esc(nt2.league?String(nt2.name):nt2.name)+'</h2></div>'+intro+'<div class="mlist">'+rows+'</div>'+plan+tonight+'</section>';
-    TB.ttop.splice(dDiff(nt2.start,todayKey)<=3?0:Math.min(1,TB.ttop.length),0,c0);
+    var c0='<section class="card sec" id="matchcard"><div class="sechead">'+ico("flag",ICOL.flag)+'<h2>'+esc(nt2.name)+'</h2>'+(chipT?'<span class="chip orange" style="margin-left:auto">'+esc(chipT)+'</span>':'')+'</div>'+
+      '<p class="small muted" style="margin:-2px 0 10px">'+esc(lbl(nt2.start,{weekday:"long",day:"numeric",month:"long"}))+(n2>1?" au "+esc(lbl(nt2.end,{weekday:"long",day:"numeric",month:"long"})):"")+'</p>'+
+      nx+'<h3>Heure de ton premier match</h3><div class="mlist">'+rows+'</div>'+full+'</section>';
+    TB.ttop.splice(0,0,c0);
   })();
 
   /* débrief du coach après un tournoi : ressenti physique et récupération */
@@ -2115,12 +2128,13 @@ out=TB.body;
   var ye=JR[yk]||{},pdY=null;(PLAN.days||[]).forEach(function(x){if(x.date===yk)pdY=x});
   var hadY=SS.some(function(x){return dkey(x.s)===yk})||(pdY&&pdY.kind&&pdY.kind!=="repos"&&pdY.kind!=="tournoi");
   var mk=null;for(var mi=0;mi<=3&&!mk;mi++){var kk=dkey(NOW+mi*DAY),pp=tourPhase(kk);if(pp&&pp.kind==="match"&&!(JR[kk]||{}).match)mk=kk}
-  if(mk){var md=dDiff(mk,todayKey);R.push(['Premier match '+(md===0?"aujourd'hui":md===1?"demain":"le "+fmt(new Date(mk+"T12:00:00Z").getTime(),{weekday:"long",day:"numeric",month:"long"}))+' : l\'heure n\'est pas indiquée (9 h par défaut).','Indiquer','match']);window.__MK=mk}
-  if(hadY&&!ye.legs&&!ye.done)R.push(['Aucun retour saisi pour hier (jambes, séance).','Saisir','yesterday']);
+  if(mk){var md=dDiff(mk,todayKey);R.push(['Premier match '+(md===0?"aujourd'hui":md===1?"demain":"le "+fmt(new Date(mk+"T12:00:00Z").getTime(),{weekday:"long",day:"numeric",month:"long"}))+' : heure non indiquée (9 h par défaut).','Indiquer','match']);window.__MK=mk}
+  if(hadY&&!ye.legs&&!ye.done)R.push(['Retour d\'hier manquant (jambes, séance).','Saisir','yesterday']);
   var te=JR[todayKey]||{};
-  if(hr>=9&&hr<20&&!te.legs&&!nn((HIST[todayKey]||{}).sleepSec))R.push(['Pas encore de retour ce matin : comment sont tes jambes ?','Saisir','today']);
-  if(hr>=20&&c&&c.bed)R.push(['Coucher avant '+esc(c.bed)+' pour récupérer au mieux.','','']);
+  if(hr>=9&&hr<20&&!te.legs&&!nn((HIST[todayKey]||{}).sleepSec))R.push(['Pas encore de retour ce matin : tes jambes ?','Saisir','today']);
+  if(hr>=20&&c&&c.bed)R.push(['Coucher avant '+esc(c.bed)+' pour récupérer au mieux.','','bed']);
   if(!R.length)return;
+  var PRI={match:0,bed:1,today:2,yesterday:3};R.sort(function(a,b){return PRI[a[2]]-PRI[b[2]]});R=R.slice(0,2);
   var html='<section class="card sec remind" aria-label="Rappels">'+R.map(function(r){return '<div class="rem"><span>'+r[0]+'</span>'+(r[1]?'<button type="button" class="jchip" data-remind="'+r[2]+'">'+r[1]+'</button>':'')+'</div>'}).join("")+'</section>';
   TB.today.splice(Math.min(1,TB.today.length),0,html);
   window.__remind=function(w){
@@ -2260,7 +2274,8 @@ var APP=document.getElementById("app");
     {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:(TB.wtop||[]).concat(TB.week,TB.wstat||[])},
     {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:TB.body},
     {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:TB.suivi},
-    {k:"tour",lab:tourLab,title:nt?"Tournoi":"Cycle",ic:'<path d="M5 22V3M5 4h13l-2 4 2 4H5"/>',items:(TB.ttop||[]).concat(TB.tour)}
+    {k:"tour",lab:tourLab,title:nt?"Tournoi":"Cycle",ic:'<path d="M5 22V3M5 4h13l-2 4 2 4H5"/>',items:(function(){var all=(TB.ttop||[]).concat(TB.tour),top=[],rest=[];all.forEach(function(x){(/id="matchcard"|Débrief du coach/.test(x)?top:rest).push(x)});
+      return /id="matchcard"/.test(top.join(""))&&rest.length?top.concat(['<details class="moredet"><summary>Plus de détails : frise, jours du tournoi, cycle</summary><div class="stack" style="margin-top:12px">'+rest.join("")+'</div></details>']):all})()}
   ];
   if(!window.__TAB){try{var tk=JSON.parse(localStorage.getItem("recup-tab")||"null");if(tk&&Date.now()-tk.at<3*H)window.__TAB=tk.k}catch(e){}}
   var cur=window.__TAB||"today";if(!TABS.some(function(x){return x.k===cur}))cur="today";
@@ -2293,48 +2308,19 @@ window.__setTab=function(k){
   if(wk&&(dw===0||dw===1))L.push("Bilan de la semaine : "+wk.head+" "+wk.adj);
   window.BRIEF=Object.assign({},c,{title:title,body:L.join("\n"),week:wk,dow:dw,generatedFor:todayKey});
 })();
-/* ----- coach (chat) : ce que Claude sait de la journée, et ce qu'il peut noter dans le journal ----- */
-window.__chatCtx=function(){
-  var L=[],c=window.BRIEF||{};
-  function fr(k){return fmt(new Date(k+"T12:00:00Z").getTime(),{weekday:"short",day:"numeric",month:"short"})}
-  L.push("Date et heure : "+dayName(NOW)+", "+hm(NOW)+" (heure de Paris).");
-  L.push("");L.push("## Verdict du jour (calculé par l'application)");
-  L.push(c.title||"(pas encore calculé)");if(c.body)L.push(c.body);
-  L.push("");L.push("## 7 derniers jours (données Garmin et journal de Cyprien)");
-  L.push("Repères : VFC basse sous "+P.hrvLow+" ms ; sommeil bas sous un score de "+P.sleepLow+".");
-  for(var i=6;i>=0;i--){
-    var k=dkey(NOW-i*DAY),r=HIST[k]||{},j=JR[k]||{},ld=0,a=[];
-    SS.forEach(function(x){if(dkey(x.s)===k)ld+=x.l||0});
-    if(!nn(r.hrv))a.push("VFC "+Math.round(r.hrv)+" ms");
-    if(!nn(r.sleepSec))a.push("sommeil "+hmSec(r.sleepSec)+(nn(r.sleepScore)?" (score "+r.sleepScore+")":""));
-    if(!nn(r.rhr))a.push("FC repos "+Math.round(r.rhr));
-    if(ld)a.push("charge des séances "+Math.round(ld));
-    if(j.legs)a.push("jambes "+({fresh:"fraîches",ok:"normales",heavy:"lourdes"})[j.legs]);
-    if(j.done)a.push("programme "+({oui:"fait",partiel:"en partie",non:"pas fait"})[j.done]);
-    if((j.pain||[]).length)a.push("douleurs : "+j.pain.join(", "));
-    if((j.tags||[]).length)a.push("contexte : "+j.tags.join(", "));
-    if(j.note)a.push("note : « "+String(j.note).slice(0,200)+" »");
-    L.push("- "+fr(k)+(k===todayKey?" (aujourd'hui)":"")+" : "+(a.join(" ; ")||"pas de donnée"));
-  }
-  var rs=SS.slice(-5);
-  if(rs.length){L.push("");L.push("## Dernières séances");rs.forEach(function(x){L.push("- "+fr(dkey(x.s))+" "+hm(x.s)+" : "+x.n+", "+Math.round((x.e-x.s)/60000)+" min, charge "+Math.round(x.l||0))})}
-  var pd=(PLAN.days||[]).filter(function(d){return d.date>=todayKey&&d.date<=dAdd(todayKey,4)});
-  if(pd.length){L.push("");L.push("## Plan des prochains jours");pd.forEach(function(d){L.push("- "+fr(d.date)+(d.date===todayKey?" (aujourd'hui)":"")+" : "+d.title+" — "+d.text)})}
-  var ev=EVTS.filter(function(T){return T.end>=todayKey&&dDiff(T.start,todayKey)<=45});
-  if(ev.length){L.push("");L.push("## Compétitions à venir");ev.forEach(function(T){var m=(JR[T.start]||{}).match;L.push("- "+T.name+" : "+fr(T.start)+(T.end!==T.start?" au "+fr(T.end):"")+(m?", premier match à "+m:", heure du premier match non indiquée (9 h par défaut)"))})}
-  return L.join("\n");
+/* ----- messages au coach : gardés dans le journal du jour (msgs), lus par l'analyse du matin, qui répond dans analyse.json (reponses) ----- */
+window.__msgSend=function(text){
+  text=String(text||"").trim().slice(0,1000);if(!text)return false;
+  var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.msgs=e.msgs||[];e.msgs.push({t:text,at:new Date().toISOString()});
+  window.__jcommit(todayKey,e);return true;
 };
-window.__chatApply=function(inp){
-  inp=inp||{};
-  var k=inp.jour==="hier"?dkey(NOW-DAY):todayKey,e=JSON.parse(JSON.stringify(JR[k]||{})),done=[];
-  var PA=["epaule","genou","mollet","dos","autre"],TA=["malade","alcool","repas tardif","voyage","stress","mal dormi"];
-  (inp.douleurs||[]).forEach(function(p){if(PA.indexOf(p)>=0){e.pain=e.pain||[];if(e.pain.indexOf(p)<0){e.pain.push(p);done.push("douleur : "+p)}}});
-  (inp.contexte||[]).forEach(function(t){if(TA.indexOf(t)>=0){e.tags=e.tags||[];if(e.tags.indexOf(t)<0){e.tags.push(t);done.push("contexte : "+t)}}});
-  if(["fresh","ok","heavy"].indexOf(inp.jambes)>=0&&e.legs!==inp.jambes){e.legs=inp.jambes;done.push("jambes")}
-  if(typeof inp.note==="string"&&inp.note.trim()){var n=inp.note.trim().slice(0,300);e.note=e.note?e.note+" | "+n:n;done.push("note")}
-  if(!done.length)return "Rien de nouveau à enregistrer.";
-  window.__jcommit(k,e);
-  return "Enregistré ("+done.join(", ")+").";
+window.__msgList=function(){
+  var out=[];Object.keys(JR).forEach(function(k){(JR[k].msgs||[]).forEach(function(m){if(m&&m.t)out.push({k:k,t:m.t,at:m.at||k})})});
+  out.sort(function(a,b){return a.at<b.at?1:-1});return out.slice(0,12);
+};
+window.__msgReplies=function(){
+  var r={};function add(a){((a&&a.reponses)||[]).forEach(function(x){if(x&&x.at&&x.reponse)r[x.at]=x.reponse})}
+  add(ANT);(ANH||[]).forEach(add);return r;
 };
 window.__rerun=function(){
   var y=window.pageYOffset||0,open=[].map.call(document.querySelectorAll(".more:not([hidden])"),function(x){return x.id});
@@ -2503,212 +2489,57 @@ APP.addEventListener("click",function(e){
 })();
 </script>
 <script id="chatjs">
-/* Coach : chat avec Claude dans l'appli, avec une clé API Anthropic gardée sur cet appareil (facturation à l'usage).
-   Chaque message envoie à Anthropic le verdict du jour, les 7 derniers jours, le plan et les compétitions (window.__chatCtx).
-   Claude peut proposer de noter une douleur / un contexte / une note dans le journal : rien n'est enregistré sans ton accord. */
+/* Message au coach : tu écris, le message est gardé dans ton journal (donc envoyé au dépôt comme le reste, même hors ligne),
+   et l'analyse du matin (tâche planifiée Claude, avec ton abonnement) le lit, en tient compte et y répond dans analyse.json.
+   Rien n'est payé en plus : aucune API n'est appelée depuis la page. */
 (function(){
-var KEY="recup-claude-key",CH="recup-chat",US="recup-chat-usage",MD="recup-chat-model";
-var MODELS=[
-  {id:"claude-opus-5-5",name:"Opus 5.5",hint:"le plus capable · environ 2 centimes par message",pin:4,pout:20},
-  {id:"claude-sonnet-5-5",name:"Sonnet 5.5",hint:"plus économique · environ 1 centime par message",pin:2,pout:10},
-  {id:"claude-haiku-5-5",name:"Haiku 5.5",hint:"le moins cher · environ 0,1 centime par message",pin:.1,pout:.5}];
-var SUGG=["Comment adapter ma séance d'aujourd'hui ?","J'ai mal à l'épaule, que faire ?","Que manger avant mon prochain tournoi ?"];
-var TOOL={name:"noter_journal",
-  description:"Propose d'enregistrer dans le journal de Cyprien (aujourd'hui ou hier) des douleurs, un contexte (malade, alcool, repas tardif, voyage, stress, mal dormi), le ressenti des jambes ou une note libre. L'application recalcule alors le plan. Cyprien doit confirmer avant l'enregistrement. À utiliser quand il donne une information qui doit changer son programme.",
-  input_schema:{type:"object",properties:{
-    jour:{type:"string",enum:["aujourd'hui","hier"],description:"Jour concerné (aujourd'hui par défaut)"},
-    douleurs:{type:"array",items:{type:"string",enum:["epaule","genou","mollet","dos","autre"]}},
-    contexte:{type:"array",items:{type:"string",enum:["malade","alcool","repas tardif","voyage","stress","mal dormi"]}},
-    jambes:{type:"string",enum:["fresh","ok","heavy"],description:"fresh = fraîches, ok = normales, heavy = lourdes"},
-    note:{type:"string",description:"Une phrase courte résumant l'information"}},
-    additionalProperties:false}};
-var RES={done:"Enregistré dans le journal de Cyprien.",ignored:"Cyprien a refusé la proposition : rien n'a été enregistré.",pending:"Cyprien n'a pas répondu à la proposition : rien n'a été enregistré."};
-var SYSTEM="Tu es le coach récupération de Cyprien, joueur de badminton qui prépare des tournois. Tu réponds en français, en le tutoyant, de façon courte et concrète (5 phrases au plus, sauf si on te demande du détail), sans jargon. "+
-"Tu t'appuies sur les données ci-dessous, fournies par son application. Si une donnée manque, dis-le au lieu d'inventer. Le verdict du jour (feu vert, orange ou rouge) est calculé par l'application : tu peux le nuancer selon ce que Cyprien te dit, mais explique pourquoi et ne le contredis pas à la légère. "+
-"Tu n'es pas médecin : une douleur qui persiste, une crampe au mollet ou un pied froid ou engourdi à l'effort imposent d'arrêter et de consulter. "+
-"Quand Cyprien donne une information qui doit changer son programme (douleur, maladie, alcool, mauvaise nuit, jambes lourdes…), appelle l'outil noter_journal : il lui demandera de confirmer, puis l'application recalculera le plan. Ne dis pas que c'est fait avant sa confirmation. "+
-"Voici l'état actuel :\n\n";
 var fab=document.getElementById("chatfab"),panel=document.getElementById("chat");
 if(!fab||!panel)return;
-function ls(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}}
-function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
-function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
+var draft="",flash="";
 function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
-function rich(t){
-  var h=esc(t).replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>");
-  return h.split("\n").map(function(l){return /^\s*[-•] /.test(l)?"• "+l.replace(/^\s*[-•] /,""):l}).join("<br>");
-}
-var st=ls(CH);if(!st||!Array.isArray(st.msgs))st={msgs:[],tools:{}};if(!st.tools)st.tools={};
-var apiKey=ls(KEY),model=ls(MD)||MODELS[0].id,view="chat",busy=false,draft="",keyMsg="",showKey=false,copied="";
-var FREE="Tu es mon coach récupération (badminton, tournois). Réponds en français, de façon courte et concrète ; tu n'es pas médecin. Voici l'état de mon application de récupération, puis ma question.\n\n";
-if(!MODELS.some(function(m){return m.id===model}))model=MODELS[0].id;
-function save(){
-  if(st.msgs.length>40){var i=st.msgs.length-40;while(i<st.msgs.length&&st.msgs[i].role!=="user")i++;st.msgs=st.msgs.slice(i)}
-  lsSet(CH,st);
-}
-function mInfo(id){for(var i=0;i<MODELS.length;i++)if(MODELS[i].id===id)return MODELS[i];return MODELS[0]}
-function usage(){var m=new Date().toISOString().slice(0,7),u=ls(US);return u&&u.m===m?u:{m:m,i:0,o:0,c:0,n:0}}
-function addUsage(j){
-  var u=usage(),inp=(j.usage&&j.usage.input_tokens||0)+(j.usage&&j.usage.cache_creation_input_tokens||0)+(j.usage&&j.usage.cache_read_input_tokens||0),out=j.usage&&j.usage.output_tokens||0,mi=mInfo(model);
-  u.i+=inp;u.o+=out;u.n+=1;u.c+=(inp*mi.pin+out*mi.pout)/1e6;lsSet(US,u);
-}
-function toolText(inp){
-  var a=[];if((inp.douleurs||[]).length)a.push("douleur : "+inp.douleurs.join(", "));if((inp.contexte||[]).length)a.push("contexte : "+inp.contexte.join(", "));
-  if(inp.jambes)a.push("jambes "+({fresh:"fraîches",ok:"normales",heavy:"lourdes"})[inp.jambes]);if(inp.note)a.push("note « "+inp.note+" »");
-  return "Noter dans ton journal ("+(inp.jour==="hier"?"hier":"aujourd'hui")+") : "+(a.join(" · ")||"rien")+".";
-}
-/* ----- rendu ----- */
-function headHtml(title,back){
-  return '<div class="chead">'+(back?'<button type="button" data-c="back">‹ Retour</button>':'')+'<h2>'+esc(title)+'</h2>'+
-    (view==="chat"&&apiKey?'<button type="button" data-c="new" aria-label="Nouvelle conversation">Nouvelle</button><button type="button" data-c="settings" aria-label="Réglages du coach">⚙</button>':'')+
-    '<button type="button" data-c="close">Fermer</button></div>';
-}
-function freeHtml(){
-  return headHtml("Coach")+'<div class="csetup"><p>Pose tes questions à Claude avec <b>ton abonnement</b>, sans rien payer en plus :</p>'+
-    '<ol class="csteps"><li>Touche « Copier mon état » : verdict du jour, 7 derniers jours, plan, tournois.</li><li>Ouvre Claude et colle (appui long › Coller), puis écris ta question.</li></ol>'+
-    '<div class="crow"><button type="button" class="main" data-c="copyctx">Copier mon état</button></div>'+
-    '<p id="cfree" role="status" class="'+(copied==="ok"?"ok":copied?"err":"")+'">'+(copied==="ok"?"Copié ✓ Colle-le dans Claude.":copied==="ko"?"Copie impossible : sélectionne le texte ci-dessous et copie-le.":"")+'</p>'+
-    (copied==="ko"?'<textarea id="cfreetxt" rows="8" readonly style="width:100%;box-sizing:border-box;font:13px/1.35 ui-monospace,Menlo,monospace;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--fg)">'+esc(FREE+(window.__chatCtx?window.__chatCtx():""))+'</textarea>':'')+
-    '<div class="crow"><a class="btnlink" href="https://claude.ai/new" target="_blank" rel="noopener">Ouvrir Claude ›</a></div>'+
-    '<p class="small muted">Pour qu\'une douleur, une maladie ou une info change ton plan, note-la dans le journal de l\'onglet « Aujourd\'hui » : le plan se recalcule tout de suite.</p>'+
-    '<p class="small"><button type="button" class="linkbtn" data-c="usekey">J\'ai une clé API Anthropic (option payante, chat intégré)</button></p></div>';
-}
-function setupHtml(){
-  return headHtml("Coach",true)+'<div class="csetup"><p>Pose tes questions au coach directement dans l\'appli. Il connaît ton verdict du jour, tes 7 derniers jours, ton plan et tes tournois, et peut noter une douleur ou une information dans ton journal pour adapter le plan.</p>'+
-    '<p>Il faut pour cela une <b>clé API Anthropic</b> : facturation à l\'usage, séparée de ton abonnement Claude.</p>'+
-    '<ol class="csteps"><li>Sur <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> › API keys › Create key.</li>'+
-    '<li>Ajoute quelques euros de crédit (Billing) et fixe une limite mensuelle (Limits).</li><li>Colle la clé ici : elle reste uniquement sur cet appareil.</li></ol>'+
-    '<input id="ckey" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="sk-ant-…" aria-label="Clé API Anthropic">'+
-    '<p id="ckeymsg" role="alert" class="'+(keyMsg?"err":"")+'">'+esc(keyMsg)+'</p>'+
-    '<div class="crow"><button type="button" data-c="testkey">Tester</button><button type="button" class="main" data-c="savekey">Enregistrer</button></div>'+
-    '<p class="small muted">À chaque message, ton plan et ton journal sont envoyés à Anthropic pour que le coach puisse répondre.</p></div>';
-}
-function settingsHtml(){
-  var u=usage(),k=String(apiKey||"");
-  return headHtml("Réglages du coach",true)+'<div class="csetup"><h3>Modèle</h3>'+
-    MODELS.map(function(m){return '<label class="cmod"><input type="radio" name="cmodel" value="'+m.id+'"'+(m.id===model?" checked":"")+'><span><b>'+m.name+'</b><small>'+m.hint+'</small></span></label>'}).join("")+
-    '<h3>Dépense estimée ce mois-ci</h3><p>≈ '+u.c.toFixed(2).replace(".",",")+' $ pour '+u.n+' message'+(u.n>1?"s":"")+' (estimation de l\'appli ; le vrai décompte est sur console.anthropic.com).</p>'+
-    '<h3>Clé API</h3><p class="small muted">Enregistrée sur cet appareil : …'+esc(k.slice(-4))+'</p><div class="crow"><button type="button" data-c="forgetkey">Oublier la clé</button></div></div>';
-}
-function msgsHtml(){
-  if(!st.msgs.length)return '<div class="cempty"><p>Demande-moi d\'adapter ta journée, de t\'expliquer ton verdict, ou dis-moi ce qui change (douleur, nuit courte, repas tardif…).</p>'+
-    SUGG.map(function(s,i){return '<button type="button" class="jchip" data-c="sug" data-i="'+i+'">'+esc(s)+'</button>'}).join("")+'</div>';
-  var h="";
-  st.msgs.forEach(function(m){
-    if(m.role==="user")h+='<div class="cm u">'+rich(m.content)+'</div>';
-    else if(m.role==="error")h+='<div class="cm e">'+esc(m.content)+'</div>';
-    else if(m.role==="assistant")(m.content||[]).forEach(function(b){
-      if(b.type==="text"&&b.text)h+='<div class="cm a">'+rich(b.text)+'</div>';
-      else if(b.type==="tool_use"){var s=st.tools[b.id]||"pending";
-        h+='<div class="cm t"><div>'+esc(toolText(b.input||{}))+'</div>'+(s==="pending"?'<div class="crow"><button type="button" class="main" data-c="tok" data-id="'+esc(b.id)+'">Enregistrer</button><button type="button" data-c="tno" data-id="'+esc(b.id)+'">Ignorer</button></div>':'<div class="small muted">'+(s==="done"?"Enregistré ✓":"Ignoré")+'</div>')+'</div>'}
-    });
-  });
-  if(busy)h+='<div class="cm a cwait">Le coach réfléchit…</div>';
-  return h;
-}
-function chatHtml(){
-  return headHtml("Coach")+'<div class="cmsgs" id="cmsgs">'+msgsHtml()+'</div>'+
-    '<div class="cform"><textarea id="cin" rows="1" placeholder="Écris ton message…" aria-label="Message au coach">'+esc(draft)+'</textarea><button type="button" data-c="send" aria-label="Envoyer"'+(busy?" disabled":"")+'>↑</button></div>';
+function lines(t){return esc(t).replace(/\n/g,"<br>")}
+function when(m){
+  var d=new Date(m.at),ok=!isNaN(d.getTime());if(!ok)return esc(m.k);
+  var f=function(o){return d.toLocaleString("fr-FR",Object.assign({timeZone:"Europe/Paris"},o))};
+  var today=new Date().toLocaleDateString("sv-SE",{timeZone:"Europe/Paris"}),k=d.toLocaleDateString("sv-SE",{timeZone:"Europe/Paris"});
+  return (k===today?"Aujourd'hui":f({weekday:"short",day:"numeric",month:"short"}))+" · "+f({hour:"2-digit",minute:"2-digit"});
 }
 function render(){
   if(panel.hidden)return;
-  var h=!apiKey?(showKey?setupHtml():freeHtml()):view==="settings"?settingsHtml():chatHtml();
+  var list=window.__msgList?window.__msgList():[],rep=window.__msgReplies?window.__msgReplies():{},h="";
+  h+='<div class="chead"><h2>Message au coach</h2><button type="button" data-c="close">Fermer</button></div><div class="cmsgs" id="cmsgs">';
+  h+='<p class="small muted" style="margin:0;line-height:1.45">Écris ce que le coach doit savoir : une gêne, un changement d\'emploi du temps, une question. Il le lira demain matin, en tiendra compte dans son analyse et répondra ici.</p>';
+  h+='<p class="small muted" style="margin:0;line-height:1.45">Pour une douleur ou une maladie à prendre en compte <b>tout de suite</b>, utilise plutôt le journal (onglet Aujourd\'hui) : le plan se recalcule aussitôt.</p>';
+  if(!list.length)h+='<p class="cempty" style="margin:10px 0 0">Aucun message pour l\'instant.</p>';
+  list.forEach(function(m){
+    h+='<div class="cm u">'+lines(m.t)+'<div class="cwhen">'+when(m)+'</div></div>';
+    h+=rep[m.at]?'<div class="cm a"><b>Coach</b><br>'+lines(rep[m.at])+'</div>':'<div class="cm t"><span class="small muted">En attente de l\'analyse de demain matin.</span></div>';
+  });
+  h+='</div><div class="cform"><textarea id="cin" rows="2" placeholder="Écris ton message…" aria-label="Message au coach" maxlength="1000">'+esc(draft)+'</textarea>'+
+     '<button type="button" data-c="send" aria-label="Envoyer le message">↑</button></div>'+(flash?'<div class="cflash" role="status">'+esc(flash)+'</div>':'');
   panel.innerHTML=h;
-  var m=document.getElementById("cmsgs");if(m)m.scrollTop=m.scrollHeight;
 }
 function fit(){var v=window.visualViewport;panel.style.height=(v?v.height:window.innerHeight)+"px";panel.style.top=(v?v.offsetTop:0)+"px"}
 function openChat(){
-  if(!window.__chatCtx)return;
-  panel.hidden=false;document.body.classList.add("lock");fit();view="chat";render();fab.hidden=true;
+  if(!window.__msgSend)return;
+  panel.hidden=false;document.body.classList.add("lock");fit();flash="";render();fab.hidden=true;
   var i=document.getElementById("cin");if(i&&!/Mobi|iPhone/.test(navigator.userAgent))i.focus();
 }
 function closeChat(){panel.hidden=true;var sh=document.getElementById("sheet");if(!sh||sh.hidden)document.body.classList.remove("lock");sync()}
-function sync(){fab.hidden=!window.__chatCtx||!!window.__HOLD||!panel.hidden||(document.body.classList.contains("lock"))}
-/* ----- API ----- */
-function apiMessages(){
-  var m=st.msgs.filter(function(x){return x.role==="user"||x.role==="assistant"}),out=[];
-  if(m.length>24){var i=m.length-24;while(i<m.length&&m[i].role!=="user")i++;m=m.slice(i)}
-  m.forEach(function(x){
-    if(x.role==="user")out.push({role:"user",content:x.content});
-    else{out.push({role:"assistant",content:x.content});
-      var tu=(x.content||[]).filter(function(b){return b.type==="tool_use"});
-      if(tu.length)out.push({role:"user",content:tu.map(function(b){return {type:"tool_result",tool_use_id:b.id,content:RES[st.tools[b.id]||"pending"]}})})}
-  });
-  return out;
+function sync(){fab.hidden=!window.__msgSend||!!window.__HOLD||!panel.hidden||document.body.classList.contains("lock")}
+function send(){
+  var t=String(draft||"").trim();if(!t)return;
+  var ok=false;try{ok=window.__msgSend(t)}catch(e){ok=false}
+  if(ok){draft="";flash="Message enregistré ✓";setTimeout(function(){flash="";render()},2500)}else flash="Impossible d'enregistrer le message.";
+  render();var m=document.getElementById("cmsgs");if(m)m.scrollTop=0;
 }
-function errText(status,j){
-  var msg=j&&j.error&&j.error.message||"";
-  if(status===401)return "Anthropic refuse la clé. Vérifie-la dans les réglages (⚙) ou crée-en une nouvelle.";
-  if(status===403)return "Cette clé n'a pas le droit d'utiliser l'API.";
-  if(status===429)return "Trop de demandes : réessaie dans un instant.";
-  if(status>=500)return "Le service d'Anthropic est momentanément indisponible. Réessaie.";
-  return "Anthropic a répondu : "+(msg||("erreur "+status))+(/credit/i.test(msg)?" (ajoute du crédit sur console.anthropic.com › Billing).":"");
-}
-async function send(text){
-  text=String(text||"").trim();if(busy||!text||!apiKey)return;
-  busy=true;draft="";st.msgs.push({role:"user",content:text});save();render();
-  var ctx="";try{ctx=window.__chatCtx?window.__chatCtx():""}catch(e){ctx="(données indisponibles)"}
-  var body={model:model,max_tokens:2000,system:SYSTEM+ctx,tools:[TOOL],output_config:{effort:"low"},messages:apiMessages()};
-  try{
-    var r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
-      headers:{"content-type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify(body)});
-    var j=null;try{j=await r.json()}catch(e){}
-    if(!r.ok||!j){st.msgs.push({role:"error",content:errText(r.status,j)})}
-    else{
-      addUsage(j);
-      if(j.stop_reason==="refusal")st.msgs.push({role:"error",content:"Le coach a refusé de répondre à cette demande."});
-      else{
-        var blocks=(j.content||[]).filter(function(b){return (b.type==="text"&&b.text)||b.type==="tool_use"});
-        if(j.stop_reason==="max_tokens"&&blocks.length){var lt=blocks.filter(function(b){return b.type==="text"}).pop();if(lt)lt.text+=" […] (réponse coupée)"}
-        if(blocks.length)st.msgs.push({role:"assistant",content:blocks});else st.msgs.push({role:"error",content:"Réponse vide : réessaie."});
-      }
-    }
-  }catch(e){st.msgs.push({role:"error",content:"Pas de connexion à Anthropic. Vérifie ton réseau."})}
-  busy=false;save();render();
-}
-async function testKey(k){
-  try{var r=await fetch("https://api.anthropic.com/v1/models?limit=1",{headers:{"x-api-key":k,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"}});
-    if(r.ok)return {ok:true};var j=null;try{j=await r.json()}catch(e){}return {ok:false,t:errText(r.status,j)}}
-  catch(e){return {ok:false,t:"Pas de connexion à Anthropic."}}
-}
-function setKeyMsg(t,cls){var m=document.getElementById("ckeymsg");if(m){m.className=cls||"";m.textContent=t}}
-/* ----- événements ----- */
 fab.addEventListener("click",openChat);
-panel.addEventListener("input",function(e){if(e.target&&e.target.id==="cin"){draft=e.target.value;e.target.style.height="auto";e.target.style.height=Math.min(120,e.target.scrollHeight)+"px"}});
-panel.addEventListener("change",function(e){var t=e.target;if(t&&t.name==="cmodel"){model=t.value;lsSet(MD,model);render()}});
-panel.addEventListener("keydown",function(e){
-  if(e.target&&e.target.id==="cin"&&e.key==="Enter"&&!e.shiftKey&&!(window.matchMedia&&window.matchMedia("(pointer:coarse)").matches)){e.preventDefault();send(draft)}
-  if(e.target&&e.target.id==="ckey"&&e.key==="Enter"){e.preventDefault();var b=panel.querySelector('[data-c="savekey"]');if(b)b.click()}
-});
-panel.addEventListener("click",async function(e){
-  var b=e.target.closest?e.target.closest("[data-c]"):null;if(!b)return;var a=b.getAttribute("data-c");
-  if(a==="close")closeChat();
-  else if(a==="back"){view="chat";showKey=false;render()}
-  else if(a==="usekey"){showKey=true;render()}
-  else if(a==="copyctx"){
-    var txt=FREE+(window.__chatCtx?window.__chatCtx():"");copied="ko";
-    try{await navigator.clipboard.writeText(txt);copied="ok"}catch(x){copied="ko"}
-    render();}
-  else if(a==="settings"){view="settings";render()}
-  else if(a==="new"){if(!st.msgs.length||window.confirm("Commencer une nouvelle conversation ?")){st={msgs:[],tools:{}};save();render()}}
-  else if(a==="send")send(draft);
-  else if(a==="sug")send(SUGG[+b.getAttribute("data-i")]);
-  else if(a==="testkey"){var k=(document.getElementById("ckey")||{}).value||"";k=k.trim();if(!k){setKeyMsg("Colle d'abord la clé.","err");return}
-    setKeyMsg("Test en cours…","");var r=await testKey(k);setKeyMsg(r.ok?"Clé valide ✓":r.t,r.ok?"ok":"err")}
-  else if(a==="savekey"){var k2=(document.getElementById("ckey")||{}).value||"";k2=k2.trim();if(!k2){setKeyMsg("Colle d'abord la clé.","err");return}
-    if(!lsSet(KEY,k2)){setKeyMsg("Impossible d'enregistrer la clé sur cet appareil (stockage bloqué).","err");return}
-    apiKey=k2;keyMsg="";view="chat";showKey=false;render()}
-  else if(a==="forgetkey"){if(window.confirm("Oublier la clé API sur cet appareil ?")){lsDel(KEY);lsDel(CH);apiKey=null;st={msgs:[],tools:{}};view="chat";keyMsg="";showKey=false;render()}}
-  else if(a==="tok"||a==="tno"){
-    var id=b.getAttribute("data-id"),blk=null;st.msgs.forEach(function(m){if(m.role==="assistant")(m.content||[]).forEach(function(x){if(x.type==="tool_use"&&x.id===id)blk=x})});
-    if(!blk)return;
-    if(a==="tok"){var res="";try{res=window.__chatApply(blk.input)}catch(x){res="Impossible d'enregistrer."}st.tools[id]="done"}else st.tools[id]="ignored";
-    save();render();
-  }
-});
+panel.addEventListener("input",function(e){if(e.target&&e.target.id==="cin")draft=e.target.value});
+panel.addEventListener("click",function(e){var b=e.target.closest?e.target.closest("[data-c]"):null;if(!b)return;var a=b.getAttribute("data-c");if(a==="close")closeChat();else if(a==="send")send()});
+panel.addEventListener("keydown",function(e){if(e.target&&e.target.id==="cin"&&e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();send()}});
 if(window.visualViewport){window.visualViewport.addEventListener("resize",function(){if(!panel.hidden)fit()});window.visualViewport.addEventListener("scroll",function(){if(!panel.hidden)fit()})}
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!panel.hidden)closeChat()});
-window.__chat={open:openChat,close:closeChat,send:send};
+window.__chat={open:openChat,close:closeChat};
 setInterval(sync,700);sync();
 })();
 </script>
