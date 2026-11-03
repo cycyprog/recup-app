@@ -352,6 +352,8 @@ h2{font-size:16px;font-weight:600}
 .ldprog:last-child{border-bottom:0} .ldprog .ln{display:flex;flex-direction:column;gap:2px;min-width:0} .ldprog .ln b{font-size:14px;font-weight:600;line-height:1.3}
 .ldprog .spark{width:110px;height:30px;flex:none}
 /* ===== respiration (bouton fixe), dette de sommeil ===== */
+.wakerow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 6px;font-size:15px;font-weight:600}
+.wakerow input{font:600 17px -apple-system,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
 #breathfab{position:fixed;right:19px;bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:45;width:44px;height:44px;border-radius:50%;border:0;background:var(--card);color:var(--accent);box-shadow:0 3px 14px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;cursor:pointer}
 #breathfab[hidden]{display:none}
 #breathfab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8}
@@ -749,6 +751,7 @@ var remNow=remAt(NOW);
 
 /* ---------- signaux et état de forme ---------- */
 var todayKey = dkey(NOW);
+function fdur(hh){var m=Math.round((+hh||0)*60);if(m<60)return m+" min";var r=m%60;return Math.floor(m/60)+" h"+(r?" "+String(r).padStart(2,"0"):"")}
 function fr1(x){return (x==null||!isFinite(x))?"–":x.toFixed(1).replace(".",",")}
 function mornLvlOf(h,sc){
   if(nn(h)&&nn(sc))return null;
@@ -798,7 +801,7 @@ else if(morningLvl==="red"){score+=3;flags.push("VFC et sommeil sous tes seuils"
 else if(morningLvl==="green")okFlags.push("VFC et sommeil dans tes critères");
 if(pctNow<P.mid){score+=1;flags.push("récupération à "+Math.round(pctNow)+" % : il reste encore "+hTxt(remNow)+" avant d'être complète")}
 if(prevLv[0]&&prevLv[1]&&prevLv[0]!=="green"&&prevLv[1]!=="green"){score+=1;flags.push("deux matinées de suite non vertes")}
-if(debtH>0){score+=1;flags.push("dette de sommeil de "+fr1(debtH)+" h")}
+if(debtH>0){score+=1;flags.push("dette de sommeil de "+fdur(debtH))}
 if(rhrDelta!=null&&rhrDelta>=4){score+=1;flags.push("FC au repos "+Math.round(rhrDelta)+" bpm au-dessus de ta base")}
 if(!nn(ratioNow)&&ratioNow>1.5){score+=1;flags.push("charge récente élevée (ratio "+ratioNow.toFixed(2).replace(".",",")+")")}
 if(JT.legs==="heavy"){score+=1;flags.push("tu ressens les jambes lourdes")}else if(JT.legs==="fresh")okFlags.push("tu ressens les jambes fraîches");
@@ -1302,7 +1305,7 @@ var heroLoad=LW?Math.round(LW.a):(ST&&ST.ok?Math.round(ST.acute):null);
 out.push('<section class="card verdict hero tap" role="button" tabindex="0" data-sheet="reflexion" aria-label="Pourquoi ce verdict"><span class="chev">›</span>'+
   '<div class="herotop"><div class="heroring">'+ringSvg(heroPct,heroCol,heroPct+"%")+'<small>récupération</small></div><div class="heroti"><div class="vlab c-'+level+'">Feu '+LBL[level].toLowerCase()+'</div><div class="vtitle">'+esc(vTitle)+'</div></div></div>'+
   '<p class="vwhy">'+esc(vWhy)+'</p>'+
-  '<div class="minis">'+mini("Sommeil",nn(TODAY.sleepSec)?"–":hmSec(TODAY.sleepSec),debtSeen>=4?"dette "+fr1(DEBT)+" h":nn(heroSc)?"":"score "+Math.round(heroSc))+
+  '<div class="minis">'+mini("Sommeil",nn(TODAY.sleepSec)?"–":hmSec(TODAY.sleepSec),debtSeen>=4?"dette "+fdur(DEBT):nn(heroSc)?"":"score "+Math.round(heroSc))+
     mini("VFC",nn(HRV)?"–":Math.round(HRV)+" ms",hrvB?"base "+Math.round(hrvB):"")+
     mini("Charge 7 j",heroLoad==null?"–":String(heroLoad),LW?"fenêtre "+Math.round(LW.lov)+"–"+Math.round(LW.hiv):"")+'</div></section>');
 
@@ -1329,10 +1332,13 @@ out.push('<section class="card verdict hero tap" role="button" tabindex="0" data
   /* sommeil de ce soir */
   var needH=debtH>0?8.25:debt7H>0?8:7.5+Math.min(30,(loadByDay[todayKey]||0)/100*10)/60;
   var tom=(PLAN.days||[]).filter(function(x){return x.date===dkey(NOW+DAY)})[0];
+  var wd=+hm(NOW).slice(0,2)<5?todayKey:dkey(NOW+DAY);   /* le matin visé : demain, ou aujourd'hui si on veille encore après minuit */
   var wakeNext=wakeMed;
-  evs.forEach(function(e){if(!e.allDay&&dkey(e.s)===dkey(NOW+DAY)){var m=tmin(hm(e.s))-90;if(m<wakeNext&&m>240)wakeNext=m}});
-  var tpTom=tourPhase(dkey(NOW+DAY));
-  if(tpTom&&tpTom.kind==="match"){var mTom=tmn((JR[dkey(NOW+DAY)]||{}).match||"09:00")-210;if(mTom<wakeNext&&mTom>240)wakeNext=mTom}
+  evs.forEach(function(e){if(!e.allDay&&dkey(e.s)===wd){var m=tmin(hm(e.s))-90;if(m<wakeNext&&m>240)wakeNext=m}});
+  var tpTom=tourPhase(wd);
+  if(tpTom&&tpTom.kind==="match"){var mTom=tmn((JR[wd]||{}).match||"09:00")-210;if(mTom<wakeNext&&mTom>240)wakeNext=mTom}
+  var wakeDefault=wakeNext,wakeSetV=(JR[wd]||{}).wake;
+  if(wakeSetV&&/^\d\d:\d\d$/.test(wakeSetV))wakeNext=tmn(wakeSetV);   /* le réveil indiqué par Cyprien l'emporte */
   var bed=wakeNext+1440-needH*60;bed=bed>=1440?bed-1440:bed;   /* heure de coucher en minutes dans la journée */
   var bedTxt=ft(bed);
   var lvTxt={green:"vert",orange:"orange",red:"rouge"}[level];
@@ -1369,8 +1375,8 @@ out.push('<section class="card verdict hero tap" role="button" tabindex="0" data
     add(750,"Déjeuner","Repas équilibré avec des protéines à chaque repas : c'est la récupération musculaire qui se joue aujourd'hui."+(daysToTour!=null&&daysToTour<=3?" Garde assez de glucides pour arriver plein d'énergie au tournoi.":""),"meal");
     add(1020,"Fin de journée","Pas de séance prévue : lumière du jour et marche légère si tu en as envie, mais pas de seconde séance déguisée.","rest");
   }
-  add(bed-45,"Préparer le coucher","Écrans éteints, lumière tamisée, dernière boisson tôt. "+(debtH>0?"Ta dette de sommeil est de "+fr1(debtH)+" h : c'est ce qui fera le plus de différence demain.":"Garde un horaire régulier : la VFC aime la régularité."),"sleep");
-  add(bed,"Coucher avant "+bedTxt,"Pour environ "+hh(needH*60)+" de sommeil et un réveil vers "+ft(wakeNext)+(wakeNext<wakeMed?" (tôt à cause d'un événement de demain)":"")+".","sleep");
+  add(bed-45,"Préparer le coucher","Écrans éteints, lumière tamisée, dernière boisson tôt. "+(debtH>0?"Ta dette de sommeil est de "+fdur(debtH)+" : c'est ce qui fera le plus de différence demain.":"Garde un horaire régulier : la VFC aime la régularité."),"sleep");
+  add(bed,"Coucher avant "+bedTxt,"Pour environ "+hh(needH*60)+" de sommeil et un réveil vers "+ft(wakeNext)+(wakeSetV?" (l'heure que tu as indiquée)":wakeNext<wakeMed?" (tôt à cause d'un événement de demain)":"")+".","sleep");
   B.sort(function(a,b){return a.m-b.m});
   /* le bloc "coucher" passe après minuit si besoin : on le garde en fin de liste */
   B.forEach(function(b){if(b.g==="sleep"&&b.m<wakeT)b.m+=1440});
@@ -1392,8 +1398,8 @@ out.push('<section class="card verdict hero tap" role="button" tabindex="0" data
   else if(ad.mult==null)pri.push("<b>"+esc(ad.head)+"</b> : "+(state==="ok"?"suis le programme prévu.":"respecte ce jour de récupération, c'est lui qui absorbe ta charge récente."));
   else if(ad.mult!=null&&ad.mult>0&&ad.mult<100)pri.push("<b>"+esc(ad.head.split(" · ")[0])+" à "+ad.mult+" % maximum</b> : joue avec de la marge, pas de pic d'intensité.");
   else pri.push("<b>"+esc(ad.head)+"</b> : feu "+lvTxt+", tu peux dérouler.");
-  if(debtH>0)pri.push("<b>Dormir tôt</b> : couché avant "+bedTxt+" ("+fr1(debtH)+" h de dette de sommeil).");
-  else if(debt7H>0)pri.push("<b>Rattraper ton sommeil</b> : "+fr1(debt7H)+" h de dette, couché avant "+bedTxt+".");
+  if(debtH>0)pri.push("<b>Dormir tôt</b> : couché avant "+bedTxt+" (dette de sommeil : "+fdur(debtH)+").");
+  else if(debt7H>0)pri.push("<b>Rattraper ton sommeil</b> : "+fdur(debt7H)+" de dette, couché avant "+bedTxt+".");
   else if(!nn(SLP)&&SLP<65)pri.push("<b>Soigner la nuit</b> : score de "+Math.round(SLP)+" cette nuit, couché avant "+bedTxt+".");
   else pri.push("<b>Garder ton rythme de sommeil</b> : couché avant "+bedTxt+".");
   if(taper&&daysToTour>0)pri.push("<b>Protéger la fraîcheur</b> pour "+esc(tourName)+" (J-"+daysToTour+") : rien de nouveau, pas de sur-effort.");
@@ -1413,7 +1419,7 @@ out.push('<section class="card verdict hero tap" role="button" tabindex="0" data
   var sum='';
   if(ts!=null)sum+='<div class="prow"><div class="pt">'+ft(ts)+'</div><div class="pb"><b>'+esc(ad.head)+'</b><span>'+esc(intens+ad.text)+'</span></div></div>';
   else sum+='<div class="prow"><div class="pt">Jour</div><div class="pb"><b>'+esc(ad.head)+'</b><span>'+esc(intens+ad.text)+'</span></div></div>';
-  sum+='<div class="prow"><div class="pt">'+bedTxt+'</div><div class="pb"><b>Au lit</b><span>'+esc(debt7H>0?fr1(debt7H)+" h de sommeil à rattraper":"Pour environ "+hh(needH*60)+" de sommeil")+'</span></div></div>';
+  sum+='<div class="prow"><div class="pt">'+bedTxt+'</div><div class="pb"><b>Au lit</b><span>'+esc(debt7H>0?fdur(debt7H)+" de sommeil à rattraper":"Pour environ "+hh(needH*60)+" de sommeil")+'</span></div></div>';
   if(planDay&&tagsT.indexOf("malade")<0&&((planDay.blocks||[]).length&&isRenfoK||ad.mult===0&&isRenfoK))sum+='<button class="bigbtn" type="button" data-day="'+todayKey+'">'+(ad.mult===0?"Voir la mobilité du jour":"Voir les exercices du "+esc(planDay.title))+'</button>';
 
   /* détail : planning heure par heure */
@@ -1444,8 +1450,8 @@ out.push('<section class="card verdict hero tap" role="button" tabindex="0" data
     tour:tpB?{name:tpB.T.name,label:tpB.label,focus:tourFocus(tpB)}:null,
     legs:JT.legs||null,tags:tagsT,pain:painT,
     debt:debtSeen>=4?Math.round(DEBT*10)/10:null,
-    bedWhy:debt7H>0?"Ta dette de sommeil est de "+fr1(debt7H)+" h.":"Pour environ "+hh(needH*60)+" de sommeil.",
-    wakeNext:ft(wakeNext),tomorrow:tom?{title:tom.title,kind:tom.kind}:null};
+    bedWhy:debt7H>0?"Ta dette de sommeil est de "+fdur(debt7H)+".":"Pour environ "+hh(needH*60)+" de sommeil.",
+    wakeNext:ft(wakeNext),wakeDate:wd,wakeDef:ft(wakeDefault),wakeSet:wakeSetV||null,needMin:Math.round(needH*60),tomorrow:tom?{title:tom.title,kind:tom.kind}:null};
   out.push(card({key:"today",title:"Ton programme",icon:"target",sum:sum,more:more}));
 })();
 
@@ -1805,7 +1811,7 @@ function sessAt(){if(!CB.session||!CB.trainToday)return null;var t=NOW+(tmn(CB.s
   var sick=tagsT.indexOf("malade")>=0, tS=sessAt(), late=CB.session&&tmn(CB.session)>=19*60;
   if(sick)add(-1,"Repos, eau et sommeil","Tu as indiqué être malade.","Aucun entraînement. Bois régulièrement, mange léger et chaud, dors dès que tu peux. Reprise 24 h après la fin de la fièvre et des courbatures.");
   add(debtH>0?0:debt7H>0?1:3,"Au lit avant "+(CB.bed||"23:00"),
-    debt7H>0?"Ta dette de sommeil est de "+fr1(debt7H)+" h.":"Le sommeil reste ton premier outil de récupération.",
+    debt7H>0?"Ta dette de sommeil est de "+fdur(debt7H)+".":"Le sommeil reste ton premier outil de récupération.",
     "Écrans coupés 45 min avant, lumière tamisée, chambre fraîche (environ 18 °C), pas de café après 14 h.");
   if(!sick&&tS)add(1,"Recharge après ta séance de "+CB.session,"C'est dans l'heure qui suit que les muscles récupèrent le mieux.",
     "25 à 30 g de protéines avec des glucides (repas complet, ou skyr et banane) et 500 ml d'eau. Puis 10 minutes de mobilité douce."+(late?" Séance tardive : douche tiède et 1 h de calme avant le lit.":""));
@@ -1858,7 +1864,7 @@ function debtDetail(){
   if(!nn(TODAY.sleepStress)&&TODAY.sleepStress>25)A.push("<b>Nuit agitée</b> (stress nocturne "+Math.round(TODAY.sleepStress)+") : 5 minutes de respiration lente au lit, et note la cause dans le journal si tu la connais.");
   if(CB.trainToday&&CB.session&&tmn(CB.session)>=19*60)A.push("<b>Séance tardive ce soir</b> : douche tiède, dîner riche en glucides et léger en graisses, puis 1 h de calme sans écran.");
   if(daysToTour!=null&&daysToTour>=1&&daysToTour<=2)A.push("<b>Avant le tournoi</b> : c'est la nuit d'avant-veille qui compte le plus ; la veille, une nuit moyenne due au stress n'est pas grave.");
-  if(!A.length||(A.length===1&&/Coucher régulier/.test(A[0])))A.push(debt7H>0?"<b>Rattrape ta dette</b> : "+fr1(debt7H)+" h ; ajoute 30 minutes par nuit (1 h au maximum compte par nuit) ou une sieste de 20 min avant 15 h, plutôt qu'une grosse nuit le week-end.":"<b>Durée suffisante</b> : garde ce rythme, c'est la base de ta récupération.");
+  if(!A.length||(A.length===1&&/Coucher régulier/.test(A[0])))A.push(debt7H>0?"<b>Rattrape ta dette</b> : "+fdur(debt7H)+" ; ajoute 30 minutes par nuit (1 h au maximum compte par nuit) ou une sieste de 20 min avant 15 h, plutôt qu'une grosse nuit le week-end.":"<b>Durée suffisante</b> : garde ce rythme, c'est la base de ta récupération.");
   var sum=top+'<h3>Conseils pour ton sommeil</h3><ul class="advice">'+A.slice(0,3).map(function(x){return '<li>'+x+'</li>'}).join("")+'</ul>';
   var nN=Math.min(30,Object.keys(HIST).filter(function(k){return !nn(HIST[k].sleepSec)}).length);
   var more=(A.length>3?'<ul class="advice" style="margin-bottom:8px">'+A.slice(3).map(function(x){return '<li>'+x+'</li>'}).join("")+'</ul>':'')+
@@ -2418,7 +2424,7 @@ TB.suivi=[];
     var line={green:"Tout est au vert : ton corps est prêt.",orange:"Quelques signaux à surveiller aujourd'hui.",red:"Ton corps demande du repos."}[level]||"";
     var sum='<p class="heroline">'+esc(line)+'</p><div class="rings">'+
       ringBox(rec,recCol,rec+"%","Récupération",remNow<0.5?"complète":"encore "+hTxt(remNow))+
-      ringBox(nn(sc)?0:sc,slCol,nn(sc)?"–":String(Math.round(sc)),"Sommeil",(nn(TODAY.sleepSec)?"pas de nuit":hmSec(TODAY.sleepSec))+(debtSeen>=4?" · dette "+fr1(DEBT)+" h":""))+
+      ringBox(nn(sc)?0:sc,slCol,nn(sc)?"–":String(Math.round(sc)),"Sommeil",(nn(TODAY.sleepSec)?"pas de nuit":hmSec(TODAY.sleepSec))+(debtSeen>=4?" · dette "+fdur(DEBT):""))+
       ringBox(hvPct,hvCol,nn(hv)?"–":String(Math.round(hv)),"VFC",hrvB?"base "+Math.round(hrvB)+" ms":"ms")+'</div>'+
       '<div class="minis">'+mini("FC au repos",nn(TODAY.rhr)?"–":Math.round(TODAY.rhr)+" bpm",rhrB?"base "+Math.round(rhrB):"")+mini("Stress",nn(TODAY.stress)?"–":String(Math.round(TODAY.stress)),"moyenne du jour")+
       mini("Body Battery",nn(TODAY.bbHigh)?"–":Math.round(TODAY.bbHigh)+" → "+Math.round(TODAY.bbLow),"réveil → minimum")+'</div>';
@@ -2523,10 +2529,12 @@ TB.suivi=[];
     bars+='<text x="'+(x+13)+'" y="'+(Hh-6)+'" text-anchor="middle" style="font-size:10px">'+esc(new Date(r.k+"T12:00:00Z").toLocaleDateString("fr-FR",{weekday:"narrow",timeZone:"UTC"}))+'</text>'});
   bars='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Dette gagnée ou rattrapée chaque nuit"><line x1="0" x2="'+W+'" y1="'+mid+'" y2="'+mid+'" stroke="var(--line)"/>'+bars+'</svg>';
   var c=window.__COACHB||{},meterH=meter([{to:DEBT_MID/mx*100,c:"var(--green)"},{to:DEBT_HI/mx*100,c:"var(--orange)"},{to:100,c:"var(--red)"}],[{p:Math.min(100,DEBT/mx*100)}]);
-  var sum='<div class="debtbig"><b class="c-'+lv+'">'+fr1(DEBT)+' h</b><span class="chip '+lv+'">'+lab+'</span></div>'+meterH+
-    '<div class="debtlegend"><span>0</span><span>'+String(DEBT_MID).replace(".",",")+' h : à rattraper</span><span>'+DEBT_HI+' h : élevée</span></div>'+
-    (c.bed?'<div class="prow"><div class="pt">'+esc(c.bed)+'</div><div class="pb"><b>Ce soir, au lit avant '+esc(c.bed)+'</b><span>'+(c.wakeNext?"Réveil vers "+esc(c.wakeNext)+". ":"")+'C\'est ce coucher qui fait baisser ta dette.</span></div></div>':'')+
-    (DEBT>=DEBT_MID?'<p class="small" style="margin:8px 0 0;line-height:1.45">En dormant <b>45 minutes de plus que ton besoin</b> chaque nuit, tu repasses sous '+String(DEBT_MID).replace(".",",")+' h en <b>environ '+n+' nuit'+(n>1?"s":"")+'</b>. Une sieste de 20 minutes avant 15 h rembourse aussi 20 minutes.</p>':
+  var sum='<div class="debtbig"><b class="c-'+lv+'">'+fdur(DEBT)+'</b><span class="chip '+lv+'">'+lab+'</span></div>'+meterH+
+    '<div class="debtlegend"><span>0</span><span>'+fdur(DEBT_MID)+' : à rattraper</span><span>'+fdur(DEBT_HI)+' : élevée</span></div>'+
+    (c.wakeNext&&c.wakeDate?'<div class="wakerow"><label for="jwake">'+(c.wakeDate===todayKey?"Je me réveille à":"Je me réveille demain à")+'</label><input type="time" id="jwake" data-day="'+c.wakeDate+'" value="'+esc(c.wakeNext)+'" aria-label="Heure de réveil"></div>'+
+      (c.wakeSet?'<p class="small muted" style="margin:0 0 6px">Heure choisie par toi. <button type="button" class="linkbtn" data-wakereset="'+c.wakeDate+'">Revenir à l\'heure habituelle ('+esc(c.wakeDef)+')</button></p>':'<p class="small muted" style="margin:0 0 6px">Heure habituelle, ou plus tôt si un événement l\'exige. Change-la quand ton réveil change.</p>'):'')+
+    (c.bed?'<div class="prow"><div class="pt">'+esc(c.bed)+'</div><div class="pb"><b>Ce soir, au lit avant '+esc(c.bed)+'</b><span>Pour environ '+fdur((c.needMin||0)/60)+' de sommeil (ton besoin'+(DEBT>=DEBT_MID?", dette comprise":"")+'). C\'est ce coucher qui fait baisser ta dette.</span></div></div>':'')+
+    (DEBT>=DEBT_MID?'<p class="small" style="margin:8px 0 0;line-height:1.45">En dormant <b>45 minutes de plus que ton besoin</b> chaque nuit, tu repasses sous '+fdur(DEBT_MID)+' en <b>environ '+n+' nuit'+(n>1?"s":"")+'</b>. Une sieste de 20 minutes avant 15 h rembourse aussi 20 minutes.</p>':
       '<p class="small" style="margin:8px 0 0;line-height:1.45">Garde un coucher régulier pour ne pas la recréer : une nuit courte pèse encore à moitié trois jours plus tard.</p>')+
     '<h3>7 dernières nuits</h3>'+bars+'<div class="legend"><span><i style="background:var(--red)"></i>dette ajoutée</span><span><i style="background:var(--green)"></i>dette rattrapée</span></div>';
   TB.today.splice(Math.min(1,TB.today.length),0,card({key:"debtcard",title:"Dette de sommeil",icon:"moon",sum:sum,more:debtDetail()||null}));
@@ -2585,6 +2593,10 @@ window.__setTab=function(k){
   window.BRIEF=Object.assign({},c,{title:title,body:L.join("\n"),week:wk,dow:dw,generatedFor:todayKey});
 })();
 /* ----- messages au coach : gardés dans le journal du jour (msgs), lus par l'analyse du matin, qui répond dans analyse.json (reponses) ----- */
+window.__jwake=function(date,v){
+  var e=JSON.parse(JSON.stringify(JR[date]||{}));v=String(v||"");if(v&&!/^\d\d:\d\d$/.test(v))return;
+  if((e.wake||"")===v)return;if(v)e.wake=v;else delete e.wake;window.__jcommit(date,e);
+};
 window.__msgSend=function(text){
   text=String(text||"").trim().slice(0,1000);if(!text)return false;
   var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.msgs=e.msgs||[];e.msgs.push({t:text,at:new Date().toISOString()});
@@ -2733,7 +2745,7 @@ SHEET.addEventListener("click",function(e){var t=e.target;if(!t.closest)return;i
   var ts=t.closest("[data-test-save]");if(ts){var tdk=ts.getAttribute("data-test-save"),vals={};SHEET.querySelectorAll('[data-test^="'+tdk+'|"]').forEach(function(inp){var v=parseFloat(String(inp.value).replace(",","."));if(isFinite(v)&&v>0)vals[inp.getAttribute("data-test").split("|")[1]]=v});window.__jexo(tdk,"tests",vals);return}
   if(x){var q=x.getAttribute("data-exo").split("|");window.__jexo(q[0],"exo",q[1],+q[2])}
   else if(y){var q2=y.getAttribute("data-exo-done").split("|");window.__jexo(q2[0],"done",q2[1])}});
-document.addEventListener("change",function(e){var t=e.target;if(!t||!t.id)return;if(t.id==="jnote")window.__jnote(t.value);if(t.id==="jmatch"||t.id.indexOf("jm-")===0)window.__jmatch(t.getAttribute("data-day"),t.value);if(t.id==="jdate")window.__jdate(t.value);if(t.id==="wcmpa"||t.id==="wcmpb"){window[t.id==="wcmpa"?"__WCA":"__WCB"]=t.value;window.__rerun()}});
+document.addEventListener("change",function(e){var t=e.target;if(!t||!t.id)return;if(t.id==="jnote")window.__jnote(t.value);if(t.id==="jmatch"||t.id.indexOf("jm-")===0)window.__jmatch(t.getAttribute("data-day"),t.value);if(t.id==="jwake")window.__jwake(t.getAttribute("data-day"),t.value);if(t.id==="jdate")window.__jdate(t.value);if(t.id==="wcmpa"||t.id==="wcmpb"){window[t.id==="wcmpa"?"__WCA":"__WCB"]=t.value;window.__rerun()}});
 document.addEventListener("keydown",function(e){
   if(e.key==="Escape"&&!SHEET.hidden)closeSheet();
   if((e.key==="Enter"||e.key===" ")&&e.target.getAttribute&&e.target.getAttribute("data-sheet")){e.preventDefault();window.__openSheet(e.target.getAttribute("data-sheet"))}
@@ -2743,6 +2755,7 @@ APP.addEventListener("click",function(e){
   var t=e.target,b=t.closest?t.closest("button"):null;
   var jb=t.closest?t.closest("[data-j]"):null;
   var mok=t.closest?t.closest("[data-matchok]"):null;if(mok){window.__jmatch(mok.getAttribute("data-matchok"),"09:00");return}
+  var wr=t.closest?t.closest("[data-wakereset]"):null;if(wr&&window.__jwake){window.__jwake(wr.getAttribute("data-wakereset"),"");return}
   var pb=t.closest?t.closest("[data-phr]"):null;if(pb&&window.__phrToggle){window.__phrToggle(+pb.getAttribute("data-phr"));return}
   var ps=t.closest?t.closest("[data-phrsave]"):null;if(ps&&window.__phrCustom){window.__phrCustom();return}
   var rmb=t.closest?t.closest("[data-remind]"):null;if(rmb&&window.__remind){window.__remind(rmb.getAttribute("data-remind"));return}
