@@ -351,6 +351,12 @@ h2{font-size:16px;font-weight:600}
 .ldprog{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .ldprog:last-child{border-bottom:0} .ldprog .ln{display:flex;flex-direction:column;gap:2px;min-width:0} .ldprog .ln b{font-size:14px;font-weight:600;line-height:1.3}
 .ldprog .spark{width:110px;height:30px;flex:none}
+/* ===== respiration (bouton fixe), dette de sommeil ===== */
+#breathfab{position:fixed;right:19px;bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:45;width:44px;height:44px;border-radius:50%;border:0;background:var(--card);color:var(--accent);box-shadow:0 3px 14px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;cursor:pointer}
+#breathfab[hidden]{display:none}
+#breathfab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8}
+.debtbig{display:flex;align-items:baseline;gap:12px;margin-bottom:10px} .debtbig b{font-size:36px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.debtlegend{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin:5px 0 10px}
 /* ===== respiration, phrases, tournois ===== */
 #breath{position:fixed;inset:0;z-index:80;background:var(--bg);color:var(--fg);display:flex;flex-direction:column;max-width:720px;margin:0 auto}
 #breath[hidden]{display:none}
@@ -427,6 +433,7 @@ h2{font-size:16px;font-weight:600}
 <div id="appfoot"></div>
 <button type="button" id="chatfab" aria-label="Demander au coach" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/></svg></button>
 <div id="chat" hidden role="dialog" aria-modal="true" aria-label="Coach"></div>
+<button type="button" id="breathfab" data-breath="0" aria-label="Respiration guidée" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.6"/><circle cx="12" cy="12" r="6.6"/><circle cx="12" cy="12" r="10.4"/></svg></button>
 <div id="breath" hidden role="dialog" aria-modal="true" aria-label="Respiration"></div>
 <div class="sheet" id="sheet" hidden aria-hidden="true">
   <div class="scrim" data-close></div>
@@ -1295,7 +1302,7 @@ var heroLoad=LW?Math.round(LW.a):(ST&&ST.ok?Math.round(ST.acute):null);
 out.push('<section class="card verdict hero tap" role="button" tabindex="0" data-sheet="reflexion" aria-label="Pourquoi ce verdict"><span class="chev">›</span>'+
   '<div class="herotop"><div class="heroring">'+ringSvg(heroPct,heroCol,heroPct+"%")+'<small>récupération</small></div><div class="heroti"><div class="vlab c-'+level+'">Feu '+LBL[level].toLowerCase()+'</div><div class="vtitle">'+esc(vTitle)+'</div></div></div>'+
   '<p class="vwhy">'+esc(vWhy)+'</p>'+
-  '<div class="minis">'+mini("Sommeil",nn(TODAY.sleepSec)?"–":hmSec(TODAY.sleepSec),nn(heroSc)?"":"score "+Math.round(heroSc))+
+  '<div class="minis">'+mini("Sommeil",nn(TODAY.sleepSec)?"–":hmSec(TODAY.sleepSec),debtSeen>=4?"dette "+fr1(DEBT)+" h":nn(heroSc)?"":"score "+Math.round(heroSc))+
     mini("VFC",nn(HRV)?"–":Math.round(HRV)+" ms",hrvB?"base "+Math.round(hrvB):"")+
     mini("Charge 7 j",heroLoad==null?"–":String(heroLoad),LW?"fenêtre "+Math.round(LW.lov)+"–"+Math.round(LW.hiv):"")+'</div></section>');
 
@@ -2144,12 +2151,13 @@ TB.ttop=[];
     function ul(a){return '<ul class="mlistu">'+a.map(function(x){return '<li>'+x+'</li>'}).join("")+'</ul>'}
     var phr=function(t,a){return '<p class="mph"><b>'+t+'</b></p><ul class="mphr">'+a.map(function(x){return '<li>« '+x+' »</li>'}).join("")+'</ul>'};
     var html='<section class="card sec" id="mentalcard"><div class="sechead">'+ico("bulb",ICOL.bulb)+'<h2>Mental : rester détendu sous pression</h2></div>'+
+      '<button type="button" class="bigbtn" data-breath="3" style="margin:0 0 12px">Respiration guidée · 3 min</button>'+
       '<p class="small" style="margin:0 0 10px;line-height:1.45">Détendu ne veut pas dire mou : <b>mâchoire, épaules et mains relâchées, jambes vives</b>. Le but est une concentration calme, pas l\'absence de nerfs : un peu de tension veut dire que ça compte, c\'est de l\'énergie à canaliser.</p>'+
       (function(){
         var mine=MYP.length?MYP.map(function(x){return '<p class="myp">« '+esc(x)+' »</p>'}).join(""):'<p class="small muted" style="margin:0 0 8px">Choisis une ou deux phrases ci-dessous, ou écris la tienne : elles apparaissent à l\'étape « Respiration » de ta journée de match.</p>';
         var chips='<div class="jchips">'+PHRASES.map(function(x,i){return '<button type="button" class="jchip'+(MYP.indexOf(x)>=0?" on":"")+'" data-phr="'+i+'">'+esc(x)+'</button>'}).join("")+'</div>';
         return '<details class="moredet inner"'+(!MYP.length||window.__MPHROPEN?" open":"")+'><summary>Ma phrase clé et ma respiration</summary><div class="mbody">'+mine+
-          '<button type="button" class="bigbtn" data-breath="3">Lancer la respiration (3 min)</button><h3>Mes phrases</h3>'+chips+
+          '<h3>Mes phrases</h3>'+chips+
           '<div class="phrow"><input id="phrcustom" type="text" maxlength="80" placeholder="Ou écris la tienne…" aria-label="Ta phrase"><button type="button" class="jchip" data-phrsave="1">Ajouter</button></div></div></details>'})()+
       sec("Avant le match : 5 minutes",ul([
         "<b>Respire 3 minutes</b> : inspire 4 secondes par le nez, expire 6 secondes par la bouche. Une expiration plus longue que l'inspiration calme le corps.",
@@ -2410,7 +2418,7 @@ TB.suivi=[];
     var line={green:"Tout est au vert : ton corps est prêt.",orange:"Quelques signaux à surveiller aujourd'hui.",red:"Ton corps demande du repos."}[level]||"";
     var sum='<p class="heroline">'+esc(line)+'</p><div class="rings">'+
       ringBox(rec,recCol,rec+"%","Récupération",remNow<0.5?"complète":"encore "+hTxt(remNow))+
-      ringBox(nn(sc)?0:sc,slCol,nn(sc)?"–":String(Math.round(sc)),"Sommeil",nn(TODAY.sleepSec)?"pas de nuit":hmSec(TODAY.sleepSec))+
+      ringBox(nn(sc)?0:sc,slCol,nn(sc)?"–":String(Math.round(sc)),"Sommeil",(nn(TODAY.sleepSec)?"pas de nuit":hmSec(TODAY.sleepSec))+(debtSeen>=4?" · dette "+fr1(DEBT)+" h":""))+
       ringBox(hvPct,hvCol,nn(hv)?"–":String(Math.round(hv)),"VFC",hrvB?"base "+Math.round(hrvB)+" ms":"ms")+'</div>'+
       '<div class="minis">'+mini("FC au repos",nn(TODAY.rhr)?"–":Math.round(TODAY.rhr)+" bpm",rhrB?"base "+Math.round(rhrB):"")+mini("Stress",nn(TODAY.stress)?"–":String(Math.round(TODAY.stress)),"moyenne du jour")+
       mini("Body Battery",nn(TODAY.bbHigh)?"–":Math.round(TODAY.bbHigh)+" → "+Math.round(TODAY.bbLow),"réveil → minimum")+'</div>';
@@ -2501,6 +2509,27 @@ TB.suivi=[];
   var insight=(hiN&&loN)?'<p class="facts" style="text-align:left;margin:10px 0 0">Pression forte (4 ou 5) : énergie à plat ou souffle court '+hiPlat+' fois sur '+hiN+' ; pression plus basse : '+loPlat+' fois sur '+loN+'. À confirmer sur plusieurs tournois.</p>':
     (nP?'':'<p class="facts" style="text-align:left;margin:10px 0 0">Note la pression (1 à 5) avant le premier match dans le journal du jour de match : après quelques jours, je la comparerai à ton énergie et au stress Garmin.</p>');
   TB.suivi.push(card({key:"tourn",title:"Tes tournois",icon:"flag",sum:'<div class="tdays">'+blocks+'</div>'+insight}));
+})();
+
+/* ----- dette de sommeil : en haut de l'accueil, avec le coucher du soir et le temps pour la réduire ----- */
+(function(){
+  if(debtSeen<4)return;
+  var lv=DEBT>=DEBT_HI?"red":DEBT>=DEBT_MID?"orange":"green",lab=DEBT>=DEBT_HI?"Dette élevée":DEBT>=DEBT_MID?"À rattraper":"Dette faible",mx=6;
+  var bal=DEBT*3600,n=0;while(bal>DEBT_MID*3600&&n<14){bal*=DEBT_DECAY;bal-=Math.min(2700,3600,bal);n++}
+  var rows=DEBT_NIGHTS.slice(-7),W=7*44,Hh=64,mid=26,bars="";
+  rows.forEach(function(r,i){var x=i*44+9,d=r.delta||0,hh=Math.min(1,Math.abs(d)/7200)*22,up=d>0;
+    if(r.slept==null)bars+='<circle cx="'+(x+13)+'" cy="'+mid+'" r="2" fill="var(--line)"/>';
+    else bars+='<rect x="'+x+'" y="'+(up?mid-hh:mid)+'" width="26" height="'+Math.max(2,hh)+'" rx="5" fill="'+(up?"var(--red)":"var(--green)")+'" opacity="'+(Math.abs(d)<60?.35:1)+'"/>';
+    bars+='<text x="'+(x+13)+'" y="'+(Hh-6)+'" text-anchor="middle" style="font-size:10px">'+esc(new Date(r.k+"T12:00:00Z").toLocaleDateString("fr-FR",{weekday:"narrow",timeZone:"UTC"}))+'</text>'});
+  bars='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Dette gagnée ou rattrapée chaque nuit"><line x1="0" x2="'+W+'" y1="'+mid+'" y2="'+mid+'" stroke="var(--line)"/>'+bars+'</svg>';
+  var c=window.__COACHB||{},meterH=meter([{to:DEBT_MID/mx*100,c:"var(--green)"},{to:DEBT_HI/mx*100,c:"var(--orange)"},{to:100,c:"var(--red)"}],[{p:Math.min(100,DEBT/mx*100)}]);
+  var sum='<div class="debtbig"><b class="c-'+lv+'">'+fr1(DEBT)+' h</b><span class="chip '+lv+'">'+lab+'</span></div>'+meterH+
+    '<div class="debtlegend"><span>0</span><span>'+String(DEBT_MID).replace(".",",")+' h : à rattraper</span><span>'+DEBT_HI+' h : élevée</span></div>'+
+    (c.bed?'<div class="prow"><div class="pt">'+esc(c.bed)+'</div><div class="pb"><b>Ce soir, au lit avant '+esc(c.bed)+'</b><span>'+(c.wakeNext?"Réveil vers "+esc(c.wakeNext)+". ":"")+'C\'est ce coucher qui fait baisser ta dette.</span></div></div>':'')+
+    (DEBT>=DEBT_MID?'<p class="small" style="margin:8px 0 0;line-height:1.45">En dormant <b>45 minutes de plus que ton besoin</b> chaque nuit, tu repasses sous '+String(DEBT_MID).replace(".",",")+' h en <b>environ '+n+' nuit'+(n>1?"s":"")+'</b>. Une sieste de 20 minutes avant 15 h rembourse aussi 20 minutes.</p>':
+      '<p class="small" style="margin:8px 0 0;line-height:1.45">Garde un coucher régulier pour ne pas la recréer : une nuit courte pèse encore à moitié trois jours plus tard.</p>')+
+    '<h3>7 dernières nuits</h3>'+bars+'<div class="legend"><span><i style="background:var(--red)"></i>dette ajoutée</span><span><i style="background:var(--green)"></i>dette rattrapée</span></div>';
+  TB.today.splice(Math.min(1,TB.today.length),0,card({key:"debtcard",title:"Dette de sommeil",icon:"moon",sum:sum,more:debtDetail()||null}));
 })();
 
 var APP=document.getElementById("app");
@@ -2822,6 +2851,9 @@ document.addEventListener("click",function(e){var b=e.target.closest?e.target.cl
 box.addEventListener("click",function(e){var b=e.target.closest?e.target.closest("[data-b]"):null;if(!b)return;var a=b.getAttribute("data-b");if(a==="close")close();else if(a==="go")go(+b.getAttribute("data-m"))});
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!box.hidden)close()});
 window.__breath={open:open,close:close};
+var bf=document.getElementById("breathfab");
+function syncB(){if(bf)bf.hidden=!!window.__HOLD||!window.__msgSend||document.body.classList.contains("lock")}
+setInterval(syncB,700);syncB();
 })();
 </script>
 </body>
