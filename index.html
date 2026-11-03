@@ -501,7 +501,7 @@ function paint(){
   if(left!=null&&left>0&&left<30*86400000){lines.push("Ton jeton GitHub expire dans "+Math.max(1,Math.ceil(left/86400000))+" jour"+(left>86400000*1.5?"s":"")+" : crée-en un nouveau (étapes dans docs/PWA.md), puis « Oublier le jeton » et colle le nouveau.");warn=true}
   if(loaded.calAt&&Date.now()-new Date(loaded.calAt).getTime()>CAL_STALE){lines.push("Agenda non mis à jour depuis plus de 24 h : ouvre Scriptable pour le synchroniser.");warn=true}
   NOTE.innerHTML=lines.map(esc).join("<br>");NOTE.className=lines.length?"on"+(warn||status!=="ok"?" warn":""):"";
-  FOOT.innerHTML='<div>Données de '+esc(when(loaded.at))+'</div><button type="button" data-app="refresh">Actualiser</button><button type="button" data-app="export">Exporter le journal</button><button type="button" data-app="forget">Oublier le jeton</button>';
+  FOOT.innerHTML='<div>Données de '+esc(when(loaded.at))+'</div><button type="button" data-app="refresh">Actualiser</button><button type="button" data-app="collect">Collecter maintenant</button><button type="button" data-app="export">Exporter le journal</button><button type="button" data-app="forget">Oublier le jeton</button>';
   FOOT.className="on";
 }
 /* ----- données ----- */
@@ -606,11 +606,17 @@ async function collect(){
     return {ok:false,why:(r.status===401||r.status===403||r.status===404)?"droit":"erreur "+r.status}}
   catch(e){return {ok:false,why:"reseau"}}
 }
+async function collectNow(){
+  NOTE.innerHTML="Lancement de la collecte Garmin…";NOTE.className="on";
+  var r=await collect();
+  if(r.ok){NOTE.textContent="Collecte lancée : tes données se mettent à jour dans environ 2 minutes.";[110000,200000].forEach(function(ms){setTimeout(refresh,ms)})}
+  else{NOTE.className="on warn";NOTE.textContent=r.why==="droit"?"Ton jeton n’a pas le droit de lancer la collecte : ajoute « Actions : Read and write » à ton jeton GitHub.":r.why==="reseau"?"Pas de connexion : réessaie plus tard.":"La collecte n’a pas pu être lancée ("+r.why+")."}
+}
 window.__collect=collect;window.__refresh=function(){refresh()};window.__exportJournal=exportJournal;
 document.addEventListener("click",function(e){
   var b=e.target.closest?e.target.closest("[data-app]"):null;if(!b)return;
   var a=b.getAttribute("data-app");
-  if(a==="test")testTok();else if(a==="save")saveTok();else if(a==="refresh"){if(!cfg)start();else refresh()}else if(a==="forget")forget();else if(a==="export")exportJournal();
+  if(a==="test")testTok();else if(a==="save")saveTok();else if(a==="refresh"){if(!cfg)start();else refresh()}else if(a==="forget")forget();else if(a==="export")exportJournal();else if(a==="collect")collectNow();
 });
 document.addEventListener("keydown",function(e){if(e.key==="Enter"&&e.target&&e.target.id==="apptok")saveTok()});
 document.addEventListener("visibilitychange",function(){if(document.visibilityState!=="visible"||!cfg||!loaded)return;if(Date.now()-loaded.at>STALE)refresh();else flush()});
