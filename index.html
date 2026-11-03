@@ -351,6 +351,9 @@ h2{font-size:16px;font-weight:600}
 .ldprog{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .ldprog:last-child{border-bottom:0} .ldprog .ln{display:flex;flex-direction:column;gap:2px;min-width:0} .ldprog .ln b{font-size:14px;font-weight:600;line-height:1.3}
 .ldprog .spark{width:110px;height:30px;flex:none}
+/* ===== bilan, alerte de collecte ===== */
+.txtin{width:100%;box-sizing:border-box;font:15px/1.3 -apple-system,system-ui,sans-serif;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+.remind.warn{background:var(--orange-soft)} .remind.warn .rem span{color:var(--orange-t);font-weight:600}
 /* ===== respiration (bouton fixe), dette de sommeil ===== */
 .wakerow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 6px;font-size:15px;font-weight:600}
 .wakerow input{font:600 17px -apple-system,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
@@ -498,7 +501,7 @@ function paint(){
   if(left!=null&&left>0&&left<30*86400000){lines.push("Ton jeton GitHub expire dans "+Math.max(1,Math.ceil(left/86400000))+" jour"+(left>86400000*1.5?"s":"")+" : crée-en un nouveau (étapes dans docs/PWA.md), puis « Oublier le jeton » et colle le nouveau.");warn=true}
   if(loaded.calAt&&Date.now()-new Date(loaded.calAt).getTime()>CAL_STALE){lines.push("Agenda non mis à jour depuis plus de 24 h : ouvre Scriptable pour le synchroniser.");warn=true}
   NOTE.innerHTML=lines.map(esc).join("<br>");NOTE.className=lines.length?"on"+(warn||status!=="ok"?" warn":""):"";
-  FOOT.innerHTML='<div>Données de '+esc(when(loaded.at))+'</div><button type="button" data-app="refresh">Actualiser</button><button type="button" data-app="forget">Oublier le jeton</button>';
+  FOOT.innerHTML='<div>Données de '+esc(when(loaded.at))+'</div><button type="button" data-app="refresh">Actualiser</button><button type="button" data-app="export">Exporter le journal</button><button type="button" data-app="forget">Oublier le jeton</button>';
   FOOT.className="on";
 }
 /* ----- données ----- */
@@ -589,10 +592,25 @@ function saveTok(){
   if(!lsSet(KEY,{owner:DEF.owner,repo:DEF.repo,token:t,at:Date.now()})){msg("Impossible d'enregistrer le jeton sur cet appareil (stockage bloqué).","err");return}
   showLoading();start();
 }
+function exportJournal(){
+  var days={},remote=((window.DATA||{}).journal||{}).days||{},local=window.__jLocal?window.__jLocal():{};
+  [remote,local].forEach(function(o){for(var k in o){if(!days[k]||(o[k].at||"")>=(days[k].at||""))days[k]=o[k]}});
+  var name="journal-recup-"+new Date().toISOString().slice(0,10)+".json",txt=JSON.stringify({exportedAt:new Date().toISOString(),days:days},null,1),blob=new Blob([txt],{type:"application/json"});
+  try{var f=new File([blob],name,{type:"application/json"});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:"Journal Récup"}).catch(function(){});return}}catch(e){}
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){try{URL.revokeObjectURL(a.href)}catch(e){}a.remove()},1500);
+}
+async function collect(){
+  if(!cfg)return {ok:false,why:"jeton"};
+  try{var r=await fetch("https://api.github.com/repos/"+cfg.owner+"/"+cfg.repo+"/actions/workflows/collect.yml/dispatches",{method:"POST",headers:{Authorization:"Bearer "+cfg.token,Accept:"application/vnd.github+json","Content-Type":"application/json"},body:JSON.stringify({ref:"main"})});
+    if(r.status===204)return {ok:true};
+    return {ok:false,why:(r.status===401||r.status===403||r.status===404)?"droit":"erreur "+r.status}}
+  catch(e){return {ok:false,why:"reseau"}}
+}
+window.__collect=collect;window.__refresh=function(){refresh()};window.__exportJournal=exportJournal;
 document.addEventListener("click",function(e){
   var b=e.target.closest?e.target.closest("[data-app]"):null;if(!b)return;
   var a=b.getAttribute("data-app");
-  if(a==="test")testTok();else if(a==="save")saveTok();else if(a==="refresh"){if(!cfg)start();else refresh()}else if(a==="forget")forget();
+  if(a==="test")testTok();else if(a==="save")saveTok();else if(a==="refresh"){if(!cfg)start();else refresh()}else if(a==="forget")forget();else if(a==="export")exportJournal();
 });
 document.addEventListener("keydown",function(e){if(e.key==="Enter"&&e.target&&e.target.id==="apptok")saveTok()});
 document.addEventListener("visibilitychange",function(){if(document.visibilityState!=="visible"||!cfg||!loaded)return;if(Date.now()-loaded.at>STALE)refresh();else flush()});
@@ -1333,7 +1351,7 @@ out.push('<section class="card verdict hero tap" role="button" tabindex="0" data
   var needH=debtH>0?8.25:debt7H>0?8:7.5+Math.min(30,(loadByDay[todayKey]||0)/100*10)/60;
   var tom=(PLAN.days||[]).filter(function(x){return x.date===dkey(NOW+DAY)})[0];
   var wd=+hm(NOW).slice(0,2)<5?todayKey:dkey(NOW+DAY);   /* le matin visé : demain, ou aujourd'hui si on veille encore après minuit */
-  var wakeNext=wakeMed;
+  var wkp=getMyWake()[String(dowOf(wd))],wakeNext=(wkp&&/^\d\d:\d\d$/.test(wkp))?tmn(wkp):wakeMed;   /* réveil habituel de ce jour de la semaine, sinon la médiane des réveils */
   evs.forEach(function(e){if(!e.allDay&&dkey(e.s)===wd){var m=tmin(hm(e.s))-90;if(m<wakeNext&&m>240)wakeNext=m}});
   var tpTom=tourPhase(wd);
   if(tpTom&&tpTom.kind==="match"){var mTom=tmn((JR[wd]||{}).match||"09:00")-210;if(mTom<wakeNext&&mTom>240)wakeNext=mTom}
@@ -1513,6 +1531,8 @@ if(dowOf(todayKey)===0||dowOf(todayKey)===1)TB.week.push(bilanHtml());
       ["eau","Eau avant le premier match",[["bien","Bien bu"],["peu","Peu bu"]]]].concat(CQ);
     compH='<div class="compbox"><div class="jh" style="margin-top:0">'+(tpS.kind==="match"?"Ton corps pendant le tournoi":"Ton corps hier, au tournoi")+'</div>'+
       CQ.map(function(q){return '<div class="small muted" style="margin:8px 0 4px">'+q[1]+'</div>'+seg(q[2],C[q[0]],"comp."+q[0])}).join("")+
+      '<div class="small muted" style="margin:10px 0 4px">Ce qui a bien marché (une phrase)</div><input type="text" id="cmp-bien" class="txtin" data-day="'+sel+'" maxlength="200" value="'+esc(C.bien||"")+'" placeholder="Ex. : ma respiration, mon échauffement…">'+
+      '<div class="small muted" style="margin:8px 0 4px">Ce que je change la prochaine fois</div><input type="text" id="cmp-change" class="txtin" data-day="'+sel+'" maxlength="200" value="'+esc(C.change||"")+'" placeholder="Ex. : manger plus tôt, arriver plus tôt…">'+
       (C.jambes==="crampes"?'<p class="small" style="margin:8px 0 0;color:var(--red-t)"><b>Crampe au mollet ou pied froid :</b> arrête-toi et parles-en à ton médecin (artère poplitée).</p>':"")+'</div>';
   }
   /* séance du jour terminée sans effort ressenti : ses boutons s'affichent tout de suite (la notification d'après séance y mène) */
@@ -2108,6 +2128,7 @@ TB.ttop=[];
   window.__phrCustom=function(){var el=document.getElementById("phrcustom"),x=el?String(el.value).trim().slice(0,80):"";if(!x)return;var cur=MYP.filter(function(y){return y!==x});cur.push(x);if(cur.length>2)cur.shift();savePhr(cur)};
   /* ----- carte du prochain tournoi : prochaine étape + heure du premier match ; le reste est replié ----- */
   (function(){
+    window.__MATCHNX=null;window.__MYPNOW=MYP;
     var nt2=null;EVTS.forEach(function(T){if(!nt2&&T.end>=todayKey)nt2=T});if(!nt2)return;
     if(dDiff(nt2.start,todayKey)>14)return;
     var n2=dDiff(nt2.end,nt2.start)+1,days=[];for(var i2=0;i2<n2;i2++){var k2=dAdd(nt2.start,i2);if(k2>=todayKey)days.push(k2)}
@@ -2140,6 +2161,7 @@ TB.ttop=[];
       nx='<div class="nxt"><div class="nt">Aujourd\'hui · '+esc(tourFocus(tpN))+'</div>'+tourSections(tpN,todayKey).slice(0,3).map(function(x){return '<div class="nb"><b>'+esc(x.t)+'</b><span>'+esc(first(x.x))+'</span></div>'}).join("")+'</div>';
     }
     function pr(m,t,x){return '<div class="prow"><div class="pt">'+ftm(m)+'</div><div class="pb"><b>'+esc(t)+'</b><span>'+esc(x)+'</span></div></div>'}
+    window.__MATCHNX=dd===0?nx:null;
     var full="";
     if(dd<=3){
       full='<details class="moredet inner"><summary>Toute la journée du '+esc(dd===0?"jour J":lbl(tg,{weekday:"long",day:"numeric",month:"long"}))+', heure par heure</summary>'+
@@ -2507,7 +2529,7 @@ TB.suivi=[];
       if(c.souffle)ch.push(chip(SO[c.souffle],c.souffle==="court"));
       if(c.jambes)ch.push(chip(JA[c.jambes],c.jambes==="lourdes"||c.jambes==="crampes"));
       var info=[];if(ps!=null)info.push("stress Garmin avant le match : "+ps);if(!nn(hv))info.push("VFC du matin : "+Math.round(hv)+" ms");
-      rows+='<div class="tday"><div class="th"><b>'+esc(String(T.name).replace(/^Tournoi (national )?(d')?/i,""))+'</b> · '+esc(fmt(new Date(k+"T12:00:00Z").getTime(),{weekday:"short",day:"numeric",month:"short"}))+(e.match?' · 1er match '+esc(e.match):'')+'</div><div class="jchs">'+ch.join("")+'</div>'+(info.length?'<div class="small muted">'+esc(info.join(" · "))+'</div>':'')+'</div>';
+      rows+='<div class="tday"><div class="th"><b>'+esc(String(T.name).replace(/^Tournoi (national )?(d')?/i,""))+'</b> · '+esc(fmt(new Date(k+"T12:00:00Z").getTime(),{weekday:"short",day:"numeric",month:"short"}))+(e.match?' · 1er match '+esc(e.match):'')+'</div><div class="jchs">'+ch.join("")+'</div>'+(info.length?'<div class="small muted">'+esc(info.join(" · "))+'</div>':'')+(c.bien?'<div class="small"><b>Ce qui a marché :</b> '+esc(c.bien)+'</div>':'')+(c.change?'<div class="small"><b>À changer :</b> '+esc(c.change)+'</div>':'')+'</div>';
     }
     if(rows)blocks+=rows;
   });
@@ -2528,16 +2550,57 @@ TB.suivi=[];
     else bars+='<rect x="'+x+'" y="'+(up?mid-hh:mid)+'" width="26" height="'+Math.max(2,hh)+'" rx="5" fill="'+(up?"var(--red)":"var(--green)")+'" opacity="'+(Math.abs(d)<60?.35:1)+'"/>';
     bars+='<text x="'+(x+13)+'" y="'+(Hh-6)+'" text-anchor="middle" style="font-size:10px">'+esc(new Date(r.k+"T12:00:00Z").toLocaleDateString("fr-FR",{weekday:"narrow",timeZone:"UTC"}))+'</text>'});
   bars='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Dette gagnée ou rattrapée chaque nuit"><line x1="0" x2="'+W+'" y1="'+mid+'" y2="'+mid+'" stroke="var(--line)"/>'+bars+'</svg>';
+  var MW=getMyWake(),wkdRows=[[1,"Lundi"],[2,"Mardi"],[3,"Mercredi"],[4,"Jeudi"],[5,"Vendredi"],[6,"Samedi"],[0,"Dimanche"]].map(function(x){return '<div class="mrow" style="grid-template-columns:1fr auto"><label for="wkd-'+x[0]+'"><b>'+x[1]+'</b></label><input type="time" id="wkd-'+x[0]+'" data-dow="'+x[0]+'" value="'+esc(MW[String(x[0])]||"")+'" aria-label="Réveil habituel le '+x[1].toLowerCase()+'"></div>'}).join("");
+  var wakeDays='<details class="moredet inner"'+(window.__WKOPEN?" open":"")+'><summary>Mes réveils habituels (par jour de la semaine)</summary><div class="mbody"><p class="small muted" style="margin:0 0 6px">Renseigne-les une fois : la page en déduit ton coucher chaque soir. Tu ne règles ci-dessus que les exceptions.</p>'+wkdRows+'</div></details>';
   var c=window.__COACHB||{},meterH=meter([{to:DEBT_MID/mx*100,c:"var(--green)"},{to:DEBT_HI/mx*100,c:"var(--orange)"},{to:100,c:"var(--red)"}],[{p:Math.min(100,DEBT/mx*100)}]);
   var sum='<div class="debtbig"><b class="c-'+lv+'">'+fdur(DEBT)+'</b><span class="chip '+lv+'">'+lab+'</span></div>'+meterH+
     '<div class="debtlegend"><span>0</span><span>'+fdur(DEBT_MID)+' : à rattraper</span><span>'+fdur(DEBT_HI)+' : élevée</span></div>'+
     (c.wakeNext&&c.wakeDate?'<div class="wakerow"><label for="jwake">'+(c.wakeDate===todayKey?"Je me réveille à":"Je me réveille demain à")+'</label><input type="time" id="jwake" data-day="'+c.wakeDate+'" value="'+esc(c.wakeNext)+'" aria-label="Heure de réveil"></div>'+
-      (c.wakeSet?'<p class="small muted" style="margin:0 0 6px">Heure choisie par toi. <button type="button" class="linkbtn" data-wakereset="'+c.wakeDate+'">Revenir à l\'heure habituelle ('+esc(c.wakeDef)+')</button></p>':'<p class="small muted" style="margin:0 0 6px">Heure habituelle, ou plus tôt si un événement l\'exige. Change-la quand ton réveil change.</p>'):'')+
+      (c.wakeSet?'<p class="small muted" style="margin:0 0 6px">Heure choisie par toi. <button type="button" class="linkbtn" data-wakereset="'+c.wakeDate+'">Revenir à l\'heure habituelle ('+esc(c.wakeDef)+')</button></p>':'<p class="small muted" style="margin:0 0 6px">Heure habituelle, ou plus tôt si un événement l\'exige. Change-la quand ton réveil change.</p>'):'')+wakeDays+
     (c.bed?'<div class="prow"><div class="pt">'+esc(c.bed)+'</div><div class="pb"><b>Ce soir, au lit avant '+esc(c.bed)+'</b><span>Pour environ '+fdur((c.needMin||0)/60)+' de sommeil (ton besoin'+(DEBT>=DEBT_MID?", dette comprise":"")+'). C\'est ce coucher qui fait baisser ta dette.</span></div></div>':'')+
     (DEBT>=DEBT_MID?'<p class="small" style="margin:8px 0 0;line-height:1.45">En dormant <b>45 minutes de plus que ton besoin</b> chaque nuit, tu repasses sous '+fdur(DEBT_MID)+' en <b>environ '+n+' nuit'+(n>1?"s":"")+'</b>. Une sieste de 20 minutes avant 15 h rembourse aussi 20 minutes.</p>':
       '<p class="small" style="margin:8px 0 0;line-height:1.45">Garde un coucher régulier pour ne pas la recréer : une nuit courte pèse encore à moitié trois jours plus tard.</p>')+
     '<h3>7 dernières nuits</h3>'+bars+'<div class="legend"><span><i style="background:var(--red)"></i>dette ajoutée</span><span><i style="background:var(--green)"></i>dette rattrapée</span></div>';
   TB.today.splice(Math.min(1,TB.today.length),0,card({key:"debtcard",title:"Dette de sommeil",icon:"moon",sum:sum,more:debtDetail()||null}));
+})();
+
+/* ----- jour de match : l'accueil se réduit à l'essentiel ----- */
+function todayItems(items){
+  var tp=tourPhase(todayKey);if(!(tp&&tp.kind==="match"))return items;
+  var order=[/card verdict hero/,/id="matchday"/,/card sec remind/],main=[],used={};
+  order.forEach(function(re){for(var i=0;i<items.length;i++){if(!used[i]&&re.test(items[i])){used[i]=1;main.push(items[i]);break}}});
+  var rest=items.filter(function(x,i){return !used[i]});
+  return main.concat(rest.length?['<details class="moredet" id="todaymore"><summary>Plus de détails : programme, sommeil, journal, analyse</summary><div class="stack" style="margin-top:12px">'+rest.join("")+'</div></details>']:[]);
+}
+(function(){
+  var tp=tourPhase(todayKey);if(!(tp&&tp.kind==="match"))return;
+  var e=JR[todayKey]||{},c=e.comp||{},fm0=e.match||"09:00",P5=[["1","1"],["2","2"],["3","3"],["4","4"],["5","5"]],mp=window.__MYPNOW||[];
+  function qseg(list,cur,kind){return '<div class="seg">'+list.map(function(x){return '<button type="button" class="'+(cur===x[0]?"on":"")+'" data-j="comp.'+kind+':'+x[0]+'">'+x[1]+'</button>'}).join("")+'</div>'}
+  var html='<section class="card sec" id="matchday"><div class="sechead">'+ico("flag",ICOL.flag)+'<h2>Jour de match</h2><span class="chip orange" style="margin-left:auto">1er match '+esc(fm0)+'</span></div>'+(window.__MATCHNX||'')+
+    (mp.length?'<p class="myp" style="margin:6px 0 10px">« '+mp.map(esc).join(' » · « ')+' »</p>':'')+
+    '<div class="small muted" style="margin:8px 0 4px">Pression avant le match (1 = serein, 5 = très forte)</div>'+qseg(P5,c.pression,"pression")+
+    '<div class="small muted" style="margin:8px 0 4px">Repas avant le premier match</div>'+qseg([["bon","Bien mangé"],["leger","Léger"],["rien","Presque rien"]],c.repas,"repas")+
+    '<div class="small muted" style="margin:8px 0 4px">Eau avant le premier match</div>'+qseg([["bien","Bien bu"],["peu","Peu bu"]],c.eau,"eau")+
+    '<button type="button" class="linkbtn" data-openjournal="1" style="margin-top:10px">Noter mon ressenti après le match ›</button></section>';
+  TB.today.splice(Math.min(1,TB.today.length),0,html);
+})();
+
+/* ----- séance ou nuit pas encore récupérée : bouton pour lancer la collecte Garmin (appli installée seulement) ----- */
+window.__collectGo=async function(){
+  var m=document.getElementById("collectmsg"),b=document.querySelector("[data-collect]");if(!window.__collect)return;
+  if(b)b.disabled=true;if(m)m.textContent="Lancement de la collecte…";
+  var r=await window.__collect();
+  if(r.ok){if(m)m.textContent="Collecte lancée : tes données arrivent dans environ 2 minutes.";[110000,200000].forEach(function(ms){setTimeout(function(){if(window.__refresh)window.__refresh()},ms)})}
+  else{if(b)b.disabled=false;if(m)m.textContent=r.why==="droit"?"Ton jeton n’a pas le droit de lancer la collecte : ajoute « Actions : Read and write » à ton jeton GitHub (voir docs/PWA.md).":r.why==="reseau"?"Pas de connexion : réessaie plus tard.":"La collecte n’a pas pu être lancée ("+r.why+")."}
+};
+(function(){
+  if(!window.__collect)return;
+  var gen=S.generatedAt?new Date(S.generatedAt).getTime():0,fa=gen?(NOW-gen)/H:null,msg=null;
+  var miss=evs.filter(function(e){return !e.allDay&&SPORT.test(e.t||"")&&dkey(e.s)===todayKey&&e.e<NOW-20*60000&&gen<e.e+15*60000&&!SS.some(function(x){return x.s>=e.s-45*60000&&x.s<=e.e+60*60000})})[0];
+  if(miss)msg="Ta séance de "+hm(miss.s)+" n’est pas encore récupérée : les données datent d’avant sa fin.";
+  else if(fa!=null&&fa>5)msg="Tes données ont "+hTxt(fa)+" : une séance ou une nuit récente peut manquer.";
+  if(!msg)return;
+  TB.today.splice(Math.min(1,TB.today.length),0,'<section class="card sec remind warn" id="collectbanner"><div class="rem"><span id="collectmsg">'+esc(msg)+'</span><button type="button" class="jchip" data-collect="1">Actualiser maintenant</button></div></section>');
 })();
 
 var APP=document.getElementById("app");
@@ -2554,7 +2617,7 @@ var APP=document.getElementById("app");
   }
   var bilanDay=dowOf(todayKey)<=1;
   var TABS=[
-    {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:TB.today},
+    {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:todayItems(TB.today)},
     {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, statut":"Plus de détails : 7 derniers jours, charge, bilan, statut")},
     {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:groupCards(TB.body,["Ton corps aujourd'hui","Signaux du corps","Le coach propose"],"Plus de détails : récupération, sommeil, leviers, VFC de journée, analyses, progrès")},
     {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:groupCards(TB.suivi,["Tes tendances (30 jours)","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours")},
@@ -2593,6 +2656,13 @@ window.__setTab=function(k){
   window.BRIEF=Object.assign({},c,{title:title,body:L.join("\n"),week:wk,dow:dw,generatedFor:todayKey});
 })();
 /* ----- messages au coach : gardés dans le journal du jour (msgs), lus par l'analyse du matin, qui répond dans analyse.json (reponses) ----- */
+function getMyWake(){var a=window.__MYWAKE;if(!a){try{a=JSON.parse(localStorage.getItem("recup-wake")||"{}")}catch(e){a={}}}return a&&typeof a==="object"?a:{}}
+window.__wakeDay=function(d,v){var a=JSON.parse(JSON.stringify(getMyWake()));v=String(v||"");if(v&&!/^\d\d:\d\d$/.test(v))return;if(v)a[String(d)]=v;else delete a[String(d)];window.__MYWAKE=a;try{localStorage.setItem("recup-wake",JSON.stringify(a))}catch(e){}window.__WKOPEN=true;window.__rerun()};
+window.__jcomptxt=function(date,key,v){var e=JSON.parse(JSON.stringify(JR[date]||{}));e.comp=e.comp||{};v=String(v||"").trim().slice(0,200);if((e.comp[key]||"")===v)return;if(v)e.comp[key]=v;else delete e.comp[key];if(!Object.keys(e.comp).length)delete e.comp;
+  /* enregistre sans redessiner la page : sinon, en passant d'un champ à l'autre, le second perdrait le focus */
+  e.at=new Date().toISOString();window.__JRX=window.__JRX||{};window.__JRX[date]=e;JR[date]=e;
+  try{var o=JSON.parse(localStorage.getItem("recup-journal")||"{}");o[date]=e;localStorage.setItem("recup-journal",JSON.stringify(o))}catch(x){}
+  window.__JSTAT="saving";window.__ghSync()};
 window.__jwake=function(date,v){
   var e=JSON.parse(JSON.stringify(JR[date]||{}));v=String(v||"");if(v&&!/^\d\d:\d\d$/.test(v))return;
   if((e.wake||"")===v)return;if(v)e.wake=v;else delete e.wake;window.__jcommit(date,e);
@@ -2745,7 +2815,7 @@ SHEET.addEventListener("click",function(e){var t=e.target;if(!t.closest)return;i
   var ts=t.closest("[data-test-save]");if(ts){var tdk=ts.getAttribute("data-test-save"),vals={};SHEET.querySelectorAll('[data-test^="'+tdk+'|"]').forEach(function(inp){var v=parseFloat(String(inp.value).replace(",","."));if(isFinite(v)&&v>0)vals[inp.getAttribute("data-test").split("|")[1]]=v});window.__jexo(tdk,"tests",vals);return}
   if(x){var q=x.getAttribute("data-exo").split("|");window.__jexo(q[0],"exo",q[1],+q[2])}
   else if(y){var q2=y.getAttribute("data-exo-done").split("|");window.__jexo(q2[0],"done",q2[1])}});
-document.addEventListener("change",function(e){var t=e.target;if(!t||!t.id)return;if(t.id==="jnote")window.__jnote(t.value);if(t.id==="jmatch"||t.id.indexOf("jm-")===0)window.__jmatch(t.getAttribute("data-day"),t.value);if(t.id==="jwake")window.__jwake(t.getAttribute("data-day"),t.value);if(t.id==="jdate")window.__jdate(t.value);if(t.id==="wcmpa"||t.id==="wcmpb"){window[t.id==="wcmpa"?"__WCA":"__WCB"]=t.value;window.__rerun()}});
+document.addEventListener("change",function(e){var t=e.target;if(!t||!t.id)return;if(t.id==="jnote")window.__jnote(t.value);if(t.id==="jmatch"||t.id.indexOf("jm-")===0)window.__jmatch(t.getAttribute("data-day"),t.value);if(t.id==="jwake")window.__jwake(t.getAttribute("data-day"),t.value);if(t.id&&t.id.indexOf("wkd-")===0)window.__wakeDay(+t.getAttribute("data-dow"),t.value);if(t.id==="cmp-bien")window.__jcomptxt(t.getAttribute("data-day"),"bien",t.value);if(t.id==="cmp-change")window.__jcomptxt(t.getAttribute("data-day"),"change",t.value);if(t.id==="jdate")window.__jdate(t.value);if(t.id==="wcmpa"||t.id==="wcmpb"){window[t.id==="wcmpa"?"__WCA":"__WCB"]=t.value;window.__rerun()}});
 document.addEventListener("keydown",function(e){
   if(e.key==="Escape"&&!SHEET.hidden)closeSheet();
   if((e.key==="Enter"||e.key===" ")&&e.target.getAttribute&&e.target.getAttribute("data-sheet")){e.preventDefault();window.__openSheet(e.target.getAttribute("data-sheet"))}
@@ -2755,6 +2825,8 @@ APP.addEventListener("click",function(e){
   var t=e.target,b=t.closest?t.closest("button"):null;
   var jb=t.closest?t.closest("[data-j]"):null;
   var mok=t.closest?t.closest("[data-matchok]"):null;if(mok){window.__jmatch(mok.getAttribute("data-matchok"),"09:00");return}
+  var oj=t.closest?t.closest("[data-openjournal]"):null;if(oj){var tm=document.getElementById("todaymore");if(tm)tm.open=true;var jj=document.getElementById("journal");if(jj&&jj.scrollIntoView)jj.scrollIntoView({block:"start"});return}
+  var cg=t.closest?t.closest("[data-collect]"):null;if(cg&&window.__collectGo){window.__collectGo();return}
   var wr=t.closest?t.closest("[data-wakereset]"):null;if(wr&&window.__jwake){window.__jwake(wr.getAttribute("data-wakereset"),"");return}
   var pb=t.closest?t.closest("[data-phr]"):null;if(pb&&window.__phrToggle){window.__phrToggle(+pb.getAttribute("data-phr"));return}
   var ps=t.closest?t.closest("[data-phrsave]"):null;if(ps&&window.__phrCustom){window.__phrCustom();return}
