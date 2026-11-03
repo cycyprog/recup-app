@@ -1473,6 +1473,10 @@ if(dowOf(todayKey)===0||dowOf(todayKey)===1)TB.week.push(bilanHtml());
   if(isComp){
     var CQ=[["energie","Énergie",[["pleine","Pleine"],["ok","Correcte"],["plat","À plat"]]],["jambes","Jambes en fin de match",[["toniques","Toniques"],["lourdes","Lourdes"],["crampes","Crampes"]]],
       ["souffle","Souffle",[["bon","Bon"],["juste","Juste"],["court","Court"]]],["epaule","Épaule",[["ok","OK"],["gene","Gêne"],["douleur","Douleur"]]],["matchs","Matchs joués",[["1","1"],["2","2"],["3","3"],["4","4"],["5","5+"]]]];
+    /* jours de match : pression ressentie, repas et eau avant le premier match, pour comparer d'un tournoi à l'autre */
+    if(tpS.kind==="match")CQ=[["pression","Pression avant le match (1 = serein, 5 = très forte)",[["1","1"],["2","2"],["3","3"],["4","4"],["5","5"]]],
+      ["repas","Repas avant le premier match",[["bon","Bien mangé"],["leger","Léger"],["rien","Presque rien"]]],
+      ["eau","Eau avant le premier match",[["bien","Bien bu"],["peu","Peu bu"]]]].concat(CQ);
     compH='<div class="compbox"><div class="jh" style="margin-top:0">'+(tpS.kind==="match"?"Ton corps pendant le tournoi":"Ton corps hier, au tournoi")+'</div>'+
       CQ.map(function(q){return '<div class="small muted" style="margin:8px 0 4px">'+q[1]+'</div>'+seg(q[2],C[q[0]],"comp."+q[0])}).join("")+
       (C.jambes==="crampes"?'<p class="small" style="margin:8px 0 0;color:var(--red-t)"><b>Crampe au mollet ou pied froid :</b> arrête-toi et parles-en à ton médecin (artère poplitée).</p>':"")+'</div>';
