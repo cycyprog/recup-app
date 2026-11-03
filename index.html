@@ -351,6 +351,21 @@ h2{font-size:16px;font-weight:600}
 .ldprog{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .ldprog:last-child{border-bottom:0} .ldprog .ln{display:flex;flex-direction:column;gap:2px;min-width:0} .ldprog .ln b{font-size:14px;font-weight:600;line-height:1.3}
 .ldprog .spark{width:110px;height:30px;flex:none}
+/* ===== respiration, phrases, tournois ===== */
+#breath{position:fixed;inset:0;z-index:80;background:var(--bg);color:var(--fg);display:flex;flex-direction:column;max-width:720px;margin:0 auto}
+#breath[hidden]{display:none}
+.brhead{display:flex;align-items:center;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px 18px} .brhead h2{flex:1;margin:0;font-size:18px}
+.brhead button{border:0;background:none;color:var(--accent);font:600 16px -apple-system,system-ui,sans-serif;padding:8px;cursor:pointer}
+.brbody{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px 24px calc(30px + env(safe-area-inset-bottom,0px));text-align:center}
+.brring{width:min(72vw,300px);height:min(72vw,300px);display:grid;place-items:center}
+#brc{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#8fd3ff,var(--accent));box-shadow:0 10px 40px rgba(0,122,255,.25);transform:scale(.5);will-change:transform}
+.brl{font-size:32px;font-weight:700;letter-spacing:-.02em} .brt{font-size:18px;color:var(--muted);font-variant-numeric:tabular-nums}
+.brtxt{margin:0;font-size:16px;line-height:1.5;color:var(--muted);max-width:420px} .brp{margin:0;font-size:19px;font-weight:600;line-height:1.4}
+.brbody .crow{width:100%;max-width:420px}
+.myp{margin:0 0 6px;font-size:19px;font-weight:700;line-height:1.35}
+.phrow{display:flex;gap:8px;margin-top:10px} .phrow input{flex:1;min-width:0;font:16px/1.2 -apple-system,system-ui,sans-serif;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+.tdays{display:flex;flex-direction:column} .tday{padding:11px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px} .tday:last-child{border-bottom:0}
+.tday .th{font-size:14.5px} .tday .jchs{display:flex;flex-wrap:wrap;gap:5px}
 /* ===== carte Mental ===== */
 #mentalcard .moredet.inner{margin-top:8px} #mentalcard .moredet>summary{text-align:left;padding:12px 14px;font-weight:600}
 .mbody{padding:10px 4px 2px} .mlistu{margin:0;padding-left:18px;font-size:14.5px;line-height:1.5} .mlistu li{margin:6px 0}
@@ -412,6 +427,7 @@ h2{font-size:16px;font-weight:600}
 <div id="appfoot"></div>
 <button type="button" id="chatfab" aria-label="Demander au coach" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/></svg></button>
 <div id="chat" hidden role="dialog" aria-modal="true" aria-label="Coach"></div>
+<div id="breath" hidden role="dialog" aria-modal="true" aria-label="Respiration"></div>
 <div class="sheet" id="sheet" hidden aria-hidden="true">
   <div class="scrim" data-close></div>
   <div class="panel" role="dialog" aria-modal="true" aria-labelledby="sheet-t">
@@ -2070,6 +2086,13 @@ TB.ttop=[];
   s+='<path d="M'+(X(0)+px/2)+' '+(y+20)+' l-4 6 h8 z" fill="var(--fg)"/>';
   var tl=svg(w,y+40,s,"Frise jusqu'aux compétitions")+'<div class="legend"><span><i style="background:var(--light)"></i>préparation</span><span><i style="background:var(--awake)"></i>affûtage J-7</span><span><i style="background:var(--orange)"></i>compétition</span><span><i style="background:var(--teal)"></i>récupération</span></div>';
   TB.ttop.push('<section class="card sec">'+hero+'<h3>Ta route</h3>'+tl+'</section>');
+  /* ----- phrases clés personnelles (gardées sur cet appareil) ----- */
+  var PHRASES=["Je respire, je relâche, je joue.","Je suis prêt : j'ai déjà joué ça cent fois.","Cette énergie, c'est du carburant.","Un point à la fois.","Le prochain point est le seul qui compte.","Je joue le volant, pas le score.","Point suivant.","Effacé, je reviens au placement.","Épaules basses, mains souples.","Prise légère, jambes vives.","Ce match vaut comme le troisième.","Même échauffement, mêmes gestes."];
+  var MYP=(function(){var a=window.__MYPHR;if(!a){try{a=JSON.parse(localStorage.getItem("recup-phrases")||"[]")}catch(e){a=[]}}return Array.isArray(a)?a.filter(function(x){return typeof x==="string"&&x.trim()}).slice(0,2):[]})();
+  function myPhr(){return MYP.length?"« "+MYP.join(" » · « ")+" »":""}
+  function savePhr(a){window.__MYPHR=a;try{localStorage.setItem("recup-phrases",JSON.stringify(a))}catch(e){}window.__MPHROPEN=true;window.__rerun()}
+  window.__phrToggle=function(i){var x=PHRASES[i];if(!x)return;var cur=MYP.slice(),k=cur.indexOf(x);if(k>=0)cur.splice(k,1);else{cur.push(x);if(cur.length>2)cur.shift()}savePhr(cur)};
+  window.__phrCustom=function(){var el=document.getElementById("phrcustom"),x=el?String(el.value).trim().slice(0,80):"";if(!x)return;var cur=MYP.filter(function(y){return y!==x});cur.push(x);if(cur.length>2)cur.shift();savePhr(cur)};
   /* ----- carte du prochain tournoi : prochaine étape + heure du premier match ; le reste est replié ----- */
   (function(){
     var nt2=null;EVTS.forEach(function(T){if(!nt2&&T.end>=todayKey)nt2=T});if(!nt2)return;
@@ -2089,14 +2112,14 @@ TB.ttop=[];
       [fm-180,"Petit-déjeuner","Riche en glucides, pauvre en graisses et en fibres (pain, flocons d'avoine, banane, miel, un œuf), avec 400 à 500 ml d'eau."],
       [fm-105,"Départ","Sac : raquettes, grips, chaussures, 2 tenues, élastique d'épaule, boisson, collations. Arrivée 1 h 15 avant le match."],
       [fm-45,"Échauffement","25 minutes : épaules, hanches, fentes marchées, jeu de pieds, smashs progressifs."],
-      [fm-15,"Respiration et phrase clé","3 minutes : inspire 4 s, expire 6 s. Relâche la mâchoire, les épaules et la prise de raquette. Répète ta phrase clé."],
+      [fm-15,"Respiration et phrase clé","3 minutes : inspire 4 s, expire 6 s. Relâche la mâchoire, les épaules et la prise de raquette."+(MYP.length?" Ta phrase : "+myPhr()+".":" Répète ta phrase clé.")],
       [fm,"Premier match","Un point à la fois. Ce match vaut comme le troisième."]];
     var cb=window.__COACHB&&window.__COACHB.bed,nx="";
-    function nextBox(tag,title,text){return '<div class="nxt"><div class="nt">'+esc(tag)+'</div><div class="nb"><b>'+esc(title)+'</b><span>'+esc(text)+'</span></div></div>'}
+    function nextBox(tag,title,text,breath){return '<div class="nxt"><div class="nt">'+esc(tag)+'</div><div class="nb"><b>'+esc(title)+'</b><span>'+esc(text)+'</span></div>'+(breath?'<button type="button" class="jchip" data-breath="3" style="align-self:flex-start">Lancer la respiration (3 min)</button>':'')+'</div>'}
     if(dd===0){
       var st=null;steps.forEach(function(s){if(!st&&s[0]>=nowM-10)st=s});
       var dm=st?st[0]-nowM:0,when=!st?"":dm<=5?"maintenant":dm<60?"dans "+dm+" min":"dans "+Math.floor(dm/60)+" h"+(dm%60?" "+String(dm%60).padStart(2,"0"):"");
-      nx=st?nextBox("Prochaine étape · "+when,ftm(st[0])+" · "+st[1],st[2])
+      nx=st?nextBox("Prochaine étape · "+when,ftm(st[0])+" · "+st[1],st[2],/^Respiration/.test(st[1]))
         :nextBox("Pendant le tournoi","Entre deux matchs","Quelques gorgées, une banane ou une pâte de fruits, reste au chaud, mobilité des mollets et de l'épaule.");
     }else if(dd===1){
       nx=nextBox("Ce soir","Sac prêt, dîner de féculents, coucher tôt","Pas d'alcool, rien de nouveau"+(cb?". Coucher avant "+cb:"")+". Réveil demain à "+ftm(fm-210)+" pour un premier match à "+ftm(fm)+".");
@@ -2122,6 +2145,12 @@ TB.ttop=[];
     var phr=function(t,a){return '<p class="mph"><b>'+t+'</b></p><ul class="mphr">'+a.map(function(x){return '<li>« '+x+' »</li>'}).join("")+'</ul>'};
     var html='<section class="card sec" id="mentalcard"><div class="sechead">'+ico("bulb",ICOL.bulb)+'<h2>Mental : rester détendu sous pression</h2></div>'+
       '<p class="small" style="margin:0 0 10px;line-height:1.45">Détendu ne veut pas dire mou : <b>mâchoire, épaules et mains relâchées, jambes vives</b>. Le but est une concentration calme, pas l\'absence de nerfs : un peu de tension veut dire que ça compte, c\'est de l\'énergie à canaliser.</p>'+
+      (function(){
+        var mine=MYP.length?MYP.map(function(x){return '<p class="myp">« '+esc(x)+' »</p>'}).join(""):'<p class="small muted" style="margin:0 0 8px">Choisis une ou deux phrases ci-dessous, ou écris la tienne : elles apparaissent à l\'étape « Respiration » de ta journée de match.</p>';
+        var chips='<div class="jchips">'+PHRASES.map(function(x,i){return '<button type="button" class="jchip'+(MYP.indexOf(x)>=0?" on":"")+'" data-phr="'+i+'">'+esc(x)+'</button>'}).join("")+'</div>';
+        return '<details class="moredet inner"'+(!MYP.length||window.__MPHROPEN?" open":"")+'><summary>Ma phrase clé et ma respiration</summary><div class="mbody">'+mine+
+          '<button type="button" class="bigbtn" data-breath="3">Lancer la respiration (3 min)</button><h3>Mes phrases</h3>'+chips+
+          '<div class="phrow"><input id="phrcustom" type="text" maxlength="80" placeholder="Ou écris la tienne…" aria-label="Ta phrase"><button type="button" class="jchip" data-phrsave="1">Ajouter</button></div></div></details>'})()+
       sec("Avant le match : 5 minutes",ul([
         "<b>Respire 3 minutes</b> : inspire 4 secondes par le nez, expire 6 secondes par la bouche. Une expiration plus longue que l'inspiration calme le corps.",
         "<b>Relâche</b> : mâchoire (dents desserrées), épaules (baisse-les), mains (prise de raquette légère, comme un oiseau qu'on tient sans l'écraser).",
@@ -2446,6 +2475,34 @@ TB.suivi=[];
   })();
 })();
 
+(function(){
+  var EN={pleine:"Énergie pleine",ok:"Énergie correcte",plat:"Énergie à plat"},JA={toniques:"Jambes toniques",lourdes:"Jambes lourdes",crampes:"Crampes"},SO={bon:"Souffle bon",juste:"Souffle juste",court:"Souffle court"},
+    RE={bon:"Bien mangé",leger:"Repas léger",rien:"Presque rien mangé"},EA={bien:"Bien bu",peu:"Peu bu"};
+  var BAD={plat:1,lourdes:1,crampes:1,court:1,rien:1,peu:1};
+  function chip(txt,bad,warn){return '<span class="chip'+(bad?" red":warn?" orange":"")+'">'+esc(txt)+'</span>'}
+  function preStress(k,mt){var a=(HIST[k]||{}).stressQ;if(!a||a.length<96)return null;var m=tmn(mt),sl=Math.floor(m/60)*4+Math.floor((m%60)/15),v=a.slice(Math.max(0,sl-6),sl).filter(function(x){return x>=0});return v.length?Math.round(avg(v)):null}
+  var evs2=EVTS.filter(function(T){return T.end<=todayKey}).sort(function(a,b){return a.start<b.start?1:-1}),blocks="",hiN=0,hiPlat=0,loN=0,loPlat=0,nP=0;
+  evs2.forEach(function(T){
+    var n=dDiff(T.end,T.start)+1,rows="";
+    for(var i=0;i<n;i++){var k=dAdd(T.start,i),e=JR[k]||{},c=e.comp;if(!c)continue;
+      var mt=e.match||"09:00",ps=preStress(k,mt),hv=(HIST[k]||{}).hrv,ch=[];
+      if(c.pression){ch.push(chip("Pression "+c.pression+"/5",+c.pression>=4,+c.pression===3));nP++;if(+c.pression>=4){hiN++;if(c.energie==="plat"||c.souffle==="court")hiPlat++}else{loN++;if(c.energie==="plat"||c.souffle==="court")loPlat++}}
+      if(c.repas)ch.push(chip(RE[c.repas],c.repas==="rien",c.repas==="leger"));
+      if(c.eau)ch.push(chip(EA[c.eau],c.eau==="peu"));
+      if(c.energie)ch.push(chip(EN[c.energie],c.energie==="plat"));
+      if(c.souffle)ch.push(chip(SO[c.souffle],c.souffle==="court"));
+      if(c.jambes)ch.push(chip(JA[c.jambes],c.jambes==="lourdes"||c.jambes==="crampes"));
+      var info=[];if(ps!=null)info.push("stress Garmin avant le match : "+ps);if(!nn(hv))info.push("VFC du matin : "+Math.round(hv)+" ms");
+      rows+='<div class="tday"><div class="th"><b>'+esc(String(T.name).replace(/^Tournoi (national )?(d')?/i,""))+'</b> · '+esc(fmt(new Date(k+"T12:00:00Z").getTime(),{weekday:"short",day:"numeric",month:"short"}))+(e.match?' · 1er match '+esc(e.match):'')+'</div><div class="jchs">'+ch.join("")+'</div>'+(info.length?'<div class="small muted">'+esc(info.join(" · "))+'</div>':'')+'</div>';
+    }
+    if(rows)blocks+=rows;
+  });
+  if(!blocks)return;
+  var insight=(hiN&&loN)?'<p class="facts" style="text-align:left;margin:10px 0 0">Pression forte (4 ou 5) : énergie à plat ou souffle court '+hiPlat+' fois sur '+hiN+' ; pression plus basse : '+loPlat+' fois sur '+loN+'. À confirmer sur plusieurs tournois.</p>':
+    (nP?'':'<p class="facts" style="text-align:left;margin:10px 0 0">Note la pression (1 à 5) avant le premier match dans le journal du jour de match : après quelques jours, je la comparerai à ton énergie et au stress Garmin.</p>');
+  TB.suivi.push(card({key:"tourn",title:"Tes tournois",icon:"flag",sum:'<div class="tdays">'+blocks+'</div>'+insight}));
+})();
+
 var APP=document.getElementById("app");
 /* ----- assemblage : un panneau par onglet + barre d'onglets ----- */
 (function(){
@@ -2463,7 +2520,7 @@ var APP=document.getElementById("app");
     {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:TB.today},
     {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, statut":"Plus de détails : 7 derniers jours, charge, bilan, statut")},
     {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:groupCards(TB.body,["Ton corps aujourd'hui","Signaux du corps","Le coach propose"],"Plus de détails : récupération, sommeil, leviers, VFC de journée, analyses, progrès")},
-    {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:groupCards(TB.suivi,["Tes tendances (30 jours)"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours")},
+    {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:groupCards(TB.suivi,["Tes tendances (30 jours)","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours")},
     {k:"tour",lab:tourLab,title:nt?"Tournoi":"Cycle",ic:'<path d="M5 22V3M5 4h13l-2 4 2 4H5"/>',items:(function(){var all=(TB.ttop||[]).concat(TB.tour),top=[],rest=[];all.forEach(function(x){(/id="matchcard"|id="mentalcard"|Débrief du coach/.test(x)?top:rest).push(x)});
       return /id="matchcard"/.test(top.join(""))&&rest.length?top.concat(['<details class="moredet"><summary>Plus de détails : frise, jours du tournoi, cycle</summary><div class="stack" style="margin-top:12px">'+rest.join("")+'</div></details>']):all})()}
   ];
@@ -2657,6 +2714,8 @@ APP.addEventListener("click",function(e){
   var t=e.target,b=t.closest?t.closest("button"):null;
   var jb=t.closest?t.closest("[data-j]"):null;
   var mok=t.closest?t.closest("[data-matchok]"):null;if(mok){window.__jmatch(mok.getAttribute("data-matchok"),"09:00");return}
+  var pb=t.closest?t.closest("[data-phr]"):null;if(pb&&window.__phrToggle){window.__phrToggle(+pb.getAttribute("data-phr"));return}
+  var ps=t.closest?t.closest("[data-phrsave]"):null;if(ps&&window.__phrCustom){window.__phrCustom();return}
   var rmb=t.closest?t.closest("[data-remind]"):null;if(rmb&&window.__remind){window.__remind(rmb.getAttribute("data-remind"));return}
   if(jb){window.__jclick(jb.getAttribute("data-j"));return}
   var tbn=t.closest?t.closest("[data-tab]"):null;
@@ -2731,6 +2790,38 @@ if(window.visualViewport){window.visualViewport.addEventListener("resize",functi
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!panel.hidden)closeChat()});
 window.__chat={open:openChat,close:closeChat};
 setInterval(sync,700);sync();
+})();
+</script>
+<script id="breathjs">
+/* Minuteur de respiration 4 s / 6 s : fonctionne hors ligne, rien n'est envoyé nulle part. */
+(function(){
+var box=document.getElementById("breath");if(!box)return;
+var raf=0,t0=0,dur=0,lock=null;
+function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function phr(){var a=window.__MYPHR;if(!a){try{a=JSON.parse(localStorage.getItem("recup-phrases")||"[]")}catch(e){a=[]}}return Array.isArray(a)?a.filter(function(x){return typeof x==="string"&&x.trim()}):[]}
+function head(btn){return '<div class="brhead"><h2>Respiration</h2><button type="button" data-b="close">'+btn+'</button></div>'}
+function screenStart(){box.innerHTML=head("Fermer")+'<div class="brbody"><p class="brtxt">Inspire 4 secondes par le nez, expire 6 secondes par la bouche. Relâche la mâchoire, les épaules et les mains. Choisis une durée :</p><div class="crow"><button type="button" data-b="go" data-m="1">1 min</button><button type="button" class="main" data-b="go" data-m="3">3 min</button><button type="button" data-b="go" data-m="5">5 min</button></div></div>'}
+function screenRun(){var p=phr()[0];box.innerHTML=head("Arrêter")+'<div class="brbody"><div class="brring"><div id="brc"></div></div><div id="brl" class="brl">Prépare-toi</div><div id="brt" class="brt"></div>'+(p?'<p class="brp">« '+esc(p)+' »</p>':'')+'</div>'}
+function screenEnd(){var a=phr();box.innerHTML=head("Fermer")+'<div class="brbody"><div id="brl" class="brl">Terminé</div><p class="brtxt">Respire normalement et garde les épaules basses.</p>'+(a.length?'<p class="brp">Ta phrase : « '+esc(a.join(" » · « "))+' »</p>':'')+'<div class="crow"><button type="button" class="main" data-b="close">Fermer</button></div></div>'}
+function stop(){cancelAnimationFrame(raf);raf=0;try{if(lock){lock.release();lock=null}}catch(e){}}
+function close(){stop();box.hidden=true;var sh=document.getElementById("sheet"),ch=document.getElementById("chat");if((!sh||sh.hidden)&&(!ch||ch.hidden))document.body.classList.remove("lock")}
+function ease(x){return (1-Math.cos(Math.PI*x))/2}
+function loop(now){
+  var e=(now-t0)/1000;
+  if(e>=dur){stop();screenEnd();return}
+  var c=e%10,s,lab;
+  if(c<4){s=0.5+0.5*ease(c/4);lab="Inspire"}else{s=1-0.5*ease((c-4)/6);lab="Expire"}
+  var el=document.getElementById("brc");if(el)el.style.transform="scale("+s.toFixed(3)+")";
+  var l=document.getElementById("brl");if(l&&l.textContent!==lab)l.textContent=lab;
+  var rem=Math.ceil(dur-e),t=document.getElementById("brt");if(t)t.textContent=Math.floor(rem/60)+":"+String(rem%60).padStart(2,"0");
+  raf=requestAnimationFrame(loop);
+}
+function go(m){stop();dur=m*60;screenRun();t0=performance.now();raf=requestAnimationFrame(loop);try{if(navigator.wakeLock)navigator.wakeLock.request("screen").then(function(w){lock=w}).catch(function(){})}catch(e){}}
+function open(m){box.hidden=false;document.body.classList.add("lock");if(m>0)go(m);else screenStart()}
+document.addEventListener("click",function(e){var b=e.target.closest?e.target.closest("[data-breath]"):null;if(b){e.preventDefault();open(+b.getAttribute("data-breath")||0)}});
+box.addEventListener("click",function(e){var b=e.target.closest?e.target.closest("[data-b]"):null;if(!b)return;var a=b.getAttribute("data-b");if(a==="close")close();else if(a==="go")go(+b.getAttribute("data-m"))});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!box.hidden)close()});
+window.__breath={open:open,close:close};
 })();
 </script>
 </body>
