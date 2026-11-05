@@ -351,6 +351,15 @@ h2{font-size:16px;font-weight:600}
 .ldprog{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .ldprog:last-child{border-bottom:0} .ldprog .ln{display:flex;flex-direction:column;gap:2px;min-width:0} .ldprog .ln b{font-size:14px;font-weight:600;line-height:1.3}
 .ldprog .spark{width:110px;height:30px;flex:none}
+/* ===== calendrier de forme ===== */
+.calgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.calh{text-align:center;font-size:11px;font-weight:600;color:var(--muted)}
+.calcell{position:relative;aspect-ratio:1;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;background:var(--soft);color:var(--muted);cursor:pointer;line-height:1.1}
+.calcell b{font-weight:600} .calcell small{position:absolute;top:2px;left:0;right:0;text-align:center;font-size:8.5px;font-weight:700;text-transform:uppercase;opacity:.8}
+.calcell.g{background:var(--green-soft);color:var(--green-t)} .calcell.o{background:var(--orange-soft);color:var(--orange-t)} .calcell.r{background:var(--red-soft);color:var(--red-t)}
+.calcell.f{background:transparent;opacity:.45} .calcell.today{box-shadow:inset 0 0 0 2px var(--accent)}
+.calcell .cald{position:absolute;bottom:4px;left:50%;margin-left:-3px;width:6px;height:6px;border-radius:50%;background:var(--deep)}
+.calcell .calf{position:absolute;top:2px;right:4px;font-size:10px;font-style:normal;color:var(--orange-t)}
 /* ===== matériel, assiduité ===== */
 .glist{display:flex;flex-direction:column} .grow{padding:12px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px} .grow:last-child{border-bottom:0}
 .gh{display:flex;flex-direction:column;gap:2px} .gh b{font-size:15.5px} .gact{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
@@ -2736,6 +2745,45 @@ window.__gearStatus=gearStatus;
   TB.suivi.push(card({key:"perf",title:"Quand je performe",icon:"flag",sum:sum}));
 })();
 
+/* ----- calendrier de forme : six semaines, chaque jour colorié selon ton matin ----- */
+(function(){
+  var weeks=6,t0=new Date(todayKey+"T12:00:00Z").getTime(),dw=(dowOf(todayKey)+6)%7,startT=t0-(dw+7*(weeks-1))*DAY;
+  var sessDays={},tourDays={};SS.forEach(function(x){sessDays[dkey(x.s)]=1});
+  EVTS.forEach(function(T){var n=dDiff(T.end,T.start)+1;for(var i=0;i<n;i++)tourDays[dAdd(T.start,i)]=1});
+  var head=["L","M","M","J","V","S","D"].map(function(x){return '<span class="calh">'+x+'</span>'}).join(""),cells="";
+  for(var i=0;i<weeks*7;i++){
+    var k=dkey(startT+i*DAY),future=k>todayKey,r=HIST[k]||{},lv=future?null:mornLvlOf(SKIP[k]?null:r.hrv,r.sleepScore);
+    var cls=future?"f":lv?({green:"g",orange:"o",red:"r"})[lv]:"n",dn=parseInt(k.slice(8),10);
+    cells+='<div class="calcell '+cls+(k===todayKey?" today":"")+'" role="button" tabindex="0" data-day="'+k+'" aria-label="'+esc(fmt(new Date(k+"T12:00:00Z").getTime(),{weekday:"long",day:"numeric",month:"long"}))+'">'+
+      (dn===1?'<small>'+esc(fmt(new Date(k+"T12:00:00Z").getTime(),{month:"short"}).replace(".",""))+'</small>':'')+'<b>'+dn+'</b>'+(tourDays[k]?'<i class="calf">⚑</i>':'')+(sessDays[k]?'<i class="cald"></i>':'')+'</div>';
+  }
+  var sum='<div class="calgrid">'+head+cells+'</div><div class="legend"><span><i style="background:var(--green)"></i>matin vert</span><span><i style="background:var(--orange)"></i>orange</span><span><i style="background:var(--red)"></i>rouge</span><span><i class="cald" style="position:static;display:inline-block"></i> séance</span><span>⚑ tournoi</span></div><p class="small muted" style="margin:8px 0 0">Touche un jour pour son détail. Gris : pas de mesure.</p>';
+  TB.suivi.push(card({key:"calform",title:"Calendrier de forme",icon:"cal",sum:sum}));
+})();
+
+/* ----- alerte de tendance : trois matins de suite sous le seuil de VFC, ou trois jours de FC au repos élevée ----- */
+(function(){
+  window.__TREND=null;
+  var rec=Object.keys(HIST).filter(function(k){return k<=todayKey&&k>=dkey(NOW-6*DAY)}).sort(),l3=rec.slice(-3);
+  if(l3.length<3||dDiff(todayKey,l3[2])>1||dDiff(l3[2],l3[0])!==2)return;
+  if(l3.some(function(k){return SKIP[k]}))return;
+  var low=l3.every(function(k){var v=HIST[k].hrv;return !nn(v)&&v<P.hrvLow}),hi=!!rhrB&&l3.every(function(k){var v=HIST[k].rhr;return !nn(v)&&v>=rhrB+4}),msg=null;
+  if(low)msg="ta VFC est sous ton seuil ("+P.hrvLow+" ms) depuis 3 matins";else if(hi)msg="ta FC au repos est au moins 4 bpm au-dessus de ta base depuis 3 jours";
+  if(!msg)return;
+  window.__TREND=msg;
+  TB.today.splice(Math.min(1,TB.today.length),0,'<section class="card sec remind warn" id="trendbanner"><div class="rem"><span>Tendance : '+esc(msg)+'. Allège la prochaine séance et couche-toi plus tôt.</span></div></section>');
+})();
+
+/* ----- récupération guidée après un tournoi (J+1 et J+2) ----- */
+(function(){
+  var tp=tourPhase(todayKey);if(!(tp&&tp.kind==="post"))return;
+  var L1=["Aucune séance aujourd’hui","Marche facile de 30 minutes","Mobilité de 15 minutes","Protéines et glucides à chaque repas","Beaucoup d’eau, peu d’alcool","Coucher tôt"],
+    L2=["Reprise douce seulement si ton matin est vert ou orange (bad léger, 80 % au plus)","Pas de renfo tant que le matin n’est pas vert","Mobilité de 15 minutes","Une nuit complète","Si tu as mal ou si ta VFC reste basse, prolonge le repos d’un jour"],
+    items=tp.off===1?L1:L2,done=(JR[todayKey]||{}).post||[];
+  var li=items.map(function(x,i){var on=done.indexOf(i)>=0;return '<li><button type="button" class="exb'+(on?' on':'')+'" data-post="'+i+'" aria-pressed="'+on+'"><i aria-hidden="true"></i><span>'+esc(x)+'</span></button></li>'}).join("");
+  TB.today.splice(Math.min(1,TB.today.length),0,card({key:"postcard",title:"Récupération après le tournoi · "+tp.label,icon:"heart",chip:'<span class="chip'+(done.length===items.length?' green':'')+'" style="margin-left:auto">'+done.length+'/'+items.length+'</span>',sum:'<ul class="exo exock">'+li+'</ul><p class="small muted" style="margin:8px 0 0">Coche au fur et à mesure.</p>'}));
+})();
+
 var APP=document.getElementById("app");
 /* ----- assemblage : un panneau par onglet + barre d'onglets ----- */
 (function(){
@@ -2753,7 +2801,7 @@ var APP=document.getElementById("app");
     {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:todayItems(TB.today)},
     {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, statut":"Plus de détails : 7 derniers jours, charge, bilan, statut")},
     {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:groupCards(TB.body,["Ton corps aujourd'hui","Signaux du corps","Le coach propose"],"Plus de détails : récupération, sommeil, leviers, VFC de journée, analyses, progrès")},
-    {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:groupCards(TB.suivi,["Tes tendances (30 jours)","Mes déclencheurs","Assiduité du mois","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours")},
+    {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:groupCards(TB.suivi,["Tes tendances (30 jours)","Calendrier de forme","Mes déclencheurs","Assiduité du mois","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours")},
     {k:"tour",lab:tourLab,title:nt?"Tournoi":"Cycle",ic:'<path d="M5 22V3M5 4h13l-2 4 2 4H5"/>',items:(function(){var all=(TB.ttop||[]).concat(TB.tour),top=[],rest=[];all.forEach(function(x){(/id="matchcard"|id="mentalcard"|id="goalcard"|Débrief du coach/.test(x)?top:rest).push(x)});
       return /id="matchcard"/.test(top.join(""))&&rest.length?top.concat(['<details class="moredet"><summary>Plus de détails : frise, jours du tournoi, cycle</summary><div class="stack" style="margin-top:12px">'+rest.join("")+'</div></details>']):all})()}
   ];
@@ -2783,6 +2831,7 @@ window.__setTab=function(k){
   if(c.facts)L.push(c.facts);
   c.priorities.forEach(function(p,i){L.push((i+1)+". "+p)});
   if(c.session)L.push("Séance vers "+c.session+(c.sessionSrc==="calendrier"?" (calendrier)":""));
+  if(window.__TREND)L.push("Tendance : "+window.__TREND+". Allège la prochaine séance et couche-toi plus tôt.");
   L.push("Coucher avant "+c.bed);
   if(c.tour)L.push("Mode tournoi "+c.tour.label+" : "+c.tour.focus);
   if(wk&&(dw===0||dw===1))L.push("Bilan de la semaine : "+wk.head+" "+wk.adj);
@@ -2801,6 +2850,7 @@ window.__jsaveq=function(date,e){e.at=new Date().toISOString();window.__JRX=wind
 window.__jgoal=function(field,v){var cur=null,ck=null;Object.keys(JR).sort().forEach(function(k){if(JR[k].goal){cur=JR[k].goal;ck=k}});var g=JSON.parse(JSON.stringify(cur||{}));v=String(v||"").trim().slice(0,30);if(v)g[field]=v;else delete g[field];
   var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.goal=g;window.__jsaveq(todayKey,e)};
 window.__jgear=function(id,date){date=date||todayKey;if(!date)return;var e=JSON.parse(JSON.stringify(JR[date]||{}));e.gear=e.gear||[];if(e.gear.indexOf(id)<0)e.gear.push(id);window.__jcommit(date,e)};
+window.__jpost=function(i){var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.post=e.post||[];var k=e.post.indexOf(i);if(k>=0)e.post.splice(k,1);else e.post.push(i);e.post.sort(function(a,b){return a-b});if(!e.post.length)delete e.post;window.__jcommit(todayKey,e)};
 window.__jwake=function(date,v){
   var e=JSON.parse(JSON.stringify(JR[date]||{}));v=String(v||"");if(v&&!/^\d\d:\d\d$/.test(v))return;
   if((e.wake||"")===v)return;if(v)e.wake=v;else delete e.wake;window.__jcommit(date,e);
@@ -2963,6 +3013,7 @@ APP.addEventListener("click",function(e){
   var t=e.target,b=t.closest?t.closest("button"):null;
   var jb=t.closest?t.closest("[data-j]"):null;
   var mok=t.closest?t.closest("[data-matchok]"):null;if(mok){window.__jmatch(mok.getAttribute("data-matchok"),"09:00");return}
+  var pst=t.closest?t.closest("[data-post]"):null;if(pst&&window.__jpost){window.__jpost(+pst.getAttribute("data-post"));return}
   var gb=t.closest?t.closest("[data-gear]"):null;if(gb&&window.__jgear){window.__jgear(gb.getAttribute("data-gear"));return}
   var sk0=t.closest?t.closest("[data-skip]"):null;if(sk0&&window.__jskip){window.__jskip(sk0.getAttribute("data-skip"));return}
   var oj=t.closest?t.closest("[data-openjournal]"):null;if(oj){var tm=document.getElementById("todaymore");if(tm)tm.open=true;var jj=document.getElementById("journal");if(jj&&jj.scrollIntoView)jj.scrollIntoView({block:"start"});return}
