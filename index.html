@@ -380,6 +380,8 @@ h2{font-size:16px;font-weight:600}
 /* ===== respiration (bouton fixe), dette de sommeil ===== */
 .wakerow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 6px;font-size:15px;font-weight:600}
 .wakerow input{font:600 17px -apple-system,system-ui,sans-serif;font-variant-numeric:tabular-nums;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+#chatfab,#breathfab{transition:transform .25s ease,opacity .25s ease}
+.fabaway{transform:translateX(90px);opacity:0;pointer-events:none}
 #breathfab{position:fixed;right:19px;bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:45;width:44px;height:44px;border-radius:50%;border:0;background:var(--card);color:var(--accent);box-shadow:0 3px 14px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;cursor:pointer}
 #breathfab[hidden]{display:none}
 #breathfab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8}
@@ -2346,7 +2348,7 @@ out=TB.body;
       var prev=dkey(new Date(k+"T12:00:00Z").getTime()-DAY);if(SS.some(function(x){return dkey(x.s)===prev}))return;
       var a=String(HIST[k].bedtime).split(":"),m=(+a[0])*60+(+a[1]);nb.push(m<720?m+1440:m)});
     var avgNb=nb.length>=6?Math.round(avg(nb))%1440:null,avgTxt=avgNb==null?"":String(Math.floor(avgNb/60)).padStart(2,"0")+":"+String(avgNb%60).padStart(2,"0");
-    R.push([restSoir?'Soir sans séance : c’est là que ton coucher glisse'+(avgTxt?' (vers '+avgTxt+' en moyenne)':'')+'. Au lit avant '+esc(c.bed)+'.':'Coucher avant '+esc(c.bed)+' pour récupérer au mieux.','','bed'])}
+    if(restSoir)R.push(['Soir sans séance : c’est là que ton coucher glisse'+(avgTxt?' (vers '+avgTxt+' en moyenne)':'')+'. Au lit avant '+esc(c.bed)+'.','','bed'])}
   gearStatus().forEach(function(g){if(g.due)R.push([g.name+' : '+(g.unit==="h"?Math.round(g.hrs)+' h':g.n+' séances')+' depuis le dernier changement (repère : '+g.limit+(g.unit==="h"?' h':' séances')+').','','gear'])});
   if(!R.length)return;
   var PRI={match:0,bed:1,today:2,yesterday:3,gear:4};R.sort(function(a,b){return PRI[a[2]]-PRI[b[2]]});R=R.slice(0,2);
@@ -2569,7 +2571,7 @@ TB.suivi=[];
   var RESL={gagne:"Vainqueur",finale:"Finale perdue",demi:"Demi-finale perdue",quart:"Quart de finale perdu",poule:"Sorti en poule / 1er tour",victoire:"Victoire",defaite:"Défaite",nul:"Match nul"};
   function chip(txt,bad,warn){return '<span class="chip'+(bad?" red":warn?" orange":"")+'">'+esc(txt)+'</span>'}
   function preStress(k,mt){var a=(HIST[k]||{}).stressQ;if(!a||a.length<96)return null;var m=tmn(mt),sl=Math.floor(m/60)*4+Math.floor((m%60)/15),v=a.slice(Math.max(0,sl-6),sl).filter(function(x){return x>=0});return v.length?Math.round(avg(v)):null}
-  var evs2=EVTS.filter(function(T){return T.end<=todayKey}).sort(function(a,b){return a.start<b.start?1:-1}),blocks="",hiN=0,hiPlat=0,loN=0,loPlat=0,nP=0;
+  var evs2=EVTS.filter(function(T){return T.end<=todayKey}).sort(function(a,b){return a.start<b.start?1:-1}),blocks="",tdl=[],hiN=0,hiPlat=0,loN=0,loPlat=0,nP=0;
   evs2.forEach(function(T){
     var n=dDiff(T.end,T.start)+1,rows="";
     for(var i=0;i<n;i++){var k=dAdd(T.start,i),e=JR[k]||{},c=e.comp;if(!c)continue;
@@ -2584,9 +2586,10 @@ TB.suivi=[];
       var info=[];if(ps!=null)info.push("stress Garmin avant le match : "+ps);if(!nn(hv))info.push("VFC du matin : "+Math.round(hv)+" ms");
       rows+='<div class="tday"><div class="th"><b>'+esc(String(T.name).replace(/^Tournoi (national )?(d')?/i,""))+'</b> · '+esc(fmt(new Date(k+"T12:00:00Z").getTime(),{weekday:"short",day:"numeric",month:"short"}))+(e.match?' · 1er match '+esc(e.match):'')+'</div><div class="jchs">'+ch.join("")+'</div>'+(info.length?'<div class="small muted">'+esc(info.join(" · "))+'</div>':'')+(c.bien?'<div class="small"><b>Ce qui a marché :</b> '+esc(c.bien)+'</div>':'')+(c.change?'<div class="small"><b>À changer :</b> '+esc(c.change)+'</div>':'')+'</div>';
     }
-    if(rows)blocks+=rows;
+    if(rows){var parts=rows.split('<div class="tday">');parts.slice(1).forEach(function(p){tdl.push('<div class="tday">'+p)})}
   });
-  if(!blocks)return;
+  if(!tdl.length)return;
+  blocks=tdl.slice(0,2).join("")+(tdl.length>2?'<details class="moredet inner"><summary>Voir les '+(tdl.length-2)+' jours précédents</summary>'+tdl.slice(2).join("")+'</details>':"");
   var insight=(hiN&&loN)?'<p class="facts" style="text-align:left;margin:10px 0 0">Pression forte (4 ou 5) : énergie à plat ou souffle court '+hiPlat+' fois sur '+hiN+' ; pression plus basse : '+loPlat+' fois sur '+loN+'. À confirmer sur plusieurs tournois.</p>':
     (nP?'':'<p class="facts" style="text-align:left;margin:10px 0 0">Note la pression (1 à 5) avant le premier match dans le journal du jour de match : après quelques jours, je la comparerai à ton énergie et au stress Garmin.</p>');
   TB.suivi.push(card({key:"tourn",title:"Tes tournois",icon:"flag",sum:'<div class="tdays">'+blocks+'</div>'+insight}));
@@ -2619,7 +2622,13 @@ TB.suivi=[];
 
 /* ----- jour de match : l'accueil se réduit à l'essentiel ----- */
 function todayItems(items){
-  var tp=tourPhase(todayKey);if(!(tp&&tp.kind==="match"))return items;
+  var tp=tourPhase(todayKey);
+  if(!(tp&&tp.kind==="match")){
+    /* ordre de lecture : verdict, alertes et rappels, étape du jour (compte à rebours, récupération), programme, journal, le reste (sommeil...), analyse du coach */
+    var PR=[/card verdict hero/,/id="(trendbanner|overbanner)"|card sec remind/,/data-cd=|data-post=/,/<h2>Ton programme/,/id="journal"/,null,/<h2>L'analyse du coach/];
+    function rk(x){for(var i=0;i<PR.length;i++)if(PR[i]&&PR[i].test(x))return i;return 5}
+    return items.map(function(x,i){return {x:x,i:i,r:rk(x)}}).sort(function(a,b){return a.r-b.r||a.i-b.i}).map(function(o){return o.x});
+  }
   var order=[/card verdict hero/,/id="matchday"/,/card sec remind/],main=[],used={};
   order.forEach(function(re){for(var i=0;i<items.length;i++){if(!used[i]&&re.test(items[i])){used[i]=1;main.push(items[i]);break}}});
   var rest=items.filter(function(x,i){return !used[i]});
@@ -2847,7 +2856,7 @@ window.__gearStatus=gearStatus;
     '<p class="small" style="margin:0 0 10px;line-height:1.45">Touche <b>Occupé</b> sur les soirées où tu ne peux pas t’entraîner : je replace tes séances sur les jours libres, sans enchaîner trois séances dures et sans rien coller à la veille d’un tournoi.</p>';
   var more=window.__OVER?'<p class="small" style="margin:10px 0 0">Charge trop haute : la séance marquée « à alléger » passe en version courte.</p>':'';
   window.__PLANNER={moves:moves.length,busy:busyN};
-  TB.week.push(card({key:"planner",title:"Planifier ma semaine",icon:"target",chip:busyN?'<span class="chip" style="margin-left:auto">'+busyN+' soirée'+(busyN>1?'s':'')+' prise'+(busyN>1?'s':'')+'</span>':'',sum:intro+'<div class="dlist">'+html+'</div>'+more+'<p class="small muted" style="margin:8px 0 0">Proposition seulement : ton programme officiel ne change pas.</p>'}));
+  TB.week.push(card({key:"planner",title:"Planifier ma semaine",icon:"target",chip:busyN?'<span class="chip" style="margin-left:auto">'+busyN+' soirée'+(busyN>1?'s':'')+' prise'+(busyN>1?'s':'')+'</span>':'',sum:intro+'<details class="moredet inner"'+(busyN?' open':'')+'><summary>'+(busyN?'Modifier mes soirées prises':'Choisir mes soirées prises')+'</summary><div class="dlist">'+html+'</div></details>'+more+'<p class="small muted" style="margin:8px 0 0">Proposition seulement : ton programme officiel ne change pas.</p>'}));
 })();
 
 /* ----- compte à rebours de tournoi : J-7 à J-1, trois gestes par jour ----- */
@@ -3221,6 +3230,9 @@ var bf=document.getElementById("breathfab");
 function syncB(){if(bf)bf.hidden=!!window.__HOLD||!window.__msgSend||document.body.classList.contains("lock")}
 setInterval(syncB,700);syncB();
 })();
+</script>
+<script id="fabjs">
+(function(){var last=0;addEventListener("scroll",function(){var y=window.scrollY||0,d=y-last;if(Math.abs(d)<10)return;last=y;["chatfab","breathfab"].forEach(function(i){var b=document.getElementById(i);if(b)b.classList.toggle("fabaway",d>0&&y>160)})},{passive:true})})();
 </script>
 </body>
 </html>
