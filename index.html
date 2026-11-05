@@ -360,6 +360,12 @@ h2{font-size:16px;font-weight:600}
 .calcell.f{background:transparent;opacity:.45} .calcell.today{box-shadow:inset 0 0 0 2px var(--accent)}
 .calcell .cald{position:absolute;bottom:4px;left:50%;margin-left:-3px;width:6px;height:6px;border-radius:50%;background:var(--deep)}
 .calcell .calf{position:absolute;top:2px;right:4px;font-size:10px;font-style:normal;color:var(--orange-t)}
+/* ===== compte à rebours, planificateur ===== */
+.cdstrip{display:flex;gap:5px;margin:0 0 10px}
+.cdstrip span{flex:1;text-align:center;font-size:11px;padding:6px 0;border-radius:8px;background:var(--line);color:var(--muted)}
+.cdstrip span.past{background:var(--green);color:#fff;opacity:.55}
+.cdstrip span.now{background:var(--accent);color:#fff;font-weight:700}
+.drow.pln.moved{box-shadow:inset 3px 0 0 var(--accent)}
 /* ===== matériel, assiduité ===== */
 .glist{display:flex;flex-direction:column} .grow{padding:12px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px} .grow:last-child{border-bottom:0}
 .gh{display:flex;flex-direction:column;gap:2px} .gh b{font-size:15.5px} .gact{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
@@ -2784,6 +2790,85 @@ window.__gearStatus=gearStatus;
   TB.today.splice(Math.min(1,TB.today.length),0,card({key:"postcard",title:"Récupération après le tournoi · "+tp.label,icon:"heart",chip:'<span class="chip'+(done.length===items.length?' green':'')+'" style="margin-left:auto">'+done.length+'/'+items.length+'</span>',sum:'<ul class="exo exock">'+li+'</ul><p class="small muted" style="margin:8px 0 0">Coche au fur et à mesure.</p>'}));
 })();
 
+/* ----- alerte de surcharge : trop de séances rapprochées ou charge trop haute, avec des matins qui se dégradent ----- */
+(function(){
+  window.__OVER=null;
+  var tp0=tourPhase(todayKey);if(tp0&&tp0.kind==="match")return;
+  var d5={};SS.forEach(function(x){if(x.s>NOW-5*DAY&&x.s<=NOW)d5[dkey(x.s)]=1});
+  var n5=Object.keys(d5).length,lv3=[];
+  for(var i=0;i<3;i++){var k=dkey(NOW-i*DAY),r=HIST[k];if(r&&!SKIP[k]){var l=mornLvlOf(r.hrv,r.sleepScore);if(l)lv3.push(l)}}
+  var bad3=lv3.filter(function(l){return l!=="green"}).length,why=null;
+  if(LW&&LW.pos==="over")why="ta charge des 7 derniers jours est trop haute";
+  else if(n5>=4&&bad3>=2)why="tu as fait "+n5+" séances en 5 jours et tes matins se dégradent";
+  else if(LW&&LW.pos==="high"&&bad3>=2)why="ta charge est au-dessus de ta fenêtre et tes matins se dégradent";
+  if(!why)return;
+  var nx=null;for(var j=0;j<=4&&!nx;j++){var dk=dAdd(todayKey,j),pd=null;(PLAN.days||[]).forEach(function(x){if(x.date===dk)pd=x});
+    if(pd&&/^(bad|renfoA|renfoB)$/.test(pd.kind)&&!(JR[dk]||{}).skip)nx={pd:pd,dk:dk,j:j}}
+  var sug=nx?" Transforme « "+nx.pd.title+" » ("+(nx.j===0?"aujourd’hui":fmt(new Date(nx.dk+"T12:00:00Z").getTime(),{weekday:"long"}))+") en séance légère, ou retire-la.":" Retire ou allège une séance cette semaine.";
+  window.__OVER=why+"."+sug;
+  TB.today.splice(Math.min(1,TB.today.length),0,'<section class="card sec remind warn" id="overbanner"><div class="rem"><span>Surcharge : '+esc(why)+'.'+esc(sug)+'</span></div></section>');
+})();
+
+/* ----- planificateur de semaine : replace tes séances quand une soirée est prise ----- */
+(function(){
+  var HARD=/^(bad|renfoA|renfoB)$/,SESSK=/^(bad|renfo|velo|course|activation)/,rows=[],busyN=0;
+  function wdl(dk){return fmt(new Date(dk+"T12:00:00Z").getTime(),{weekday:"long"})}
+  for(var j=0;j<7;j++){var dk=dAdd(todayKey,j),pd=null;(PLAN.days||[]).forEach(function(x){if(x.date===dk)pd=x});
+    var tp=tourPhase(dk),e=JR[dk]||{},isM=!!(tp&&tp.kind==="match");
+    var r={dk:dk,kd:pd?pd.kind:(isM?"tournoi":"repos"),title:pd?pd.title:(isM?"Tournoi":"Repos"),busy:!!e.busy,skip:!!e.skip,tp:tp,moveTo:null,moveFrom:null,drop:false,light:false};
+    r.sess=SESSK.test(r.kd)&&!r.skip&&!isM;if(r.busy)busyN++;rows.push(r)}
+  var occ=rows.map(function(r){return r.sess?r.kd:null}),occT=rows.map(function(r){return r.sess?r.title:null});
+  function hardAt(a,i){return i>=0&&i<7&&!!a[i]&&HARD.test(a[i])}
+  function slotOk(k,kd){var r=rows[k];if(r.busy||occ[k]||r.skip)return false;
+    if(r.tp&&(r.tp.kind==="match"||r.tp.kind==="post"||(r.tp.kind==="pre"&&r.tp.off>=-2)))return false;
+    if(!HARD.test(kd))return true;var a=occ.slice();a[k]=kd;
+    return !((hardAt(a,k-2)&&hardAt(a,k-1))||(hardAt(a,k-1)&&hardAt(a,k+1))||(hardAt(a,k+1)&&hardAt(a,k+2)))}
+  var moves=[];
+  rows.forEach(function(r,i){if(!(r.busy&&occ[i]))return;var kd=occ[i],t=occT[i],to=-1,k;
+    for(k=i+1;k<7&&to<0;k++)if(slotOk(k,kd))to=k;
+    for(k=i-1;k>=0&&to<0;k--)if(slotOk(k,kd))to=k;
+    if(to>=0){occ[to]=kd;occT[to]=t;occ[i]=null;occT[i]=null;r.moveTo=to;rows[to].moveFrom=i;moves.push("« "+t+" » du "+wdl(r.dk)+" passe au "+wdl(rows[to].dk)+".")}
+    else{r.drop=true;r.dropT=t;occ[i]=null;occT[i]=null;moves.push("« "+t+" » du "+wdl(r.dk)+" est sautée : soirée prise et aucun jour libre qui tienne.")}});
+  var run=0,flagged=false;
+  rows.forEach(function(r,i){if(hardAt(occ,i)){run++;if(run>=3){r.light=true;flagged=true}}else run=0});
+  if(window.__OVER&&!flagged){for(var i2=0;i2<7;i2++)if(hardAt(occ,i2)){rows[i2].light=true;flagged=true;break}}
+  var DOTC=function(kd){return /^bad|^tournoi/.test(kd)?"var(--deep)":/^renfo/.test(kd)?"var(--rem)":/^velo|^course|^activation/.test(kd)?"var(--teal)":"var(--muted)"};
+  var html="";
+  rows.forEach(function(r,i){var title,note="",kd=occ[i]?occ[i]:r.kd;
+    if(occ[i]){title=occT[i];if(r.moveFrom!=null)note="déplacée depuis "+wdl(rows[r.moveFrom].dk);if(r.light)note=(note?note+" · ":"")+"à alléger : version courte"}
+    else if(r.drop){title="Soirée prise";note="« "+r.dropT+" » sautée"}
+    else if(r.moveTo!=null){title="Soirée prise";note="« "+occT[r.moveTo]+" » déplacée au "+wdl(rows[r.moveTo].dk)}
+    else if(r.busy){title="Soirée prise";note="mobilité de 15 minutes si possible"}
+    else{title=r.skip?r.title:r.title;if(r.skip)note="annulée"}
+    html+='<div class="drow pln'+(r.moveFrom!=null||r.moveTo!=null||r.drop?' moved':'')+'" role="button" tabindex="0" data-day="'+r.dk+'"><div class="dd"><span>'+esc(fmt(new Date(r.dk+"T12:00:00Z").getTime(),{weekday:"short"}).replace(".",""))+'</span><b>'+parseInt(r.dk.slice(8),10)+'</b></div>'+
+      '<i class="ddot" style="background:'+DOTC(kd)+'"></i><div class="dt"><b>'+esc(title)+'</b>'+(note?'<div class="small muted">'+esc(note)+'</div>':'')+'</div>'+
+      '<button type="button" class="skipbtn" data-busy="'+r.dk+'" aria-pressed="'+r.busy+'">'+(r.busy?"Libre":"Occupé")+'</button></div>'});
+  var intro=busyN?(moves.length?'<ul class="mlistu" style="padding-left:18px;margin:0 0 10px">'+moves.map(function(x){return '<li>'+esc(x)+'</li>'}).join("")+'</ul>':'<p class="small" style="margin:0 0 10px">Aucune séance n’est touchée par tes soirées prises.</p>'):
+    '<p class="small" style="margin:0 0 10px;line-height:1.45">Touche <b>Occupé</b> sur les soirées où tu ne peux pas t’entraîner : je replace tes séances sur les jours libres, sans enchaîner trois séances dures et sans rien coller à la veille d’un tournoi.</p>';
+  var more=window.__OVER?'<p class="small" style="margin:10px 0 0">Charge trop haute : la séance marquée « à alléger » passe en version courte.</p>':'';
+  window.__PLANNER={moves:moves.length,busy:busyN};
+  TB.week.push(card({key:"planner",title:"Planifier ma semaine",icon:"target",chip:busyN?'<span class="chip" style="margin-left:auto">'+busyN+' soirée'+(busyN>1?'s':'')+' prise'+(busyN>1?'s':'')+'</span>':'',sum:intro+'<div class="dlist">'+html+'</div>'+more+'<p class="small muted" style="margin:8px 0 0">Proposition seulement : ton programme officiel ne change pas.</p>'}));
+})();
+
+/* ----- compte à rebours de tournoi : J-7 à J-1, trois gestes par jour ----- */
+(function(){
+  var tp=tourPhase(todayKey);if(!(tp&&tp.kind==="pre"))return;
+  var ST3={"-7":["Fixer mon heure de coucher et de lever","Tester petit-déjeuner et collations du tournoi","Vérifier raquettes, grips et chaussures"],
+    "-6":["Séance courte : jeu de pieds, vitesse, qualité","Coucher à l’heure fixée","Boire régulièrement (urine claire)"],
+    "-5":["Renfo allégé (1 série) ou repos","Coucher à l’heure fixée","Prévoir le trajet et l’heure du premier match"],
+    "-4":["Technique et jeu de pieds, rien de nouveau","Féculents à chaque repas, pas d’alcool","Visualiser deux scénarios de match"],
+    "-3":["Dernier travail de vitesse : 10 minutes","Féculents à chaque repas, pas d’alcool","Visualiser mon plan B (début raté, fatigue)"],
+    "-2":["Charge en glucides","Activation légère seulement","Nuit la plus importante : coucher tôt"],
+    "-1":["Activation courte","Sac prêt : raquettes, tenues, nourriture, eau, papiers","Coucher tôt, réveil réglé"]};
+  var items=ST3[String(tp.off)]||[],done=((JR[todayKey]||{}).cd||[]).filter(function(i){return i<items.length}),strip="";
+  for(var o=-7;o<=-1;o++)strip+='<span class="'+(o<tp.off?"past":o===tp.off?"now":"")+'">J'+o+'</span>';
+  strip+='<span>J</span>';
+  var li=items.map(function(x,i){var on=done.indexOf(i)>=0;return '<li><button type="button" class="exb'+(on?' on':'')+'" data-cd="'+i+'" aria-pressed="'+on+'"><i aria-hidden="true"></i><span>'+esc(x)+'</span></button></li>'}).join("");
+  var nm=String(tp.T.name||"").replace(/^Tournoi (national )?(d’|d')?/i,"");
+  TB.today.splice(Math.min(1,TB.today.length),0,card({key:"countdown",title:"Compte à rebours · "+tp.label,icon:"flag",chip:'<span class="chip'+(items.length&&done.length===items.length?' green':'')+'" style="margin-left:auto">'+done.length+'/'+items.length+'</span>',
+    sum:'<div class="cdstrip" aria-hidden="true">'+strip+'</div><p class="small" style="margin:0 0 8px">'+esc(TFOCUS[String(tp.off)]||"")+(nm?" · "+esc(nm):"")+'</p><ul class="exo exock">'+li+'</ul>'}));
+})();
+
 var APP=document.getElementById("app");
 /* ----- assemblage : un panneau par onglet + barre d'onglets ----- */
 (function(){
@@ -2799,7 +2884,7 @@ var APP=document.getElementById("app");
   var bilanDay=dowOf(todayKey)<=1;
   var TABS=[
     {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:todayItems(TB.today)},
-    {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, statut":"Plus de détails : 7 derniers jours, charge, bilan, statut")},
+    {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Planifier ma semaine","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, statut":"Plus de détails : 7 derniers jours, charge, bilan, statut")},
     {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:groupCards(TB.body,["Ton corps aujourd'hui","Signaux du corps","Le coach propose"],"Plus de détails : récupération, sommeil, leviers, VFC de journée, analyses, progrès")},
     {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:groupCards(TB.suivi,["Tes tendances (30 jours)","Calendrier de forme","Mes déclencheurs","Assiduité du mois","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours")},
     {k:"tour",lab:tourLab,title:nt?"Tournoi":"Cycle",ic:'<path d="M5 22V3M5 4h13l-2 4 2 4H5"/>',items:(function(){var all=(TB.ttop||[]).concat(TB.tour),top=[],rest=[];all.forEach(function(x){(/id="matchcard"|id="mentalcard"|id="goalcard"|Débrief du coach/.test(x)?top:rest).push(x)});
@@ -2832,6 +2917,7 @@ window.__setTab=function(k){
   c.priorities.forEach(function(p,i){L.push((i+1)+". "+p)});
   if(c.session)L.push("Séance vers "+c.session+(c.sessionSrc==="calendrier"?" (calendrier)":""));
   if(window.__TREND)L.push("Tendance : "+window.__TREND+". Allège la prochaine séance et couche-toi plus tôt.");
+  if(window.__OVER)L.push("Surcharge : "+window.__OVER);
   L.push("Coucher avant "+c.bed);
   if(c.tour)L.push("Mode tournoi "+c.tour.label+" : "+c.tour.focus);
   if(wk&&(dw===0||dw===1))L.push("Bilan de la semaine : "+wk.head+" "+wk.adj);
@@ -2851,6 +2937,8 @@ window.__jgoal=function(field,v){var cur=null,ck=null;Object.keys(JR).sort().for
   var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.goal=g;window.__jsaveq(todayKey,e)};
 window.__jgear=function(id,date){date=date||todayKey;if(!date)return;var e=JSON.parse(JSON.stringify(JR[date]||{}));e.gear=e.gear||[];if(e.gear.indexOf(id)<0)e.gear.push(id);window.__jcommit(date,e)};
 window.__jpost=function(i){var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.post=e.post||[];var k=e.post.indexOf(i);if(k>=0)e.post.splice(k,1);else e.post.push(i);e.post.sort(function(a,b){return a-b});if(!e.post.length)delete e.post;window.__jcommit(todayKey,e)};
+window.__jbusy=function(date){var e=JSON.parse(JSON.stringify(JR[date]||{}));if(e.busy)delete e.busy;else e.busy=true;window.__jcommit(date,e)};
+window.__jcd=function(i){var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.cd=e.cd||[];var k=e.cd.indexOf(i);if(k>=0)e.cd.splice(k,1);else e.cd.push(i);e.cd.sort(function(a,b){return a-b});if(!e.cd.length)delete e.cd;window.__jcommit(todayKey,e)};
 window.__jwake=function(date,v){
   var e=JSON.parse(JSON.stringify(JR[date]||{}));v=String(v||"");if(v&&!/^\d\d:\d\d$/.test(v))return;
   if((e.wake||"")===v)return;if(v)e.wake=v;else delete e.wake;window.__jcommit(date,e);
@@ -3013,6 +3101,8 @@ APP.addEventListener("click",function(e){
   var t=e.target,b=t.closest?t.closest("button"):null;
   var jb=t.closest?t.closest("[data-j]"):null;
   var mok=t.closest?t.closest("[data-matchok]"):null;if(mok){window.__jmatch(mok.getAttribute("data-matchok"),"09:00");return}
+  var bz=t.closest?t.closest("[data-busy]"):null;if(bz&&window.__jbusy){window.__jbusy(bz.getAttribute("data-busy"));return}
+  var cdn=t.closest?t.closest("[data-cd]"):null;if(cdn&&window.__jcd){window.__jcd(+cdn.getAttribute("data-cd"));return}
   var pst=t.closest?t.closest("[data-post]"):null;if(pst&&window.__jpost){window.__jpost(+pst.getAttribute("data-post"));return}
   var gb=t.closest?t.closest("[data-gear]"):null;if(gb&&window.__jgear){window.__jgear(gb.getAttribute("data-gear"));return}
   var sk0=t.closest?t.closest("[data-skip]"):null;if(sk0&&window.__jskip){window.__jskip(sk0.getAttribute("data-skip"));return}
