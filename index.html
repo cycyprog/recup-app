@@ -3253,7 +3253,7 @@ function when(m){
 }
 function render(){
   if(panel.hidden)return;
-  var list=window.__msgList?window.__msgList():[],rep=window.__msgReplies?window.__msgReplies():{},h="";
+  var list=(window.__msgList?window.__msgList():[]).slice().reverse(),rep=window.__msgReplies?window.__msgReplies():{},h="";
   h+='<div class="chead"><h2>Message au coach</h2><button type="button" data-c="close">Fermer</button></div><div class="cmsgs" id="cmsgs">';
   h+='<p class="small muted" style="margin:0;line-height:1.45">Écris ce que le coach doit savoir : une gêne, un changement d\'emploi du temps, une question. Il le lira demain matin, en tiendra compte dans son analyse et répondra ici.</p>';
   h+='<p class="small muted" style="margin:0;line-height:1.45">Pour une douleur ou une maladie à prendre en compte <b>tout de suite</b>, utilise plutôt le journal (onglet Aujourd\'hui) : le plan se recalcule aussitôt.</p>';
@@ -3265,6 +3265,7 @@ function render(){
   h+='</div><div class="cform"><textarea id="cin" rows="2" placeholder="Écris ton message…" aria-label="Message au coach" maxlength="1000">'+esc(draft)+'</textarea>'+
      '<button type="button" data-c="send" aria-label="Envoyer le message">↑</button></div>'+(flash?'<div class="cflash" role="status">'+esc(flash)+'</div>':'');
   panel.innerHTML=h;
+  var cm0=document.getElementById("cmsgs");if(cm0)cm0.scrollTop=cm0.scrollHeight;   /* fil chronologique : le dernier message est en bas, on s'y place */
 }
 function fit(){var v=window.visualViewport;panel.style.height=(v?v.height:window.innerHeight)+"px";panel.style.top=(v?v.offsetTop:0)+"px"}
 function openChat(){
@@ -3278,7 +3279,7 @@ function send(){
   var t=String(draft||"").trim();if(!t)return;
   var ok=false;try{ok=window.__msgSend(t)}catch(e){ok=false}
   if(ok){draft="";flash="Message enregistré ✓";setTimeout(function(){flash="";render()},2500)}else flash="Impossible d'enregistrer le message.";
-  render();var m=document.getElementById("cmsgs");if(m)m.scrollTop=0;
+  render();var m=document.getElementById("cmsgs");if(m)m.scrollTop=m.scrollHeight;
 }
 fab.addEventListener("click",openChat);
 panel.addEventListener("input",function(e){if(e.target&&e.target.id==="cin")draft=e.target.value});
