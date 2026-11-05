@@ -360,6 +360,33 @@ h2{font-size:16px;font-weight:600}
 .calcell.f{background:transparent;opacity:.45} .calcell.today{box-shadow:inset 0 0 0 2px var(--accent)}
 .calcell .cald{position:absolute;bottom:4px;left:50%;margin-left:-3px;width:6px;height:6px;border-radius:50%;background:var(--deep)}
 .calcell .calf{position:absolute;top:2px;right:4px;font-size:10px;font-style:normal;color:var(--orange-t)}
+/* ===== version colorée : Maintenant, frise, anneaux, série ===== */
+.nowwrap{display:block}
+.nowtop{background:#7c5cff;color:#fff;border-radius:22px;padding:14px 16px}
+.nowlab{font-size:11px;letter-spacing:.08em;opacity:.85;font-weight:600}
+.nowmsg{font-size:18px;font-weight:600;line-height:1.2;margin:3px 0 10px}
+.nowchips{display:flex;gap:6px;flex-wrap:wrap}
+.nowchips .nc{background:#6a4cf0;color:#fff;border-radius:99px;padding:5px 12px;font-size:13px;border:0}
+.nowchips button.nc{background:#fff;color:#4a2fc0;font-weight:600;cursor:pointer}
+.frise{display:flex;align-items:flex-start;padding:12px 8px 0}
+.fstep{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);min-width:46px}
+.fdot2{width:24px;height:24px;border-radius:50%;background:var(--line);display:grid;place-items:center}
+.fstep.done .fdot2{background:#2fcf6b}
+.fstep.cur .fdot2{background:var(--card);border:3px solid #ff7a1a}
+.fstep.cur{color:var(--fg);font-weight:600}
+.fline{flex:1;height:3px;border-radius:2px;background:var(--line);margin-top:10px}
+.fline.done{background:#2fcf6b}
+.hchips{display:flex;flex-direction:column;gap:5px;align-items:flex-end}
+.streak{flex:none;display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;background:#fff1e0;color:#d35400;white-space:nowrap}
+.streak svg{width:14px!important;height:14px!important;flex:none}
+.minis .mini svg.mr{width:42px;height:42px;display:block;margin-bottom:5px}
+.rowcard .ico{background:#ece8ff!important;color:#7c5cff!important}
+.rowcard[data-row^="Planifier"] .ico{background:#dcf3f3!important;color:#1d9e9e!important}
+.rowcard[data-row^="Mes déclencheurs"] .ico{background:#ffeadb!important;color:#ff7a1a!important}
+.rowcard[data-row^="Assiduité"] .ico{background:#dcf7e6!important;color:#1fa855!important}
+.rowcard[data-row^="Tes tournois"] .ico{background:#ffe0ec!important;color:#e0357a!important}
+.rowcard[data-row^="Signaux"] .ico{background:#ffe0e3!important;color:#ef3b4d!important}
+.rowcard[data-row^="L'analyse"] .ico,.rowcard[data-row^="Le coach"] .ico,.rowcard[data-row^="Le bilan"] .ico{background:#e3f0ff!important;color:#2f7de0!important}
 /* ===== lignes repliables ===== */
 .card.rowcard{padding:0}
 .rowcard>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr 24px;column-gap:8px;align-items:center;padding:15px 16px;-webkit-tap-highlight-color:transparent}
@@ -1363,12 +1390,17 @@ var vIdx=out.length+1;
 var heroPct=Math.round(Math.max(0,Math.min(100,pctNow))),heroCol=LVC[level]||"var(--green)",heroSc=!nn(TODAY.sleepScore)?TODAY.sleepScore:SLP;
 function mini(l,v,s){return '<div class="mini"><span>'+l+'</span><b>'+v+'</b>'+(s?'<small>'+s+'</small>':'')+'</div>'}
 var heroLoad=LW?Math.round(LW.a):(ST&&ST.ok?Math.round(ST.acute):null);
+function miniRing(pct,col){var r=17,c=2*Math.PI*r,p=Math.max(0,Math.min(100,pct||0))/100*c;return '<svg class="mr" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="17" fill="none" stroke="var(--line)" stroke-width="7"/><circle cx="22" cy="22" r="17" fill="none" stroke="'+col+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+p.toFixed(1)+' '+c.toFixed(1)+'" transform="rotate(-90 22 22)"/></svg>'}
+function miniR(l,v,s,pct,col){return '<div class="mini">'+miniRing(pct,col)+'<span>'+l+'</span><b>'+v+'</b>'+(s?'<small>'+s+'</small>':'')+'</div>'}
+var hr_slP=nn(TODAY.sleepSec)?0:TODAY.sleepSec/(8*3600)*100,hr_slC=nn(TODAY.sleepSec)?"var(--line)":(!nn(heroSc)?(heroSc>=75?"var(--green)":heroSc>=60?"var(--orange)":"var(--red)"):(TODAY.sleepSec>=7*3600?"var(--green)":TODAY.sleepSec>=6.5*3600?"var(--orange)":"var(--red)"));
+var hr_hvP=(nn(HRV)||!hrvB)?0:HRV/(hrvB*1.25)*100,hr_hvC=nn(HRV)?"var(--line)":((hrvB&&HRV>=hrvB*0.95)||HRV>=P.hrvLow+8?"var(--green)":HRV>=P.hrvLow?"var(--orange)":"var(--red)");
+var hr_ldP=LW?LW.a/LW.hiv*100:0,hr_ldC=LW?({under:"var(--blue)",in:"var(--green)",high:"var(--orange)",over:"var(--red)"})[LW.pos]||"var(--blue)":"var(--line)";
 out.push('<section class="card verdict hero tap" role="button" tabindex="0" data-sheet="reflexion" aria-label="Pourquoi ce verdict"><span class="chev">›</span>'+
   '<div class="herotop"><div class="heroring">'+ringSvg(heroPct,heroCol,heroPct+"%")+'<small>récupération</small></div><div class="heroti"><div class="vlab c-'+level+'">Feu '+LBL[level].toLowerCase()+'</div><div class="vtitle">'+esc(vTitle)+'</div></div></div>'+
   '<p class="vwhy">'+esc(vWhy)+'</p>'+
-  '<div class="minis">'+mini("Sommeil",nn(TODAY.sleepSec)?"–":hmSec(TODAY.sleepSec),debtSeen>=4?"dette "+fdur(DEBT):nn(heroSc)?"":"score "+Math.round(heroSc))+
-    mini("VFC",nn(HRV)?"–":Math.round(HRV)+" ms",hrvB?"base "+Math.round(hrvB):"")+
-    mini("Charge 7 j",heroLoad==null?"–":String(heroLoad),LW?"fenêtre "+Math.round(LW.lov)+"–"+Math.round(LW.hiv):"")+'</div></section>');
+  '<div class="minis">'+miniR("Sommeil",nn(TODAY.sleepSec)?"–":hmSec(TODAY.sleepSec),debtSeen>=4?"dette "+fdur(DEBT):nn(heroSc)?"":"score "+Math.round(heroSc),hr_slP,hr_slC)+
+    miniR("VFC",nn(HRV)?"–":Math.round(HRV)+" ms",hrvB?"base "+Math.round(hrvB):"",hr_hvP,hr_hvC)+
+    miniR("Charge 7 j",heroLoad==null?"–":String(heroLoad),LW?"fenêtre "+Math.round(LW.lov)+"–"+Math.round(LW.hiv):"",hr_ldP,hr_ldC)+'</div></section>');
 
 /* ----- plan de ta journée (coach du matin) ----- */
 (function(){
@@ -2636,8 +2668,8 @@ function todayItems(items){
   var tp=tourPhase(todayKey);
   if(!(tp&&tp.kind==="match")){
     /* ordre de lecture : verdict, alertes et rappels, étape du jour (compte à rebours, récupération), programme, journal, le reste (sommeil...), analyse du coach */
-    var PR=[/card verdict hero/,/id="(trendbanner|overbanner)"|card sec remind/,/data-cd=|data-post=/,/<h2>Ton programme/,/id="journal"/,null,/<h2>L'analyse du coach/];
-    function rk(x){for(var i=0;i<PR.length;i++)if(PR[i]&&PR[i].test(x))return i;return 5}
+    var PR=[/id="nowcard"/,/card verdict hero/,/id="(trendbanner|overbanner)"|card sec remind/,/data-cd=|data-post=/,/<h2>Ton programme/,/id="journal"/,null,/<h2>L'analyse du coach/];
+    function rk(x){for(var i=0;i<PR.length;i++)if(PR[i]&&PR[i].test(x))return i;return 6}
     return items.map(function(x,i){return {x:x,i:i,r:rk(x)}}).sort(function(a,b){return a.r-b.r||a.i-b.i}).map(function(o){return o.x});
   }
   var order=[/card verdict hero/,/id="matchday"/,/card sec remind/],main=[],used={};
@@ -2872,6 +2904,7 @@ window.__gearStatus=gearStatus;
 
 /* ----- compte à rebours de tournoi : J-7 à J-1, trois gestes par jour ----- */
 (function(){
+  window.__CD=null;
   var tp=tourPhase(todayKey);if(!(tp&&tp.kind==="pre"))return;
   var ST3={"-7":["Fixer mon heure de coucher et de lever","Tester petit-déjeuner et collations du tournoi","Vérifier raquettes, grips et chaussures"],
     "-6":["Séance courte : jeu de pieds, vitesse, qualité","Coucher à l’heure fixée","Boire régulièrement (urine claire)"],
@@ -2884,9 +2917,37 @@ window.__gearStatus=gearStatus;
   for(var o=-7;o<=-1;o++)strip+='<span class="'+(o<tp.off?"past":o===tp.off?"now":"")+'">J'+o+'</span>';
   strip+='<span>J</span>';
   var li=items.map(function(x,i){var on=done.indexOf(i)>=0;return '<li><button type="button" class="exb'+(on?' on':'')+'" data-cd="'+i+'" aria-pressed="'+on+'"><i aria-hidden="true"></i><span>'+esc(x)+'</span></button></li>'}).join("");
+  window.__CD={left:items.length-done.length,total:items.length};
   var nm=String(tp.T.name||"").replace(/^Tournoi (national )?(d’|d')?/i,"");
   TB.today.splice(Math.min(1,TB.today.length),0,card({key:"countdown",title:"Compte à rebours · "+tp.label,icon:"flag",chip:'<span class="chip'+(items.length&&done.length===items.length?' green':'')+'" style="margin-left:auto">'+done.length+'/'+items.length+'</span>',
     sum:'<div class="cdstrip" aria-hidden="true">'+strip+'</div><p class="small" style="margin:0 0 8px">'+esc(TFOCUS[String(tp.off)]||"")+(nm?" · "+esc(nm):"")+'</p><ul class="exo exock">'+li+'</ul>'}));
+})();
+
+/* ----- Maintenant : l'action du moment, et la frise matin / séance / soir / coucher ----- */
+(function(){
+  var tp=tourPhase(todayKey);if(tp&&tp.kind==="match")return;
+  var c=window.__COACHB;if(!c)return;
+  var nowMin=tmn(hm(NOW)),te=JR[todayKey]||{},hasLegs=!!te.legs,trainToday=!!c.trainToday&&!te.skip;
+  var sessStarted=SS.some(function(x){return dkey(x.s)===todayKey})||te.done==="oui"||te.done==="partiel";
+  var sessLab=trainToday&&c.session?c.session:null;
+  var steps=[
+    {lab:"Matin",done:hasLegs||nowMin>=15*60},
+    {lab:trainToday?(sessLab||"Séance"):"Repos",done:!trainToday||sessStarted},
+    {lab:"Soir",done:nowMin>=22*60},
+    {lab:c.bed||"Coucher",done:false}];
+  var cur=-1;steps.forEach(function(s,i){if(cur<0&&!s.done)cur=i});
+  var msg,chips=[],cd=window.__CD;
+  if(!hasLegs&&nowMin<15*60){msg="Note tes jambes de ce matin";chips.push('<button type="button" class="nc" data-remind="today">Jambes</button>')}
+  else if(cd&&cd.left>0&&tp){msg="Compte à rebours "+tp.label+" : "+cd.left+" petit"+(cd.left>1?"s":"")+" geste"+(cd.left>1?"s":"")+" à cocher";chips.push('<span class="nc">Gestes '+(cd.total-cd.left)+'/'+cd.total+'</span>')}
+  else if(trainToday&&!sessStarted){msg=(c.head||"Séance")+(c.mult!=null&&c.mult>0?" · "+c.mult+" %":"")+(sessLab?" à "+sessLab:"");chips.push('<span class="nc">Séance'+(sessLab?" "+sessLab:"")+'</span>')}
+  else if(nowMin>=20*60){msg="Au lit avant "+c.bed+" pour rattraper ta dette";}
+  else{msg=trainToday?"Séance faite : récupère, mange et bois bien":"Rien d’obligatoire : récupère";}
+  if(c.bed&&!/Au lit avant/.test(msg))chips.push('<span class="nc">Coucher '+esc(c.bed)+'</span>');
+  var fr="";steps.forEach(function(s,i){
+    fr+='<div class="fstep'+(s.done?" done":i===cur?" cur":"")+'"><span class="fdot2">'+(s.done?'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>':'')+'</span><span>'+esc(s.lab)+'</span></div>';
+    if(i<steps.length-1)fr+='<div class="fline'+(s.done?" done":"")+'"></div>'});
+  TB.today.unshift('<section class="nowwrap" id="nowcard" aria-label="Maintenant"><div class="nowtop"><div class="nowlab">MAINTENANT</div><div class="nowmsg">'+esc(msg)+'</div><div class="nowchips">'+chips.join("")+'</div></div><div class="frise" role="img" aria-label="Ta journée : '+esc(steps.map(function(s){return s.lab}).join(", "))+'">'+fr+'</div></section>');
+  window.__NOW={msg:msg,cur:cur};
 })();
 
 /* ----- lignes repliables : les cartes secondaires deviennent une ligne (titre + résumé), qui se déplie au toucher ----- */
@@ -2930,9 +2991,13 @@ var APP=document.getElementById("app");
   ];
   if(!window.__TAB){try{var tk=JSON.parse(localStorage.getItem("recup-tab")||"null");if(tk&&Date.now()-tk.at<3*H)window.__TAB=tk.k}catch(e){}}
   var cur=window.__TAB||"today";if(!TABS.some(function(x){return x.k===cur}))cur="today";
+  var streak=0;for(var si=0;si<60;si++){var sk=dkey(NOW-si*DAY),sr=HIST[sk];if(!sr||(nn(sr.hrv)&&nn(sr.sleepScore))){if(si===0)continue;break}
+    if(mornLvlOf(SKIP[sk]?null:sr.hrv,sr.sleepScore)==="green")streak++;else break}
+  window.__STREAK=streak;
+  var streakChip=streak>=2?'<span class="streak" title="Matins verts d’affilée"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12c2-2.96 0-7-1-8 0 3.038-1.773 4.741-3 6-1.226 1.26-2 3.24-2 5a6 6 0 1 0 12 0c0-1.532-1.056-3.94-2-5-1.786 3-2.791 3-4 2z"/></svg> '+streak+' jours verts</span>':'';
   var html=TABS.map(function(T){
     return '<div class="tabpanel" data-panel="'+T.k+'" role="tabpanel"'+(T.k===cur?"":" hidden")+'>'+
-      '<header><div><div class="kicker">'+esc(dayName(NOW))+'</div><h1>'+T.title+'</h1></div>'+syncChip+'</header>'+
+      '<header><div><div class="kicker">'+esc(dayName(NOW))+'</div><h1>'+T.title+'</h1></div><div class="hchips">'+streakChip+syncChip+'</div></header>'+
       T.items.join("")+'</div>'}).join("");
   html+='<nav class="tabbar" role="tablist" aria-label="Sections">'+TABS.map(function(T){
     return '<button type="button" role="tab" data-tab="'+T.k+'" aria-selected="'+(T.k===cur?"true":"false")+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+T.ic+'</svg>'+esc(T.lab)+'</button>'}).join("")+'</nav>';
