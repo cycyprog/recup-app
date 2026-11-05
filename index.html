@@ -351,6 +351,10 @@ h2{font-size:16px;font-weight:600}
 .ldprog{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .ldprog:last-child{border-bottom:0} .ldprog .ln{display:flex;flex-direction:column;gap:2px;min-width:0} .ldprog .ln b{font-size:14px;font-weight:600;line-height:1.3}
 .ldprog .spark{width:110px;height:30px;flex:none}
+/* ===== matériel, assiduité ===== */
+.glist{display:flex;flex-direction:column} .grow{padding:12px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px} .grow:last-child{border-bottom:0}
+.gh{display:flex;flex-direction:column;gap:2px} .gh b{font-size:15.5px} .gact{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.assid{display:flex;align-items:center;gap:16px} .ringone{flex:none;width:84px} .ringone svg{width:84px;height:84px;display:block} .assl{min-width:0}
 /* ===== annulation, objectif ===== */
 .skipbtn{flex:none;border:0;background:var(--soft);color:var(--accent);font:600 12.5px -apple-system,system-ui,sans-serif;padding:6px 11px;border-radius:99px;cursor:pointer}
 .goalbig{display:flex;align-items:baseline;gap:12px;margin:0 0 4px} .goalbig b{font-size:30px;font-weight:700;letter-spacing:-.02em} .goalbig span{font-size:22px;color:var(--muted)}
@@ -2321,9 +2325,16 @@ out=TB.body;
   if(hadY&&!ye.legs&&!ye.done)R.push(['Retour d\'hier manquant (jambes, séance).','Saisir','yesterday']);
   var te=JR[todayKey]||{};
   if(hr>=9&&hr<20&&!te.legs&&!nn((HIST[todayKey]||{}).sleepSec))R.push(['Pas encore de retour ce matin : tes jambes ?','Saisir','today']);
-  if(hr>=20&&c&&c.bed)R.push(['Coucher avant '+esc(c.bed)+' pour récupérer au mieux.','','bed']);
+  if(hr>=20&&c&&c.bed){
+    var restSoir=!c.trainToday&&!SS.some(function(x){return dkey(x.s)===todayKey}),nb=[];
+    Object.keys(HIST).filter(function(k){return k>=dkey(NOW-60*DAY)&&k<=todayKey&&HIST[k].bedtime}).forEach(function(k){
+      var prev=dkey(new Date(k+"T12:00:00Z").getTime()-DAY);if(SS.some(function(x){return dkey(x.s)===prev}))return;
+      var a=String(HIST[k].bedtime).split(":"),m=(+a[0])*60+(+a[1]);nb.push(m<720?m+1440:m)});
+    var avgNb=nb.length>=6?Math.round(avg(nb))%1440:null,avgTxt=avgNb==null?"":String(Math.floor(avgNb/60)).padStart(2,"0")+":"+String(avgNb%60).padStart(2,"0");
+    R.push([restSoir?'Soir sans séance : c’est là que ton coucher glisse'+(avgTxt?' (vers '+avgTxt+' en moyenne)':'')+'. Au lit avant '+esc(c.bed)+'.':'Coucher avant '+esc(c.bed)+' pour récupérer au mieux.','','bed'])}
+  gearStatus().forEach(function(g){if(g.due)R.push([g.name+' : '+(g.unit==="h"?Math.round(g.hrs)+' h':g.n+' séances')+' depuis le dernier changement (repère : '+g.limit+(g.unit==="h"?' h':' séances')+').','','gear'])});
   if(!R.length)return;
-  var PRI={match:0,bed:1,today:2,yesterday:3};R.sort(function(a,b){return PRI[a[2]]-PRI[b[2]]});R=R.slice(0,2);
+  var PRI={match:0,bed:1,today:2,yesterday:3,gear:4};R.sort(function(a,b){return PRI[a[2]]-PRI[b[2]]});R=R.slice(0,2);
   var html='<section class="card sec remind" aria-label="Rappels">'+R.map(function(r){return '<div class="rem"><span>'+r[0]+'</span>'+(r[1]?'<button type="button" class="jchip" data-remind="'+r[2]+'">'+r[1]+'</button>':'')+'</div>'}).join("")+'</section>';
   TB.today.splice(Math.min(1,TB.today.length),0,html);
   window.__remind=function(w){
@@ -2665,6 +2676,66 @@ window.__collectGo=async function(){
   TB.suivi.push(card({key:"trig",title:"Mes déclencheurs",icon:"bulb",sum:'<ul class="mlistu" style="padding-left:18px">'+out2.slice(0,4).map(function(x){return '<li>'+x+'</li>'}).join("")+'</ul><p class="small muted" style="margin:10px 0 0">Constats calculés sur tes 90 derniers jours : ils montrent des tendances, pas des causes.</p>'}));
 })();
 
+/* ----- matériel : combien de séances depuis le dernier changement de cordes, de grip, de chaussures ----- */
+function gearStatus(){
+  var IT=[["cordes","Cordes",25,"s"],["grip","Grip",6,"s"],["chaussures","Chaussures",120,"h"]],out=[];
+  IT.forEach(function(it){var last=null;Object.keys(JR).sort().forEach(function(k){if((JR[k].gear||[]).indexOf(it[0])>=0)last=k});
+    var n=0,hrs=0;if(last)SS.forEach(function(x){if(/bad/i.test(x.n||"")&&dkey(x.s)>last){n++;hrs+=(x.e-x.s)/H}});
+    var val=it[3]==="h"?hrs:n;out.push({id:it[0],name:it[1],limit:it[2],unit:it[3],last:last,n:n,hrs:hrs,val:val,due:!!last&&val>=it[2]})});
+  return out;
+}
+window.__gearStatus=gearStatus;
+(function(){
+  var rows=gearStatus().map(function(g){
+    var pc=Math.min(100,g.val/g.limit*100),lv=!g.last?"":g.due?"red":pc>=80?"orange":"green";
+    return '<div class="grow"><div class="gh"><b>'+g.name+'</b><span class="small muted">'+(g.last?(g.unit==="h"?Math.round(g.hrs)+' h':g.n+' séance'+(g.n>1?'s':''))+' depuis le '+esc(fmt(new Date(g.last+"T12:00:00Z").getTime(),{day:"numeric",month:"short"}))+' · repère '+g.limit+(g.unit==="h"?' h':' séances'):'pas encore suivi')+'</span></div>'+
+      (g.last?meter([{to:80,c:"var(--green)"},{to:100,c:"var(--orange)"}],[{p:pc}]):'')+
+      '<div class="gact"><button type="button" class="jchip" data-gear="'+g.id+'">Changé aujourd’hui</button><label class="small muted">ou le <input type="date" id="gd-'+g.id+'" data-geardate="'+g.id+'" class="txtin" style="width:auto;padding:6px 8px"></label></div></div>'}).join("");
+  TB.suivi.push(card({key:"gear",title:"Matériel",icon:"bars",sum:'<div class="glist">'+rows+'</div><p class="small muted" style="margin:8px 0 0">Compte tes séances de bad enregistrées par Garmin. Repères indicatifs : cordes toutes les 25 séances, grip toutes les 6, chaussures vers 120 h. Touche « Changé aujourd’hui » quand tu changes : un rappel apparaît sur l’accueil quand le repère est atteint.</p>'}));
+})();
+
+/* ----- assiduité : séances d'entraînement faites contre prévues, ce mois-ci et le mois dernier ----- */
+(function(){
+  var TR=/^(bad|renfo|velo|course)/;
+  function month(ym){var s={fait:0,part:0,non:0,inc:0,ann:0};
+    (PLAN.days||[]).forEach(function(d){if(d.date.slice(0,7)!==ym||d.date>todayKey||!TR.test(d.kind||""))return;
+      var e=JR[d.date]||{};if(e.skip){s.ann++;return}
+      var hasS=SS.some(function(x){return dkey(x.s)===d.date});
+      if(e.done==="oui"||hasS)s.fait++;   /* une séance enregistrée par Garmin compte comme faite, même si le programme prévu a été remplacé par autre chose */else if(e.done==="partiel")s.part++;else if(e.done==="non")s.non++;else s.inc++});
+    return s}
+  function pct(s){var den=s.fait+s.part+s.non;return den?Math.round((s.fait+0.5*s.part)/den*100):null}
+  function tot(s){return s.fait+s.part+s.non+s.inc+s.ann}
+  var ym=todayKey.slice(0,7),pm=dkey(new Date(ym+"-01T12:00:00Z").getTime()-DAY).slice(0,7),A=month(ym),B=month(pm);
+  if(tot(A)+tot(B)===0)return;
+  var pa=pct(A),col=pa==null?"var(--line)":pa>=80?"var(--green)":pa>=60?"var(--orange)":"var(--red)";
+  var mname=function(k){return fmt(new Date(k+"-01T12:00:00Z").getTime(),{month:"long"})};
+  var line=function(s){return s.fait+" faite"+(s.fait>1?"s":"")+(s.part?" · "+s.part+" en partie":"")+(s.non?" · "+s.non+" pas faite"+(s.non>1?"s":""):"")+(s.ann?" · "+s.ann+" annulée"+(s.ann>1?"s":""):"")};
+  var sum='<div class="assid"><div class="ringone">'+ringSvg(pa==null?0:pa,col,pa==null?"–":pa+"%")+'</div><div class="assl"><b>'+esc(mname(ym))+'</b><div class="small">'+esc(line(A))+'</div>'+(A.inc?'<div class="small muted">'+A.inc+' non renseignée'+(A.inc>1?'s':'')+' (coche « Fait / En partie / Pas fait » dans le journal)</div>':'')+
+    (tot(B)?'<div class="small muted" style="margin-top:6px"><b>'+esc(mname(pm))+'</b> : '+(pct(B)==null?"–":pct(B)+" %")+' · '+esc(line(B))+'</div>':'')+'</div></div>';
+  TB.suivi.push(card({key:"assid",title:"Assiduité du mois",icon:"target",sum:sum}));
+})();
+
+/* ----- Quand je performe : ce qui ressemble à tes meilleurs jours de tournoi (dès que les résultats sont renseignés) ----- */
+(function(){
+  var GOOD={gagne:1,finale:1,demi:1,victoire:1},LESS={quart:1,poule:1,defaite:1},rows=[],withComp=false;
+  function preStress(k,mt){var a=(HIST[k]||{}).stressQ;if(!a||a.length<96)return null;var m=tmn(mt),sl=Math.floor(m/60)*4+Math.floor((m%60)/15),v=a.slice(Math.max(0,sl-6),sl).filter(function(x){return x>=0});return v.length?avg(v):null}
+  Object.keys(JR).forEach(function(k){var e=JR[k]||{},c=e.comp;if(!c)return;withComp=true;if(!c.resultat)return;var g=GOOD[c.resultat]?1:LESS[c.resultat]?0:null;if(g==null)return;
+    var r=HIST[k]||{};rows.push({g:g,hrv:nn(r.hrv)?null:r.hrv,sl:nn(r.sleepSec)?null:r.sleepSec/3600,ps:preStress(k,e.match||"09:00"),pr:+c.pression||null})});
+  if(!withComp)return;
+  var good=rows.filter(function(x){return x.g}),less=rows.filter(function(x){return !x.g}),out2=[];
+  if(rows.length>=4&&good.length>=2&&less.length>=2){
+    function cmp(key,lab,fmtv,minDiff){var a=good.map(function(x){return x[key]}).filter(function(v){return v!=null}),b=less.map(function(x){return x[key]}).filter(function(v){return v!=null});
+      if(a.length>=2&&b.length>=2&&Math.abs(avg(a)-avg(b))>=minDiff)out2.push(lab+" : <b>"+fmtv(avg(a))+"</b> les jours de bons résultats, "+fmtv(avg(b))+" les autres ("+a.length+" et "+b.length+" jours).")}
+    cmp("hrv","VFC du matin",function(v){return Math.round(v)+" ms"},3);
+    cmp("sl","Sommeil de la nuit d’avant",function(v){return fdur(v)},0.3);
+    cmp("ps","Stress Garmin avant le premier match",function(v){return String(Math.round(v))},8);
+    cmp("pr","Pression ressentie avant le match",function(v){return v.toFixed(1).replace(".",",")+"/5"},0.7);
+  }
+  var sum=out2.length?'<ul class="mlistu" style="padding-left:18px">'+out2.map(function(x){return '<li>'+x+'</li>'}).join("")+'</ul><p class="small muted" style="margin:10px 0 0">Calculé sur '+rows.length+' jours de tournoi : à prendre comme une tendance, qui se précise avec le temps.</p>':
+    '<p class="small" style="margin:0;line-height:1.45">Note le <b>résultat</b> de chaque jour de tournoi (carte « Jour de match »). À partir de 4 jours renseignés, dont au moins 2 bons et 2 moins bons résultats, je cherche ce qui ressemble à tes meilleurs jours : sommeil, VFC, stress avant le match, pression.</p><p class="small muted" style="margin:8px 0 0">Jours avec résultat : '+rows.length+' sur 4 (dont '+good.length+' bon'+(good.length>1?'s':'')+' et '+less.length+' moins bon'+(less.length>1?'s':'')+').</p>';
+  TB.suivi.push(card({key:"perf",title:"Quand je performe",icon:"flag",sum:sum}));
+})();
+
 var APP=document.getElementById("app");
 /* ----- assemblage : un panneau par onglet + barre d'onglets ----- */
 (function(){
@@ -2682,7 +2753,7 @@ var APP=document.getElementById("app");
     {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:todayItems(TB.today)},
     {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, statut":"Plus de détails : 7 derniers jours, charge, bilan, statut")},
     {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:groupCards(TB.body,["Ton corps aujourd'hui","Signaux du corps","Le coach propose"],"Plus de détails : récupération, sommeil, leviers, VFC de journée, analyses, progrès")},
-    {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:groupCards(TB.suivi,["Tes tendances (30 jours)","Mes déclencheurs","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours")},
+    {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:groupCards(TB.suivi,["Tes tendances (30 jours)","Mes déclencheurs","Assiduité du mois","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours")},
     {k:"tour",lab:tourLab,title:nt?"Tournoi":"Cycle",ic:'<path d="M5 22V3M5 4h13l-2 4 2 4H5"/>',items:(function(){var all=(TB.ttop||[]).concat(TB.tour),top=[],rest=[];all.forEach(function(x){(/id="matchcard"|id="mentalcard"|id="goalcard"|Débrief du coach/.test(x)?top:rest).push(x)});
       return /id="matchcard"/.test(top.join(""))&&rest.length?top.concat(['<details class="moredet"><summary>Plus de détails : frise, jours du tournoi, cycle</summary><div class="stack" style="margin-top:12px">'+rest.join("")+'</div></details>']):all})()}
   ];
@@ -2729,6 +2800,7 @@ window.__jskip=function(date){var e=JSON.parse(JSON.stringify(JR[date]||{}));if(
 window.__jsaveq=function(date,e){e.at=new Date().toISOString();window.__JRX=window.__JRX||{};window.__JRX[date]=e;JR[date]=e;try{var o=JSON.parse(localStorage.getItem("recup-journal")||"{}");o[date]=e;localStorage.setItem("recup-journal",JSON.stringify(o))}catch(x){}window.__JSTAT="saving";window.__ghSync()};
 window.__jgoal=function(field,v){var cur=null,ck=null;Object.keys(JR).sort().forEach(function(k){if(JR[k].goal){cur=JR[k].goal;ck=k}});var g=JSON.parse(JSON.stringify(cur||{}));v=String(v||"").trim().slice(0,30);if(v)g[field]=v;else delete g[field];
   var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.goal=g;window.__jsaveq(todayKey,e)};
+window.__jgear=function(id,date){date=date||todayKey;if(!date)return;var e=JSON.parse(JSON.stringify(JR[date]||{}));e.gear=e.gear||[];if(e.gear.indexOf(id)<0)e.gear.push(id);window.__jcommit(date,e)};
 window.__jwake=function(date,v){
   var e=JSON.parse(JSON.stringify(JR[date]||{}));v=String(v||"");if(v&&!/^\d\d:\d\d$/.test(v))return;
   if((e.wake||"")===v)return;if(v)e.wake=v;else delete e.wake;window.__jcommit(date,e);
@@ -2881,7 +2953,7 @@ SHEET.addEventListener("click",function(e){var t=e.target;if(!t.closest)return;i
   var ts=t.closest("[data-test-save]");if(ts){var tdk=ts.getAttribute("data-test-save"),vals={};SHEET.querySelectorAll('[data-test^="'+tdk+'|"]').forEach(function(inp){var v=parseFloat(String(inp.value).replace(",","."));if(isFinite(v)&&v>0)vals[inp.getAttribute("data-test").split("|")[1]]=v});window.__jexo(tdk,"tests",vals);return}
   if(x){var q=x.getAttribute("data-exo").split("|");window.__jexo(q[0],"exo",q[1],+q[2])}
   else if(y){var q2=y.getAttribute("data-exo-done").split("|");window.__jexo(q2[0],"done",q2[1])}});
-document.addEventListener("change",function(e){var t=e.target;if(!t||!t.id)return;if(t.id==="jnote")window.__jnote(t.value);if(t.id==="jmatch"||t.id.indexOf("jm-")===0)window.__jmatch(t.getAttribute("data-day"),t.value);if(t.id==="jwake")window.__jwake(t.getAttribute("data-day"),t.value);if(t.id&&t.id.indexOf("wkd-")===0)window.__wakeDay(+t.getAttribute("data-dow"),t.value);if(t.id==="cmp-bien")window.__jcomptxt(t.getAttribute("data-day"),"bien",t.value);if(t.id==="goal-now")window.__jgoal("now",t.value);if(t.id==="goal-goal")window.__jgoal("goal",t.value);if(t.id==="goal-date")window.__jgoal("date",t.value);if(t.id==="cmp-change")window.__jcomptxt(t.getAttribute("data-day"),"change",t.value);if(t.id==="jdate")window.__jdate(t.value);if(t.id==="wcmpa"||t.id==="wcmpb"){window[t.id==="wcmpa"?"__WCA":"__WCB"]=t.value;window.__rerun()}});
+document.addEventListener("change",function(e){var t=e.target;if(!t||!t.id)return;if(t.id==="jnote")window.__jnote(t.value);if(t.id==="jmatch"||t.id.indexOf("jm-")===0)window.__jmatch(t.getAttribute("data-day"),t.value);if(t.id==="jwake")window.__jwake(t.getAttribute("data-day"),t.value);if(t.id&&t.id.indexOf("wkd-")===0)window.__wakeDay(+t.getAttribute("data-dow"),t.value);if(t.id==="cmp-bien")window.__jcomptxt(t.getAttribute("data-day"),"bien",t.value);if(t.id&&t.id.indexOf("gd-")===0&&t.value)window.__jgear(t.getAttribute("data-geardate"),t.value);if(t.id==="goal-now")window.__jgoal("now",t.value);if(t.id==="goal-goal")window.__jgoal("goal",t.value);if(t.id==="goal-date")window.__jgoal("date",t.value);if(t.id==="cmp-change")window.__jcomptxt(t.getAttribute("data-day"),"change",t.value);if(t.id==="jdate")window.__jdate(t.value);if(t.id==="wcmpa"||t.id==="wcmpb"){window[t.id==="wcmpa"?"__WCA":"__WCB"]=t.value;window.__rerun()}});
 document.addEventListener("keydown",function(e){
   if(e.key==="Escape"&&!SHEET.hidden)closeSheet();
   if((e.key==="Enter"||e.key===" ")&&e.target.getAttribute&&e.target.getAttribute("data-sheet")){e.preventDefault();window.__openSheet(e.target.getAttribute("data-sheet"))}
@@ -2891,6 +2963,7 @@ APP.addEventListener("click",function(e){
   var t=e.target,b=t.closest?t.closest("button"):null;
   var jb=t.closest?t.closest("[data-j]"):null;
   var mok=t.closest?t.closest("[data-matchok]"):null;if(mok){window.__jmatch(mok.getAttribute("data-matchok"),"09:00");return}
+  var gb=t.closest?t.closest("[data-gear]"):null;if(gb&&window.__jgear){window.__jgear(gb.getAttribute("data-gear"));return}
   var sk0=t.closest?t.closest("[data-skip]"):null;if(sk0&&window.__jskip){window.__jskip(sk0.getAttribute("data-skip"));return}
   var oj=t.closest?t.closest("[data-openjournal]"):null;if(oj){var tm=document.getElementById("todaymore");if(tm)tm.open=true;var jj=document.getElementById("journal");if(jj&&jj.scrollIntoView)jj.scrollIntoView({block:"start"});return}
   var cg=t.closest?t.closest("[data-collect]"):null;if(cg&&window.__collectGo){window.__collectGo();return}
