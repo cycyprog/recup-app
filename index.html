@@ -360,6 +360,17 @@ h2{font-size:16px;font-weight:600}
 .calcell.f{background:transparent;opacity:.45} .calcell.today{box-shadow:inset 0 0 0 2px var(--accent)}
 .calcell .cald{position:absolute;bottom:4px;left:50%;margin-left:-3px;width:6px;height:6px;border-radius:50%;background:var(--deep)}
 .calcell .calf{position:absolute;top:2px;right:4px;font-size:10px;font-style:normal;color:var(--orange-t)}
+/* ===== lignes repliables ===== */
+.card.rowcard{padding:0}
+.rowcard>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr 24px;column-gap:8px;align-items:center;padding:15px 16px;-webkit-tap-highlight-color:transparent}
+.rowcard>summary::-webkit-details-marker{display:none}
+.rowcard>summary .sechead{margin:0;grid-column:1}
+.rowcard>summary .sechead h2{font-size:16px}
+.rowcard>summary::after{content:"";grid-column:2;grid-row:1/3;width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);justify-self:center;margin-top:-4px;transition:transform .2s}
+.rowcard[open]>summary::after{transform:rotate(-135deg);margin-top:4px}
+.rowsub{grid-column:1;margin:3px 0 0 38px;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rowcard[open]>summary .rowsub{display:none}
+.rowbody{padding:0 16px 16px;display:block}
 /* ===== compte à rebours, planificateur ===== */
 .cdstrip{display:flex;gap:5px;margin:0 0 10px}
 .cdstrip span{flex:1;text-align:center;font-size:11px;padding:6px 0;border-radius:8px;background:var(--line);color:var(--muted)}
@@ -2878,6 +2889,24 @@ window.__gearStatus=gearStatus;
     sum:'<div class="cdstrip" aria-hidden="true">'+strip+'</div><p class="small" style="margin:0 0 8px">'+esc(TFOCUS[String(tp.off)]||"")+(nm?" · "+esc(nm):"")+'</p><ul class="exo exock">'+li+'</ul>'}));
 })();
 
+/* ----- lignes repliables : les cartes secondaires deviennent une ligne (titre + résumé), qui se déplie au toucher ----- */
+function rowify(items,openT){
+  return items.map(function(x){
+    if(x.indexOf('<section class="card sec')!==0||x.indexOf('<h2>')<0)return x;
+    var m=/<h2>([^<]*)<\/h2>/.exec(x),t=m?m[1]:"";
+    if(openT.some(function(o){return t.indexOf(o)===0}))return x;
+    var d=document.createElement("div");d.innerHTML=x;var s=d.firstElementChild,hd=s&&s.querySelector(".sechead");if(!hd)return x;
+    var hdHtml=hd.innerHTML;hd.parentNode.removeChild(hd);
+    var tx=s.cloneNode(true);Array.prototype.forEach.call(tx.querySelectorAll(".btn,button,.more,script"),function(n){n.parentNode.removeChild(n)});
+    var t2=document.createElement("div");t2.innerHTML=tx.innerHTML.replace(/<[^>]+>/g," ");
+    var sub=(t2.textContent||"").replace(/\s+/g," ").trim();
+    if(t==="Dette de sommeil"&&typeof DEBT!=="undefined"&&window.__COACHB)sub="Dette "+fdur(DEBT)+" · coucher avant "+window.__COACHB.bed+(typeof window.__COACHB.wakeNext==="number"?" · réveil "+ftm(window.__COACHB.wakeNext):"");if(sub.length>72)sub=sub.slice(0,70).replace(/\s+\S*$/,"")+"…";
+    var open=(window.__ROWOPEN&&window.__ROWOPEN[t]!=null)?window.__ROWOPEN[t]:!!window.__ROWSOPEN;
+    return '<details class="card sec rowcard"'+(s.id?' id="'+s.id+'"':'')+' data-row="'+esc(t)+'"'+(open?' open':'')+'><summary><div class="sechead">'+hdHtml+'</div>'+(sub?'<div class="rowsub">'+esc(sub)+'</div>':'')+'</summary><div class="rowbody">'+s.innerHTML+'</div></details>';
+  });
+}
+document.addEventListener("toggle",function(e){var t=e.target;if(t&&t.classList&&t.classList.contains("rowcard")){window.__ROWOPEN=window.__ROWOPEN||{};window.__ROWOPEN[t.getAttribute("data-row")]=t.open}},true);
+
 var APP=document.getElementById("app");
 /* ----- assemblage : un panneau par onglet + barre d'onglets ----- */
 (function(){
@@ -2892,10 +2921,10 @@ var APP=document.getElementById("app");
   }
   var bilanDay=dowOf(todayKey)<=1;
   var TABS=[
-    {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:todayItems(TB.today)},
-    {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Planifier ma semaine","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, statut":"Plus de détails : 7 derniers jours, charge, bilan, statut")},
-    {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:groupCards(TB.body,["Ton corps aujourd'hui","Signaux du corps","Le coach propose"],"Plus de détails : récupération, sommeil, leviers, VFC de journée, analyses, progrès")},
-    {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:groupCards(TB.suivi,["Tes tendances (30 jours)","Calendrier de forme","Mes déclencheurs","Assiduité du mois","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours")},
+    {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:rowify(todayItems(TB.today),["Ton programme","Compte à rebours","Récupération après","Jour de match","Tes jambes"])},
+    {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:rowify(groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Planifier ma semaine","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, statut":"Plus de détails : 7 derniers jours, charge, bilan, statut"),["Cette semaine","Ta semaine","Bilan de la semaine"])},
+    {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:rowify(groupCards(TB.body,["Ton corps aujourd'hui","Signaux du corps","Le coach propose"],"Plus de détails : récupération, sommeil, leviers, VFC de journée, analyses, progrès"),["Ton corps aujourd'hui"])},
+    {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:rowify(groupCards(TB.suivi,["Tes tendances (30 jours)","Calendrier de forme","Mes déclencheurs","Assiduité du mois","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours"),["Tes tendances","Calendrier de forme"])},
     {k:"tour",lab:tourLab,title:nt?"Tournoi":"Cycle",ic:'<path d="M5 22V3M5 4h13l-2 4 2 4H5"/>',items:(function(){var all=(TB.ttop||[]).concat(TB.tour),top=[],rest=[];all.forEach(function(x){(/id="matchcard"|id="mentalcard"|id="goalcard"|Débrief du coach/.test(x)?top:rest).push(x)});
       return /id="matchcard"/.test(top.join(""))&&rest.length?top.concat(['<details class="moredet"><summary>Plus de détails : frise, jours du tournoi, cycle</summary><div class="stack" style="margin-top:12px">'+rest.join("")+'</div></details>']):all})()}
   ];
