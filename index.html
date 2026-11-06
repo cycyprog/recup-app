@@ -990,7 +990,7 @@ if(JT.legs==="heavy"){score+=1;flags.push("tu ressens les jambes lourdes")}else 
 if(tagsT.indexOf("malade")>=0){score+=5;flags.push("tu as indiqué être malade")}
 if(hrvOff)okFlags.push("VFC non retenue ce matin ("+tagsT.filter(function(t){return EXCL_TAGS.indexOf(t)>=0}).join(", ")+") : je m'appuie sur ton sommeil et ton ressenti");
 var GR=S.garminReadiness||null,gRem=null,myRem=last&&last.r>NOW?(last.r-NOW)/H:0;
-if(GR&&!nn(GR.recoveryH)){var gAt=GR.at?new Date(GR.at).getTime():NaN;gRem=Math.max(0,GR.recoveryH-(isNaN(gAt)?0:(NOW-gAt)/H))}
+if(GR&&!nn(GR.recoveryH)&&GR.recoveryH<=120){var gAt=GR.at?new Date(GR.at).getTime():NaN;gRem=Math.max(0,GR.recoveryH-(isNaN(gAt)?0:(NOW-gAt)/H))}
 if(gRem!=null&&gRem>=36&&gRem-myRem>=24){score+=1;flags.push("Garmin estime encore "+Math.round(gRem)+" h de repos, contre "+Math.round(myRem)+" h pour mon modèle : je prends l'avis le plus prudent")}
 var state=score===0?"ok":score<=2?"tired":"overreached";
 var capped=false;
@@ -2780,7 +2780,7 @@ function todayItems(items){
   var tp=tourPhase(todayKey);
   if(!(tp&&tp.kind==="match")){
     /* ordre de lecture : verdict, alertes et rappels, étape du jour (compte à rebours, récupération), programme, journal, le reste (sommeil...), analyse du coach */
-    var PR=[/id="nowcard"/,/card verdict hero/,/id="(trendbanner|overbanner)"|card sec remind/,/data-cd=|data-post=|data-reprise=/,/<h2>Débrief de ta séance/,/<h2>Ton programme/,/id="journal"/,null,/<h2>L'analyse du coach/];
+    var PR=[/id="nowcard"/,/card verdict hero/,/id="(trendbanner|overbanner|illbanner)"|card sec remind/,/data-cd=|data-post=|data-reprise=/,/<h2>Débrief de ta séance/,/<h2>Ton programme/,/id="journal"/,null,/<h2>L'analyse du coach/];
     function rk(x){for(var i=0;i<PR.length;i++)if(PR[i]&&PR[i].test(x))return i;return 6}
     return items.map(function(x,i){return {x:x,i:i,r:rk(x)}}).sort(function(a,b){return a.r-b.r||a.i-b.i}).map(function(o){return o.x});
   }
@@ -2957,9 +2957,22 @@ window.__gearStatus=gearStatus;
   TB.suivi.push(card({key:"bedideal",title:title,icon:"moon",sum:'<div class="debtbig"><b style="font-size:24px">'+esc(head)+'</b></div>'+body+'<p class="small muted" style="margin:10px 0 0">Calculé sur tes nuits des 90 derniers jours : une tendance, pas une cause.</p>'}));
 })();
 
+/* ----- début de maladie possible : FC au repos haute ET VFC basse, deux matins de suite ----- */
+(function(){
+  window.__ILL=null;
+  if(pauseOf(todayKey)||tagsT.indexOf("malade")>=0)return;
+  var res=[todayKey,dAdd(todayKey,-1)].map(function(k){var r=HIST[k];if(!r||SKIP[k]||nn(r.rhr)||nn(r.hrv))return null;
+    var rh=!!rhrB&&r.rhr>=rhrB+4,hv=(!!hrvB&&r.hrv<hrvB*0.85)||r.hrv<P.hrvLow,sl=(!nn(r.sleepScore)&&r.sleepScore<60)||(!nn(r.sleepSec)&&r.sleepSec<6*3600);
+    return {rh:rh,hv:hv,sl:sl}});
+  if(!res[0]||!res[1]||!(res[0].rh&&res[0].hv&&res[1].rh&&res[1].hv))return;
+  var msg="FC au repos "+Math.round(HIST[todayKey].rhr-rhrB)+" bpm au-dessus de ta base et VFC basse deux nuits de suite"+(res[0].sl&&res[1].sl?", sommeil faible aussi":"");
+  window.__ILL=msg;
+  TB.today.splice(Math.min(1,TB.today.length),0,'<section class="card sec remind warn" id="illbanner"><div class="rem"><span>Début de maladie possible : '+esc(msg)+'. Lève le pied : pas d’intensité, hydrate-toi, dors, surveille la fièvre.</span><button type="button" class="jchip" data-j="tag:malade">Je suis malade</button></div></section>');
+})();
+
 /* ----- alerte de tendance : trois matins de suite sous le seuil de VFC, ou trois jours de FC au repos élevée ----- */
 (function(){
-  window.__TREND=null;if(pauseOf(todayKey))return;
+  window.__TREND=null;if(pauseOf(todayKey)||window.__ILL)return;
   var rec=Object.keys(HIST).filter(function(k){return k<=todayKey&&k>=dkey(NOW-6*DAY)}).sort(),l3=rec.slice(-3);
   if(l3.length<3||dDiff(todayKey,l3[2])>1||dDiff(l3[2],l3[0])!==2)return;
   if(l3.some(function(k){return SKIP[k]}))return;
@@ -2982,7 +2995,7 @@ window.__gearStatus=gearStatus;
 
 /* ----- alerte de surcharge : trop de séances rapprochées ou charge trop haute, avec des matins qui se dégradent ----- */
 (function(){
-  window.__OVER=null;if(pauseOf(todayKey))return;
+  window.__OVER=null;if(pauseOf(todayKey)||window.__ILL)return;
   var tp0=tourPhase(todayKey);if(tp0&&tp0.kind==="match")return;
   var d5={};SS.forEach(function(x){if(x.s>NOW-5*DAY&&x.s<=NOW)d5[dkey(x.s)]=1});
   var n5=Object.keys(d5).length,lv3=[];
@@ -3239,6 +3252,7 @@ window.__setTab=function(k){
   c.priorities.forEach(function(p,i){L.push((i+1)+". "+p)});
   if(c.session)L.push("Séance vers "+c.session+(c.sessionSrc==="calendrier"?" (calendrier)":""));
   if(window.__TREND)L.push("Tendance : "+window.__TREND+". Allège la prochaine séance et couche-toi plus tôt.");
+  if(window.__ILL)L.push("Début de maladie possible : "+window.__ILL+". Lève le pied et surveille la fièvre.");
   if(window.__OVER)L.push("Surcharge : "+window.__OVER);
   L.push("Coucher avant "+c.bed);
   if(c.tour)L.push("Mode tournoi "+c.tour.label+" : "+c.tour.focus);
