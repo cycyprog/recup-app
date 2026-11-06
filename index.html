@@ -387,6 +387,19 @@ h2{font-size:16px;font-weight:600}
 .rowcard[data-row^="Tes tournois"] .ico{background:#ffe0ec!important;color:#e0357a!important}
 .rowcard[data-row^="Signaux"] .ico{background:#ffe0e3!important;color:#ef3b4d!important}
 .rowcard[data-row^="L'analyse"] .ico,.rowcard[data-row^="Le coach"] .ico,.rowcard[data-row^="Le bilan"] .ico{background:#e3f0ff!important;color:#2f7de0!important}
+/* ===== cartes d'ouverture des onglets ===== */
+.frise.f7{justify-content:space-between;padding:12px 4px 0}
+.frise.f7 .fstep{min-width:0;flex:1}
+.fstep.g .fdot2{background:#2fcf6b}
+.fstep.o .fdot2{background:#ff9f0a}
+.fstep.r .fdot2{background:#ff453a}
+.fstep.b .fdot2{background:#2f8cff}
+.fstep.t .fdot2{background:#ff9500}
+.fstep.cur.g .fdot2,.fstep.cur.o .fdot2,.fstep.cur.r .fdot2{border:3px solid var(--fg)}
+#chat .cm.u{background:#7c5cff}
+#chat .cm.a{background:#e6f8ee;color:#0d3b22}
+#chat .cm.a b{color:#1c9c50}
+.cform button{background:#7c5cff}
 /* ===== lignes repliables ===== */
 .card.rowcard{padding:0}
 .rowcard>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr 24px;column-gap:8px;align-items:center;padding:15px 16px;-webkit-tap-highlight-color:transparent}
@@ -2263,7 +2276,7 @@ TB.ttop=[];
       (function(){
         var mine=MYP.length?MYP.map(function(x){return '<p class="myp">« '+esc(x)+' »</p>'}).join(""):'<p class="small muted" style="margin:0 0 8px">Choisis une ou deux phrases ci-dessous, ou écris la tienne : elles apparaissent à l\'étape « Respiration » de ta journée de match.</p>';
         var chips='<div class="jchips">'+PHRASES.map(function(x,i){return '<button type="button" class="jchip'+(MYP.indexOf(x)>=0?" on":"")+'" data-phr="'+i+'">'+esc(x)+'</button>'}).join("")+'</div>';
-        return '<details class="moredet inner"'+(!MYP.length||window.__MPHROPEN?" open":"")+'><summary>Ma phrase clé et ma respiration</summary><div class="mbody">'+mine+
+        return '<details class="moredet inner"'+((!MYP.length&&window.__ROWSOPEN)||window.__MPHROPEN?" open":"")+'><summary>Ma phrase clé et ma respiration</summary><div class="mbody">'+mine+
           '<h3>Mes phrases</h3>'+chips+
           '<div class="phrow"><input id="phrcustom" type="text" maxlength="80" placeholder="Ou écris la tienne…" aria-label="Ta phrase"><button type="button" class="jchip" data-phrsave="1">Ajouter</button></div></div></details>'})()+
       sec("Avant le match : 5 minutes",ul([
@@ -2980,19 +2993,50 @@ var APP=document.getElementById("app");
     items.forEach(function(x,i){if(!used[i])rest.push(x)});
     return rest.length?main.concat(['<details class="moredet"><summary>'+label+'</summary><div class="stack" style="margin-top:12px">'+rest.join("")+'</div></details>']):main;
   }
+  var streak=0;for(var si=0;si<60;si++){var sk=dkey(NOW-si*DAY),sr=HIST[sk];if(!sr||(nn(sr.hrv)&&nn(sr.sleepScore))){if(si===0)continue;break}
+    if(mornLvlOf(SKIP[sk]?null:sr.hrv,sr.sleepScore)==="green")streak++;else break}
+  /* carte violette + frise, comme sur l'accueil : chaque onglet commence par l'essentiel, en une phrase */
+  function dl(k){return ["D","L","M","M","J","V","S"][dowOf(k)]}
+  function stp(cls,lab,inner){return '<div class="fstep '+cls+'"><span class="fdot2">'+(inner||"")+'</span><span>'+esc(lab)+'</span></div>'}
+  var CK='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+  function topCard(id,lab,msg,chips,strip){
+    return '<section class="nowwrap" id="'+id+'" aria-label="'+esc(lab)+'"><div class="nowtop"><div class="nowlab">'+esc(lab)+'</div><div class="nowmsg">'+esc(msg)+'</div><div class="nowchips">'+chips.filter(Boolean).map(function(c){return '<span class="nc">'+esc(c)+'</span>'}).join("")+'</div></div>'+(strip?'<div class="frise f7">'+strip+'</div>':'')+'</section>'}
+  var wkTop=(function(){
+    var dw=(dowOf(todayKey)+6)%7,mon=dAdd(todayKey,-dw),strip="",n=0,next=null,planned=0;
+    for(var i=0;i<7;i++){var k=dAdd(mon,i),has=SS.some(function(x){return dkey(x.s)===k}),pd=null;(PLAN.days||[]).forEach(function(x){if(x.date===k)pd=x});
+      var tpk=tourPhase(k),isT=!!(tpk&&tpk.kind==="match"),sess=!!(pd&&/^(bad|renfo|velo|course|activation)/.test(pd.kind||"")&&!(JR[k]||{}).skip);
+      if(has)n++;if(sess)planned++;
+      if(!next&&k>=todayKey&&(sess||isT)&&!(k===todayKey&&has))next={k:k,t:isT?"Tournoi":pd.title};
+      var cls=k<todayKey?(has||isT?"g":"n"):k===todayKey?"cur"+(has?" g":""):(isT?"t":sess?"b":"n");
+      strip+=stp(cls,dl(k),k<todayKey&&(has||isT)?CK:(k>todayKey&&isT?'<span style="color:#fff;font-size:10px;font-weight:700">⚑</span>':""))}
+    var msg=window.__OVER?"Charge trop haute : allège ta prochaine séance dure":next?"Prochaine séance : "+(next.k===todayKey?"aujourd’hui":fmt(new Date(next.k+"T12:00:00Z").getTime(),{weekday:"long"}))+", "+next.t:"Semaine calme : récupère";
+    return topCard("weektop","CETTE SEMAINE",msg,[n+" séance"+(n>1?"s":"")+" faite"+(n>1?"s":""),planned?planned+" prévue"+(planned>1?"s":""):"",LW?({under:"charge sous ta fenêtre",in:"charge dans ta fenêtre",high:"charge au-dessus",over:"charge trop haute"})[LW.pos]:""],strip)})();
+  var bodyTop=(function(){
+    var line={green:"Ton corps est prêt",orange:"Quelques signaux à surveiller",red:"Ton corps demande du repos"}[level]||"Ton corps aujourd’hui";
+    return topCard("bodytop","TON CORPS",line,[nn(TODAY.sleepSec)?"":"Sommeil "+hmSec(TODAY.sleepSec),nn(HRV)?"":"VFC "+Math.round(HRV)+" ms",debtSeen>=4?"Dette "+fdur(DEBT):""],"")})();
+  var suiTop=(function(){
+    var strip="",gr=0,me=0;
+    for(var i=6;i>=0;i--){var k=dkey(NOW-i*DAY),r=HIST[k]||{},lv=mornLvlOf(SKIP[k]?null:r.hrv,r.sleepScore);if(lv){me++;if(lv==="green")gr++}
+      strip+=stp((lv?({green:"g",orange:"o",red:"r"})[lv]:"n")+(k===todayKey?" cur":""),dl(k),"")}
+    return topCard("suivitop","TES 7 DERNIERS JOURS",me?gr+" matin"+(gr>1?"s":"")+" vert"+(gr>1?"s":"")+" sur "+me:"Pas encore de mesure cette semaine",[streak>=2?streak+" jours verts d’affilée":"",LW?({under:"charge sous ta fenêtre",in:"charge dans ta fenêtre",high:"charge au-dessus",over:"charge trop haute"})[LW.pos]:""],strip)})();
+  var tourTop=(function(){
+    if(!nt)return topCard("tourtop","CYCLE","Pas de tournoi à venir : construis ta base",[],"");
+    var strip="";
+    if(ntd!=null&&ntd<=7)for(var o=-7;o<=0;o++){var k=dAdd(nt.start,o),past=k<todayKey;strip+=stp(past?"g":k===todayKey?"cur":"n",o===0?"J":"J"+o,past?CK:"")}
+    var nm=String(nt.name||"").replace(/^Tournoi (national )?(d’|d')?/i,""),cd=window.__CD;
+    var msg=ntd>0?(nm||"Tournoi")+" dans "+ntd+" jour"+(ntd>1?"s":""):"Tournoi en cours : "+(nm||"");
+    return topCard("tourtop",(nt.league?"CHAMPIONNAT":"TOURNOI"),msg,[cd&&ntd>0?"Gestes "+(cd.total-cd.left)+"/"+cd.total:"",ntd>0&&ntd<=7&&tourPhase(todayKey)?tourFocus(tourPhase(todayKey)):""],strip)})();
   var bilanDay=dowOf(todayKey)<=1;
   var TABS=[
     {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:rowify(todayItems(TB.today),["Ton programme","Compte à rebours","Récupération après","Jour de match","Tes jambes"])},
-    {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:rowify(groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Planifier ma semaine","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, statut":"Plus de détails : 7 derniers jours, charge, bilan, statut"),["Cette semaine","Ta semaine","Bilan de la semaine"])},
-    {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:rowify(groupCards(TB.body,["Ton corps aujourd'hui","Signaux du corps","Le coach propose"],"Plus de détails : récupération, sommeil, leviers, VFC de journée, analyses, progrès"),["Ton corps aujourd'hui"])},
-    {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:rowify(groupCards(TB.suivi,["Tes tendances (30 jours)","Calendrier de forme","Mes déclencheurs","Assiduité du mois","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours"),["Tes tendances","Calendrier de forme"])},
-    {k:"tour",lab:tourLab,title:nt?"Tournoi":"Cycle",ic:'<path d="M5 22V3M5 4h13l-2 4 2 4H5"/>',items:(function(){var all=(TB.ttop||[]).concat(TB.tour),top=[],rest=[];all.forEach(function(x){(/id="matchcard"|id="mentalcard"|id="goalcard"|Débrief du coach/.test(x)?top:rest).push(x)});
-      return /id="matchcard"/.test(top.join(""))&&rest.length?top.concat(['<details class="moredet"><summary>Plus de détails : frise, jours du tournoi, cycle</summary><div class="stack" style="margin-top:12px">'+rest.join("")+'</div></details>']):all})()}
+    {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:[wkTop].concat(rowify(groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Planifier ma semaine","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, statut":"Plus de détails : 7 derniers jours, charge, bilan, statut"),["Cette semaine","Ta semaine","Bilan de la semaine"]))},
+    {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:[bodyTop].concat(rowify(groupCards(TB.body,["Ton corps aujourd'hui","Signaux du corps","Le coach propose"],"Plus de détails : récupération, sommeil, leviers, VFC de journée, analyses, progrès"),["Ton corps aujourd'hui"]))},
+    {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:[suiTop].concat(rowify(groupCards(TB.suivi,["Tes tendances (30 jours)","Calendrier de forme","Mes déclencheurs","Assiduité du mois","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours"),["Tes tendances","Calendrier de forme"]))},
+    {k:"tour",lab:tourLab,title:nt?"Tournoi":"Cycle",ic:'<path d="M5 22V3M5 4h13l-2 4 2 4H5"/>',items:[tourTop].concat((function(){var all=(TB.ttop||[]).concat(TB.tour),top=[],rest=[];all.forEach(function(x){(/id="matchcard"|id="mentalcard"|id="goalcard"|Débrief du coach/.test(x)?top:rest).push(x)});
+      return /id="matchcard"/.test(top.join(""))&&rest.length?top.concat(['<details class="moredet"><summary>Plus de détails : frise, jours du tournoi, cycle</summary><div class="stack" style="margin-top:12px">'+rest.join("")+'</div></details>']):all})())}
   ];
   if(!window.__TAB){try{var tk=JSON.parse(localStorage.getItem("recup-tab")||"null");if(tk&&Date.now()-tk.at<3*H)window.__TAB=tk.k}catch(e){}}
   var cur=window.__TAB||"today";if(!TABS.some(function(x){return x.k===cur}))cur="today";
-  var streak=0;for(var si=0;si<60;si++){var sk=dkey(NOW-si*DAY),sr=HIST[sk];if(!sr||(nn(sr.hrv)&&nn(sr.sleepScore))){if(si===0)continue;break}
-    if(mornLvlOf(SKIP[sk]?null:sr.hrv,sr.sleepScore)==="green")streak++;else break}
   window.__STREAK=streak;
   var streakChip=streak>=2?'<span class="streak" title="Matins verts d’affilée"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12c2-2.96 0-7-1-8 0 3.038-1.773 4.741-3 6-1.226 1.26-2 3.24-2 5a6 6 0 1 0 12 0c0-1.532-1.056-3.94-2-5-1.786 3-2.791 3-4 2z"/></svg> '+streak+' jours verts</span>':'';
   var html=TABS.map(function(T){
