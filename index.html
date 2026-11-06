@@ -382,6 +382,13 @@ h2{font-size:16px;font-weight:600}
 .minis .mini svg.mr{width:42px;height:42px;display:block;margin-bottom:5px}
 .rowcard .ico{background:#ece8ff!important;color:#7c5cff!important}
 .rowcard[data-row^="Planifier"] .ico{background:#dcf3f3!important;color:#1d9e9e!important}
+.bedrow{display:grid;grid-template-columns:96px 1fr 30px 56px;gap:8px;align-items:center;font-size:12.5px;margin:5px 0}
+.bedrow i{display:block;height:9px;border-radius:5px;background:var(--line)}
+.bedrow i u{display:block;height:9px;border-radius:5px;background:#b9a8ff;text-decoration:none}
+.bedrow.best i u{background:#7c5cff}
+.bedrow b{font-weight:600;text-align:right} .bedrow small{color:var(--muted);font-size:11px}
+.bedrow.best span{font-weight:700;color:var(--accent)}
+.rowcard[data-row^="Mon heure"] .ico{background:#e7e7ff!important;color:#5e5ce6!important}
 .rowcard[data-row^="Mes déclencheurs"] .ico{background:#ffeadb!important;color:#ff7a1a!important}
 .rowcard[data-row^="Assiduité"] .ico{background:#dcf7e6!important;color:#1fa855!important}
 .rowcard[data-row^="Tes tournois"] .ico{background:#ffe0ec!important;color:#e0357a!important}
@@ -529,6 +536,7 @@ html.dark .card .sechead .ico{background:var(--soft)!important}
 .card .btn{background:var(--blue-soft);color:var(--accent);border-radius:99px;padding:9px 18px;width:auto;margin-top:12px;font-weight:700;font-size:14px}
 .moredet>summary,.moredet:not(.inner)>summary{background:var(--blue-soft);color:var(--accent);border-radius:20px;box-shadow:none;font-weight:700;padding:14px}
 .moredet.inner>summary{border-radius:16px}
+.moredet{background:none!important;padding:0!important;box-shadow:none!important;border:0!important}
 .seg{gap:7px}
 .seg button{min-height:46px;border-radius:15px;background:var(--fill);font-weight:700}
 .seg button.on{background:var(--accent);color:#fff;box-shadow:0 5px 14px rgba(124,92,255,.38)}
@@ -2339,7 +2347,7 @@ TB.ttop=[];
     var phr=function(t,a){return '<p class="mph"><b>'+t+'</b></p><ul class="mphr">'+a.map(function(x){return '<li>« '+x+' »</li>'}).join("")+'</ul>'};
     var html='<section class="card sec" id="mentalcard"><div class="sechead">'+ico("bulb",ICOL.bulb)+'<h2>Mental : rester détendu sous pression</h2></div>'+
       '<button type="button" class="bigbtn" data-breath="3" style="margin:0 0 12px">Respiration guidée · 3 min</button>'+
-      '<p class="small" style="margin:0 0 10px;line-height:1.45">Détendu ne veut pas dire mou : <b>mâchoire, épaules et mains relâchées, jambes vives</b>. Le but est une concentration calme, pas l\'absence de nerfs : un peu de tension veut dire que ça compte, c\'est de l\'énergie à canaliser.</p>'+
+      (MYP.length?'<p class="myp" style="margin:0 0 8px">« '+MYP.map(esc).join(' » · « ')+' »</p>':'<p class="small muted" style="margin:0 0 8px">Choisis ta phrase clé dans la boîte à outils ci-dessous.</p>')+'<details class="moredet inner" id="mentalbox"'+(window.__ROWSOPEN||window.__MPHROPEN?' open':'')+'><summary>Boîte à outils : phrases, avant le match, pression</summary><div class="mbody">'+'<p class="small" style="margin:0 0 10px;line-height:1.45">Détendu ne veut pas dire mou : <b>mâchoire, épaules et mains relâchées, jambes vives</b>. Le but est une concentration calme, pas l\'absence de nerfs : un peu de tension veut dire que ça compte, c\'est de l\'énergie à canaliser.</p>'+
       (function(){
         var mine=MYP.length?MYP.map(function(x){return '<p class="myp">« '+esc(x)+' »</p>'}).join(""):'<p class="small muted" style="margin:0 0 8px">Choisis une ou deux phrases ci-dessous, ou écris la tienne : elles apparaissent à l\'étape « Respiration » de ta journée de match.</p>';
         var chips='<div class="jchips">'+PHRASES.map(function(x,i){return '<button type="button" class="jchip'+(MYP.indexOf(x)>=0?" on":"")+'" data-phr="'+i+'">'+esc(x)+'</button>'}).join("")+'</div>';
@@ -2377,7 +2385,7 @@ TB.ttop=[];
         "Prépare le sac et l'heure du réveil : moins de décisions le jour J, moins de tension.",
         "3 minutes de visualisation du premier match, calme et réussi.",
         "Aucune nouveauté (repas, matériel, échauffement)."]))+
-      '<p class="small muted" style="margin:10px 0 0">Ces pistes sont de la préparation mentale générale, à tester à l\'entraînement avant un tournoi. Si l\'anxiété devient très forte ou gênante, un préparateur mental ou un psychologue du sport peut t\'aider ; ce n\'est pas un avis médical.</p></section>';
+      '<p class="small muted" style="margin:10px 0 0">Ces pistes sont de la préparation mentale générale, à tester à l\'entraînement avant un tournoi. Si l\'anxiété devient très forte ou gênante, un préparateur mental ou un psychologue du sport peut t\'aider ; ce n\'est pas un avis médical.</p></div></details></section>';
     TB.ttop.push(html);
   })();
 
@@ -2899,6 +2907,32 @@ window.__gearStatus=gearStatus;
   TB.suivi.push(card({key:"calform",title:"Calendrier de forme",icon:"cal",sum:sum}));
 })();
 
+/* ----- heure de coucher idéale : la tranche de coucher qui précède tes meilleures VFC ----- */
+(function(){
+  var BINS=[{lo:0,hi:1380,lab:"avant 23:00"},{lo:1380,hi:1410,lab:"23:00 à 23:30"},{lo:1410,hi:1440,lab:"23:30 à 00:00"},{lo:1440,hi:1470,lab:"00:00 à 00:30"},{lo:1470,hi:1500,lab:"00:30 à 01:00"},{lo:1500,hi:9999,lab:"après 01:00"}];
+  var pts=[];Object.keys(HIST).forEach(function(k){var r=HIST[k];if(!r||!r.bedtime||nn(r.hrv)||SKIP[k]||k>todayKey)return;
+    var a=String(r.bedtime).split(":"),m=(+a[0])*60+(+a[1]);if(isNaN(m))return;m=m<720?m+1440:m;pts.push({m:m,hrv:r.hrv})});
+  BINS.forEach(function(b){var v=pts.filter(function(p){return p.m>=b.lo&&p.m<b.hi}).map(function(p){return p.hrv});b.n=v.length;b.avg=v.length?avg(v):null});
+  var ok=BINS.filter(function(b){return b.n>=3}),all=pts.length?avg(pts.map(function(p){return p.hrv})):null,best=null;
+  ok.forEach(function(b){if(!best||b.avg>best.avg)best=b});
+  var title="Mon heure de coucher idéale",head,body="";
+  if(pts.length<12||ok.length<2){
+    head="Pas encore assez de nuits variées";
+    body='<p class="small" style="margin:0;line-height:1.45">Il faut au moins 12 nuits avec une heure de coucher, réparties sur deux tranches différentes (3 nuits chacune). Tu en as '+pts.length+' ; elles se ressemblent encore trop pour comparer.</p>';
+  }else if(best.avg-all<2){
+    head="Pas d’écart net pour l’instant";
+    body='<p class="small" style="margin:0;line-height:1.45">Ta VFC de nuit reste proche de '+Math.round(all)+' ms quelle que soit l’heure de coucher (sur '+pts.length+' nuits). Garde un coucher régulier.</p>';
+  }else{
+    head=/^(avant|après)/.test(best.lab)?best.lab.charAt(0).toUpperCase()+best.lab.slice(1):"Entre "+best.lab.replace(" à "," et ");
+    var mx=Math.max.apply(null,ok.map(function(b){return b.avg})),mn=Math.min.apply(null,ok.map(function(b){return b.avg}));
+    body='<p class="small" style="margin:0 0 10px;line-height:1.45">Les nuits qui suivent un coucher à cette heure-là ont la meilleure VFC : <b>'+Math.round(best.avg)+' ms</b> contre '+Math.round(all)+' ms en moyenne ('+best.n+' nuits).</p><div class="bedbars">'+
+      BINS.map(function(b){if(!b.n)return "";var w=b.n<3?0:Math.max(8,(b.avg-mn+3)/(mx-mn+3)*100);
+        return '<div class="bedrow'+(b===best?" best":"")+'"><span>'+esc(b.lab)+'</span><i><u style="width:'+(b.n<3?0:w.toFixed(0))+'%"></u></i><b>'+(b.n<3?"–":Math.round(b.avg))+'</b><small>'+b.n+' nuit'+(b.n>1?"s":"")+'</small></div>'}).join("")+'</div>';
+  }
+  window.__BEDIDEAL=best&&all!=null&&best.avg-all>=2&&ok.length>=2&&pts.length>=12?best.lab:null;
+  TB.suivi.push(card({key:"bedideal",title:title,icon:"moon",sum:'<div class="debtbig"><b style="font-size:24px">'+esc(head)+'</b></div>'+body+'<p class="small muted" style="margin:10px 0 0">Calculé sur tes nuits des 90 derniers jours : une tendance, pas une cause.</p>'}));
+})();
+
 /* ----- alerte de tendance : trois matins de suite sous le seuil de VFC, ou trois jours de FC au repos élevée ----- */
 (function(){
   window.__TREND=null;
@@ -3098,7 +3132,7 @@ var APP=document.getElementById("app");
     {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:rowify(todayItems(TB.today),["Ton programme","Compte à rebours","Récupération après","Jour de match","Tes jambes"])},
     {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:[wkTop].concat(rowify(groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Planifier ma semaine","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, statut":"Plus de détails : 7 derniers jours, charge, bilan, statut"),["Cette semaine","Ta semaine","Bilan de la semaine"]))},
     {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:[bodyTop].concat(rowify(groupCards(TB.body,["Ton corps aujourd'hui","Signaux du corps","Le coach propose"],"Plus de détails : récupération, sommeil, leviers, VFC de journée, analyses, progrès"),["Ton corps aujourd'hui"]))},
-    {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:[suiTop].concat(rowify(groupCards(TB.suivi,["Tes tendances (30 jours)","Calendrier de forme","Mes déclencheurs","Assiduité du mois","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours"),["Tes tendances","Calendrier de forme"]))},
+    {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:[suiTop].concat(rowify(groupCards(TB.suivi,["Tes tendances (30 jours)","Calendrier de forme","Mon heure de coucher idéale","Mes déclencheurs","Assiduité du mois","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours"),["Tes tendances","Calendrier de forme"]))},
     {k:"tour",lab:tourLab,title:nt?"Tournoi":"Cycle",ic:'<path d="M5 22V3M5 4h13l-2 4 2 4H5"/>',items:[tourTop].concat((function(){var all=(TB.ttop||[]).concat(TB.tour),top=[],rest=[];all.forEach(function(x){(/id="matchcard"|id="mentalcard"|id="goalcard"|Débrief du coach/.test(x)?top:rest).push(x)});
       return /id="matchcard"/.test(top.join(""))&&rest.length?top.concat(['<details class="moredet"><summary>Plus de détails : frise, jours du tournoi, cycle</summary><div class="stack" style="margin-top:12px">'+rowify(rest,[]).join("")+'</div></details>']):all})())}
   ];
