@@ -407,6 +407,13 @@ h2{font-size:16px;font-weight:600}
 #chat .cm.a{background:#e6f8ee;color:#0d3b22}
 #chat .cm.a b{color:#1c9c50}
 .cform button{background:#7c5cff}
+.nowtop.pause{background:#1d9e9e}
+.nowtop.pause .nc{background:#168a8a}
+.nowchips button.nc[data-resume]{background:#fff;color:#0f6f6f}
+.rampstrip{display:flex;gap:6px;flex-wrap:wrap}
+.rampc{padding:5px 11px;border-radius:99px;background:var(--soft);font-size:12.5px;font-weight:600;color:var(--muted)}
+.rampc.past{background:#dcf7e6;color:#1fa855}
+.rampc.now{background:var(--accent);color:#fff}
 /* ===== lignes repliables ===== */
 .card.rowcard{padding:0}
 .rowcard>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr 24px;column-gap:8px;align-items:center;padding:15px 16px;-webkit-tap-highlight-color:transparent}
@@ -995,6 +1002,20 @@ if(!reasons.length)reasons.push("aucun signal d'alerte");
 /* ---------- programme ---------- */
 var todayKey = dkey(NOW);
 var planDay = null; (PLAN.days||[]).forEach(function(d){if(d.date===todayKey)planDay=d});
+/* ----- pause (vacances) : journal.days[AAAA-MM-JJ].pause = {to:"AAAA-MM-JJ"} sur le jour de début ----- */
+function pauseOf(dk){var best=null;Object.keys(JR).forEach(function(k){var p=JR[k]&&JR[k].pause;if(p&&p.to&&k<=dk&&dk<=p.to&&(!best||k>best.from))best={from:k,to:p.to}});return best}
+function repriseOf(dk){
+  var best=null;Object.keys(JR).forEach(function(k){var p=JR[k]&&JR[k].pause;if(p&&p.to&&p.to<dk&&(!best||p.to>best.to))best={from:k,to:p.to}});
+  if(!best)return null;
+  var DD=864e5,len=Math.round((new Date(best.to+"T12:00:00Z")-new Date(best.from+"T12:00:00Z"))/DD)+1,
+    ramp=len>=14?[50,60,70,70,80,90,100]:len>=7?[60,70,80,90,100]:len>=3?[70,85,100]:null;
+  if(!ramp)return null;
+  var idx=Math.round((new Date(dk+"T12:00:00Z")-new Date(best.to+"T12:00:00Z"))/DD)-1;
+  if(idx<0||idx>=ramp.length)return null;
+  return {idx:idx,total:ramp.length,pct:ramp[idx],len:len,ramp:ramp,to:best.to};
+}
+var PZ=pauseOf(todayKey),RP=PZ?null:repriseOf(todayKey);
+if(PZ)planDay=null;
 function adapt(day,lv){
   if(!day)return {head:"Hors du cycle",text:"Pas d'entrée de plan pour aujourd'hui.",mult:null};
   var k=day.kind, base=day.text, h, t=base;
@@ -1026,6 +1047,8 @@ function adapt(day,lv){
 }
 var ad = adapt(planDay,level);
 var notes=[], moved=null;
+if(PZ){ad={head:"Pause",text:"Mode vacances jusqu’au "+PZ.to.slice(8)+"/"+PZ.to.slice(5,7)+" : aucun entraînement, aucun reproche. Repose-toi.",mult:null};notes.push("Mode vacances : tout est suspendu.")}
+else if(RP&&ad.mult!=null&&ad.mult>RP.pct){ad={head:ad.head,text:ad.text+" Reprise progressive après ta pause : intensité plafonnée à "+RP.pct+" %.",mult:RP.pct};notes.push("Reprise progressive : intensité plafonnée à "+RP.pct+" %.")}
 (function(){
   var k0=planDay?planDay.kind:"",usesArm=/^bad|tournoi|renfoB|renfo_leger/.test(k0),usesLegs=/^bad|tournoi|renfo|velo/.test(k0);
   if((JR[todayKey]||{}).skip){ad={head:"Entraînement annulé",text:"Tu as indiqué ne pas t’entraîner aujourd’hui : récupération, sommeil et repas, sans séance. Tu peux rétablir ta séance à tout moment.",mult:null};notes.push("Entraînement annulé à ta demande")}
@@ -2465,6 +2488,7 @@ out=TB.body;
 })();
 /* ===== rappels (en haut de l'onglet Aujourd'hui) ===== */
 (function(){
+  if(pauseOf(todayKey))return;
   var R=[],hr=+new Date(NOW).toLocaleString("fr-FR",{timeZone:TZ,hour:"2-digit",hour12:false}).slice(0,2),c=window.__COACHB,yk=dkey(NOW-DAY);
   var ye=JR[yk]||{},pdY=null;(PLAN.days||[]).forEach(function(x){if(x.date===yk)pdY=x});
   var hadY=SS.some(function(x){return dkey(x.s)===yk})||(pdY&&pdY.kind&&pdY.kind!=="repos"&&pdY.kind!=="tournoi");
@@ -2507,7 +2531,7 @@ TB.suivi=[];
     var greens=0,meas=0,planned=0,done=0,fresh=0,heavy=0;
     days.forEach(function(k){
       var r=HIST[k]||{},lv=mornLvlOf(SKIP[k]?null:r.hrv,r.sleepScore);if(lv){meas++;if(lv==="green")greens++}
-      var pd=null;(PLAN.days||[]).forEach(function(x){if(x.date===k)pd=x});
+      var pd=null;(PLAN.days||[]).forEach(function(x){if(x.date===k)pd=x});if(pauseOf(k))pd={date:k,title:"Pause",kind:"repos"};
       if(pd&&pd.kind&&pd.kind!=="repos"&&pd.kind!=="tournoi"){planned++;if((JR[k]||{}).done==="oui")done++}
       var lg=(JR[k]||{}).legs;if(lg==="fresh")fresh++;if(lg==="heavy")heavy++;
     });
@@ -2654,7 +2678,7 @@ TB.suivi=[];
     var DOT=function(kd){return /^bad|^tournoi/.test(kd)?B:/^renfo/.test(kd)?"var(--rem)":/^velo|^course/.test(kd)?"var(--teal)":/^repos/.test(kd)?"var(--muted)":O};
     var rows="";
     for(var j=0;j<7;j++){
-      var dk=dAdd(todayKey,j),pd=null;(PLAN.days||[]).forEach(function(x){if(x.date===dk)pd=x});
+      var dk=dAdd(todayKey,j),pd=null;(PLAN.days||[]).forEach(function(x){if(x.date===dk)pd=x});if(pauseOf(dk))pd={date:dk,title:"Pause",kind:"repos"};
       var tp=tourPhase(dk),title=pd?pd.title:(tp&&tp.kind==="match"?"Tournoi":"–"),kd=pd?pd.kind:(tp&&tp.kind==="match"?"tournoi":"repos");
       var sk=!!(JR[dk]||{}).skip,canSkip=/^(bad|renfo|velo|course|activation)/.test(kd);
       rows+='<div class="drow" role="button" tabindex="0" data-day="'+dk+'"><div class="dd"><span>'+esc(fmt(new Date(dk+"T12:00:00Z").getTime(),{weekday:"short"}).replace(".",""))+'</span><b>'+parseInt(dk.slice(8),10)+'</b></div>'+
@@ -2756,7 +2780,7 @@ function todayItems(items){
   var tp=tourPhase(todayKey);
   if(!(tp&&tp.kind==="match")){
     /* ordre de lecture : verdict, alertes et rappels, étape du jour (compte à rebours, récupération), programme, journal, le reste (sommeil...), analyse du coach */
-    var PR=[/id="nowcard"/,/card verdict hero/,/id="(trendbanner|overbanner)"|card sec remind/,/data-cd=|data-post=/,/<h2>Ton programme/,/id="journal"/,null,/<h2>L'analyse du coach/];
+    var PR=[/id="nowcard"/,/card verdict hero/,/id="(trendbanner|overbanner)"|card sec remind/,/data-cd=|data-post=|data-reprise=/,/<h2>Débrief de ta séance/,/<h2>Ton programme/,/id="journal"/,null,/<h2>L'analyse du coach/];
     function rk(x){for(var i=0;i<PR.length;i++)if(PR[i]&&PR[i].test(x))return i;return 6}
     return items.map(function(x,i){return {x:x,i:i,r:rk(x)}}).sort(function(a,b){return a.r-b.r||a.i-b.i}).map(function(o){return o.x});
   }
@@ -2854,7 +2878,7 @@ window.__gearStatus=gearStatus;
   var TR=/^(bad|renfo|velo|course)/;
   function month(ym){var s={fait:0,part:0,non:0,inc:0,ann:0};
     (PLAN.days||[]).forEach(function(d){if(d.date.slice(0,7)!==ym||d.date>todayKey||!TR.test(d.kind||""))return;
-      var e=JR[d.date]||{};if(e.skip){s.ann++;return}
+      var e=JR[d.date]||{};if(e.skip||pauseOf(d.date)){s.ann++;return}
       var hasS=SS.some(function(x){return dkey(x.s)===d.date});
       if(e.done==="oui"||hasS)s.fait++;   /* une séance enregistrée par Garmin compte comme faite, même si le programme prévu a été remplacé par autre chose */else if(e.done==="partiel")s.part++;else if(e.done==="non")s.non++;else s.inc++});
     return s}
@@ -2935,7 +2959,7 @@ window.__gearStatus=gearStatus;
 
 /* ----- alerte de tendance : trois matins de suite sous le seuil de VFC, ou trois jours de FC au repos élevée ----- */
 (function(){
-  window.__TREND=null;
+  window.__TREND=null;if(pauseOf(todayKey))return;
   var rec=Object.keys(HIST).filter(function(k){return k<=todayKey&&k>=dkey(NOW-6*DAY)}).sort(),l3=rec.slice(-3);
   if(l3.length<3||dDiff(todayKey,l3[2])>1||dDiff(l3[2],l3[0])!==2)return;
   if(l3.some(function(k){return SKIP[k]}))return;
@@ -2958,7 +2982,7 @@ window.__gearStatus=gearStatus;
 
 /* ----- alerte de surcharge : trop de séances rapprochées ou charge trop haute, avec des matins qui se dégradent ----- */
 (function(){
-  window.__OVER=null;
+  window.__OVER=null;if(pauseOf(todayKey))return;
   var tp0=tourPhase(todayKey);if(tp0&&tp0.kind==="match")return;
   var d5={};SS.forEach(function(x){if(x.s>NOW-5*DAY&&x.s<=NOW)d5[dkey(x.s)]=1});
   var n5=Object.keys(d5).length,lv3=[];
@@ -2968,7 +2992,7 @@ window.__gearStatus=gearStatus;
   else if(n5>=4&&bad3>=2)why="tu as fait "+n5+" séances en 5 jours et tes matins se dégradent";
   else if(LW&&LW.pos==="high"&&bad3>=2)why="ta charge est au-dessus de ta fenêtre et tes matins se dégradent";
   if(!why)return;
-  var nx=null;for(var j=0;j<=4&&!nx;j++){var dk=dAdd(todayKey,j),pd=null;(PLAN.days||[]).forEach(function(x){if(x.date===dk)pd=x});
+  var nx=null;for(var j=0;j<=4&&!nx;j++){var dk=dAdd(todayKey,j),pd=null;(PLAN.days||[]).forEach(function(x){if(x.date===dk)pd=x});if(pauseOf(dk))pd={date:dk,title:"Pause",kind:"repos"};
     if(pd&&/^(bad|renfoA|renfoB)$/.test(pd.kind)&&!(JR[dk]||{}).skip)nx={pd:pd,dk:dk,j:j}}
   var sug=nx?" Transforme « "+nx.pd.title+" » ("+(nx.j===0?"aujourd’hui":fmt(new Date(nx.dk+"T12:00:00Z").getTime(),{weekday:"long"}))+") en séance légère, ou retire-la.":" Retire ou allège une séance cette semaine.";
   window.__OVER=why+"."+sug;
@@ -2979,7 +3003,7 @@ window.__gearStatus=gearStatus;
 (function(){
   var HARD=/^(bad|renfoA|renfoB)$/,SESSK=/^(bad|renfo|velo|course|activation)/,rows=[],busyN=0;
   function wdl(dk){return fmt(new Date(dk+"T12:00:00Z").getTime(),{weekday:"long"})}
-  for(var j=0;j<7;j++){var dk=dAdd(todayKey,j),pd=null;(PLAN.days||[]).forEach(function(x){if(x.date===dk)pd=x});
+  for(var j=0;j<7;j++){var dk=dAdd(todayKey,j),pd=null;(PLAN.days||[]).forEach(function(x){if(x.date===dk)pd=x});if(pauseOf(dk))pd={date:dk,title:"Pause",kind:"repos"};
     var tp=tourPhase(dk),e=JR[dk]||{},isM=!!(tp&&tp.kind==="match");
     var r={dk:dk,kd:pd?pd.kind:(isM?"tournoi":"repos"),title:pd?pd.title:(isM?"Tournoi":"Repos"),busy:!!e.busy,skip:!!e.skip,tp:tp,moveTo:null,moveFrom:null,drop:false,light:false};
     r.sess=SESSK.test(r.kd)&&!r.skip&&!isM;if(r.busy)busyN++;rows.push(r)}
@@ -3041,6 +3065,10 @@ window.__gearStatus=gearStatus;
 (function(){
   var tp=tourPhase(todayKey);if(tp&&tp.kind==="match")return;
   var c=window.__COACHB;if(!c)return;
+  var pz0=pauseOf(todayKey);
+  if(pz0){var back=dAdd(pz0.to,1);
+    TB.today.unshift('<section class="nowwrap" id="nowcard" aria-label="Mode vacances"><div class="nowtop pause"><div class="nowlab">MODE VACANCES</div><div class="nowmsg">Pause jusqu’au '+pz0.to.slice(8)+'/'+pz0.to.slice(5,7)+' : repose-toi, rien d’obligatoire</div><div class="nowchips"><span class="nc">Reprise le '+back.slice(8)+'/'+back.slice(5,7)+'</span><button type="button" class="nc" data-resume="1">Reprendre maintenant</button></div></div></section>');
+    window.__NOW={msg:"pause",cur:-1};return}
   var nowMin=tmn(hm(NOW)),te=JR[todayKey]||{},hasLegs=!!te.legs,trainToday=!!c.trainToday&&!te.skip;
   var sessStarted=SS.some(function(x){return dkey(x.s)===todayKey})||te.done==="oui"||te.done==="partiel";
   var sessLab=trainToday&&c.session?c.session:null;
@@ -3064,6 +3092,51 @@ window.__gearStatus=gearStatus;
   window.__NOW={msg:msg,cur:cur};
 })();
 
+/* ----- débrief de ta dernière séance (les 36 h qui suivent) ----- */
+(function(){
+  window.__DSUB=null;
+  var last=null;SS.forEach(function(x){if(x.e<=NOW&&(!last||x.s>last.s))last=x});
+  if(!last||NOW-last.e>36*3600*1000||nn(last.l)||pauseOf(todayKey))return;
+  var same=SS.filter(function(x){return x!==last&&x.n===last.n&&x.s<last.s&&x.s>=last.s-84*DAY&&!nn(x.l)&&x.l>20});
+  var dur=(last.e-last.s)/3600000,know=same.length>=3,medL=know?median(same.map(function(x){return x.l})):null,medD=know?median(same.map(function(x){return (x.e-x.s)/3600000})):null;
+  var ratio=medL?last.l/medL:null,head=ratio==null?"Pas encore de repère : je compare dès 3 séances de ce type":ratio>=1.25?"Plus dure que d’habitude":ratio<=0.75?"Plus légère que d’habitude":"Dans ta norme";
+  var pct=ratio==null?"":(ratio>=1?"+":"−")+Math.round(Math.abs(ratio-1)*100)+" %";
+  var all=same.concat([last]),rank=all.filter(function(x){return x.l>last.l}).length+1;
+  var rem=(last.r-NOW)/3600000,fd=function(h){return fdur(h)};
+  var recov=rem>0.5?"encore "+fd(rem):"terminée",ready=rem>0.5?"prêt "+fmt(last.r,{weekday:"long"})+" à "+hm(last.r):"tu es récupéré";
+  var nk=dAdd(dkey(last.s),1),nr=HIST[nk],nextLine="";
+  if(nk<=todayKey&&nr&&!nn(nr.hrv))nextLine='<p class="small" style="margin:10px 0 0">VFC du lendemain matin : <b>'+Math.round(nr.hrv)+' ms</b>'+(hrvB?' (base '+Math.round(hrvB)+' ms)':'')+'.</p>';
+  var adv=ratio==null?"Garde ton rythme habituel : la comparaison s’affine à chaque séance.":ratio>=1.25?"Séance chargée : mobilité et sommeil d’abord, pas d’intensité tant que la récupération n’est pas terminée.":ratio<=0.75?"Séance légère : tu peux enchaîner normalement.":"Séance dans ta norme : suis ton programme et tes sensations du matin.";
+  var mini=function(l,v,s){return '<div class="mini"><span>'+l+'</span><b>'+v+'</b>'+(s?'<small>'+s+'</small>':'')+'</div>'};
+  window.__DSUB=head+" · "+fdur(dur)+" · charge "+Math.round(last.l);
+  TB.today.push(card({key:"sessdebrief",title:"Débrief de ta séance",icon:"pulse",
+    chip:ratio==null?"":'<span class="chip '+(ratio>=1.25?"orange":ratio<=0.75?"blue":"green")+'" style="margin-left:auto">'+pct+'</span>',
+    sum:'<p class="heroline" style="margin:0 0 4px;font-weight:700;font-size:17px">'+esc(head)+'</p>'+
+      '<p class="small muted" style="margin:0 0 10px">'+esc(last.n)+' · '+esc(fmt(last.s,{weekday:"long"}))+' '+esc(hm(last.s))+(know?' · '+(rank===1?'la plus dure':rank+'e plus dure')+' de tes '+all.length+' dernières séances':'')+'</p>'+
+      '<div class="minis">'+mini("Durée",fdur(dur),medD?"habituel "+fdur(medD):"")+mini("Charge",String(Math.round(last.l)),medL?"habituelle "+Math.round(medL):"")+mini("Récupération",recov,ready)+'</div>'+
+      nextLine+'<p class="small" style="margin:10px 0 0;line-height:1.45">'+esc(adv)+'</p>'}));
+})();
+
+/* ----- reprise progressive après une pause ----- */
+(function(){
+  var rp=repriseOf(todayKey);if(!rp||pauseOf(todayKey))return;
+  var strip=rp.ramp.map(function(p,i){return '<span class="rampc'+(i<rp.idx?" past":i===rp.idx?" now":"")+'">'+p+' %</span>'}).join("");
+  var txt=rp.pct<=60?"Mobilité, marche, un peu de bad très léger (20 minutes). Pas de renfo. Écoute tes jambes.":rp.pct<=85?"Bad technique 45 minutes à "+rp.pct+" %, renfo léger (1 série). Arrête si une douleur apparaît.":"Presque normal : programme complet à "+rp.pct+" %, sans chercher la performance.";
+  TB.today.splice(Math.min(1,TB.today.length),0,card({key:"reprise",title:"Reprise progressive · jour "+(rp.idx+1)+"/"+rp.total,icon:"heart",
+    sum:'<span data-reprise="1"></span><div class="rampstrip">'+strip+'</div><p class="small" style="margin:10px 0 0;line-height:1.45">'+esc(txt)+' Ton plan du jour est plafonné à '+rp.pct+' % d’intensité.</p>'}));
+})();
+
+/* ----- carte « Pause et vacances » (onglet Semaine) ----- */
+(function(){
+  var pz=pauseOf(todayKey),rp=repriseOf(todayKey),fr=function(k){return k.slice(8)+"/"+k.slice(5,7)},sum;
+  if(pz){var n=dDiff(pz.to,todayKey)+1;
+    sum='<p class="small" style="margin:0 0 10px;line-height:1.45">Pause active jusqu’au <b>'+fr(pz.to)+'</b> ('+n+' jour'+(n>1?'s':'')+' restant'+(n>1?'s':'')+'). Aucun rappel, aucune alerte, et l’assiduité ne compte pas ces jours-là.</p><button type="button" class="bigbtn" data-resume="1">Reprendre maintenant</button>'}
+  else sum='<p class="small" style="margin:0 0 10px;line-height:1.45">Pars en vacances sans stress : pendant la pause, ni rappels, ni alertes, ni reproches, et l’assiduité ne compte pas ces jours-là. À la reprise, l’intensité remonte par paliers.</p>'+
+    '<div style="display:flex;gap:8px;align-items:center"><label class="small muted" for="pz-to">Jusqu’au</label><input type="date" id="pz-to" class="txtin" style="flex:1" value="'+dAdd(todayKey,7)+'" min="'+todayKey+'"><button type="button" class="jchip on" data-pause="1">Mettre en pause</button></div>'+
+    (rp?'<p class="small muted" style="margin:10px 0 0">Reprise en cours : jour '+(rp.idx+1)+'/'+rp.total+'.</p>':'');
+  TB.week.push(card({key:"pausec",title:"Pause et vacances",icon:"moon",chip:pz?'<span class="chip orange" style="margin-left:auto">en pause</span>':'',sum:sum}));
+})();
+
 /* ----- lignes repliables : les cartes secondaires deviennent une ligne (titre + résumé), qui se déplie au toucher ----- */
 function rowify(items,openT){
   return items.map(function(x){
@@ -3076,6 +3149,7 @@ function rowify(items,openT){
     var t2=document.createElement("div");t2.innerHTML=tx.innerHTML.replace(/<[^>]+>/g," ");
     var sub=(t2.textContent||"").replace(/\s+/g," ").trim();
     if(t==="Dette de sommeil"&&typeof DEBT!=="undefined"&&window.__COACHB)sub="Dette "+fdur(DEBT)+" · coucher avant "+window.__COACHB.bed+(typeof window.__COACHB.wakeNext==="number"?" · réveil "+ftm(window.__COACHB.wakeNext):"");if(sub.length>72)sub=sub.slice(0,70).replace(/\s+\S*$/,"")+"…";
+    if(t==="Débrief de ta séance"&&window.__DSUB)sub=window.__DSUB;
     var open=(window.__ROWOPEN&&window.__ROWOPEN[t]!=null)?window.__ROWOPEN[t]:!!window.__ROWSOPEN;
     return '<details class="card sec rowcard"'+(s.id?' id="'+s.id+'"':'')+' data-row="'+esc(t)+'"'+(open?' open':'')+'><summary><div class="sechead">'+hdHtml+'</div>'+(sub?'<div class="rowsub">'+esc(sub)+'</div>':'')+'</summary><div class="rowbody">'+s.innerHTML+'</div></details>';
   });
@@ -3104,7 +3178,7 @@ var APP=document.getElementById("app");
     return '<section class="nowwrap" id="'+id+'" aria-label="'+esc(lab)+'"><div class="nowtop"><div class="nowlab">'+esc(lab)+'</div><div class="nowmsg">'+esc(msg)+'</div><div class="nowchips">'+chips.filter(Boolean).map(function(c){return '<span class="nc">'+esc(c)+'</span>'}).join("")+'</div></div>'+(strip?'<div class="frise f7">'+strip+'</div>':'')+'</section>'}
   var wkTop=(function(){
     var dw=(dowOf(todayKey)+6)%7,mon=dAdd(todayKey,-dw),strip="",n=0,next=null,planned=0;
-    for(var i=0;i<7;i++){var k=dAdd(mon,i),has=SS.some(function(x){return dkey(x.s)===k}),pd=null;(PLAN.days||[]).forEach(function(x){if(x.date===k)pd=x});
+    for(var i=0;i<7;i++){var k=dAdd(mon,i),has=SS.some(function(x){return dkey(x.s)===k}),pd=null;(PLAN.days||[]).forEach(function(x){if(x.date===k)pd=x});if(pauseOf(k))pd={date:k,title:"Pause",kind:"repos"};
       var tpk=tourPhase(k),isT=!!(tpk&&tpk.kind==="match"),sess=!!(pd&&/^(bad|renfo|velo|course|activation)/.test(pd.kind||"")&&!(JR[k]||{}).skip);
       if(has)n++;if(sess)planned++;
       if(!next&&k>=todayKey&&(sess||isT)&&!(k===todayKey&&has))next={k:k,t:isT?"Tournoi":pd.title};
@@ -3129,8 +3203,8 @@ var APP=document.getElementById("app");
     return topCard("tourtop",(nt.league?"CHAMPIONNAT":"TOURNOI"),msg,[cd&&ntd>0?"Gestes "+(cd.total-cd.left)+"/"+cd.total:"",ntd>0&&ntd<=7&&tourPhase(todayKey)?tourFocus(tourPhase(todayKey)):""],strip)})();
   var bilanDay=dowOf(todayKey)<=1;
   var TABS=[
-    {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:rowify(todayItems(TB.today),["Ton programme","Compte à rebours","Récupération après","Jour de match","Tes jambes"])},
-    {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:[wkTop].concat(rowify(groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Planifier ma semaine","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, statut":"Plus de détails : 7 derniers jours, charge, bilan, statut"),["Cette semaine","Ta semaine","Bilan de la semaine"]))},
+    {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:rowify(todayItems(TB.today),["Ton programme","Compte à rebours","Récupération après","Reprise progressive","Jour de match","Tes jambes"])},
+    {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:[wkTop].concat(rowify(groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Planifier ma semaine","Pause et vacances","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, statut":"Plus de détails : 7 derniers jours, charge, bilan, statut"),["Cette semaine","Ta semaine","Bilan de la semaine"]))},
     {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:[bodyTop].concat(rowify(groupCards(TB.body,["Ton corps aujourd'hui","Signaux du corps","Le coach propose"],"Plus de détails : récupération, sommeil, leviers, VFC de journée, analyses, progrès"),["Ton corps aujourd'hui"]))},
     {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:[suiTop].concat(rowify(groupCards(TB.suivi,["Tes tendances (30 jours)","Calendrier de forme","Mon heure de coucher idéale","Mes déclencheurs","Assiduité du mois","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours"),["Tes tendances","Calendrier de forme"]))},
     {k:"tour",lab:tourLab,title:nt?"Tournoi":"Cycle",ic:'<path d="M5 22V3M5 4h13l-2 4 2 4H5"/>',items:[tourTop].concat((function(){var all=(TB.ttop||[]).concat(TB.tour),top=[],rest=[];all.forEach(function(x){(/id="matchcard"|id="mentalcard"|id="goalcard"|Débrief du coach/.test(x)?top:rest).push(x)});
@@ -3185,6 +3259,8 @@ window.__jgoal=function(field,v){var cur=null,ck=null;Object.keys(JR).sort().for
   var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.goal=g;window.__jsaveq(todayKey,e)};
 window.__jgear=function(id,date){date=date||todayKey;if(!date)return;var e=JSON.parse(JSON.stringify(JR[date]||{}));e.gear=e.gear||[];if(e.gear.indexOf(id)<0)e.gear.push(id);window.__jcommit(date,e)};
 window.__jpost=function(i){var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.post=e.post||[];var k=e.post.indexOf(i);if(k>=0)e.post.splice(k,1);else e.post.push(i);e.post.sort(function(a,b){return a-b});if(!e.post.length)delete e.post;window.__jcommit(todayKey,e)};
+window.__jpause=function(to){to=String(to||"");if(!/^\d{4}-\d\d-\d\d$/.test(to)||to<todayKey||pauseOf(todayKey))return;var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.pause={to:to};window.__jcommit(todayKey,e)};
+window.__jresume=function(){var pz=pauseOf(todayKey);if(!pz)return;var e=JSON.parse(JSON.stringify(JR[pz.from]||{}));if(pz.from>=todayKey)delete e.pause;else e.pause={to:dAdd(todayKey,-1)};window.__jcommit(pz.from,e)};
 window.__jbusy=function(date){var e=JSON.parse(JSON.stringify(JR[date]||{}));if(e.busy)delete e.busy;else e.busy=true;window.__jcommit(date,e)};
 window.__jcd=function(i){var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.cd=e.cd||[];var k=e.cd.indexOf(i);if(k>=0)e.cd.splice(k,1);else e.cd.push(i);e.cd.sort(function(a,b){return a-b});if(!e.cd.length)delete e.cd;window.__jcommit(todayKey,e)};
 window.__jwake=function(date,v){
@@ -3349,6 +3425,8 @@ APP.addEventListener("click",function(e){
   var t=e.target,b=t.closest?t.closest("button"):null;
   var jb=t.closest?t.closest("[data-j]"):null;
   var mok=t.closest?t.closest("[data-matchok]"):null;if(mok){window.__jmatch(mok.getAttribute("data-matchok"),"09:00");return}
+  var rsm=t.closest?t.closest("[data-resume]"):null;if(rsm&&window.__jresume){window.__jresume();return}
+  var pse=t.closest?t.closest("[data-pause]"):null;if(pse&&window.__jpause){var pin=document.getElementById("pz-to");window.__jpause(pin?pin.value:"");return}
   var bz=t.closest?t.closest("[data-busy]"):null;if(bz&&window.__jbusy){window.__jbusy(bz.getAttribute("data-busy"));return}
   var cdn=t.closest?t.closest("[data-cd]"):null;if(cdn&&window.__jcd){window.__jcd(+cdn.getAttribute("data-cd"));return}
   var pst=t.closest?t.closest("[data-post]"):null;if(pst&&window.__jpost){window.__jpost(+pst.getAttribute("data-post"));return}
