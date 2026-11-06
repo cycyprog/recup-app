@@ -22,24 +22,24 @@
 <link rel="apple-touch-startup-image" href="splash/splash-828x1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1080x2340.png" media="(device-width: 360px) and (device-height: 780px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-<meta name="theme-color" content="#f8f8fa" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f4f3fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0e17" media="(prefers-color-scheme: dark)">
 <style>
 :root{
   color-scheme:light;
-  --bg:#f8f8fa; --card:#ffffff; --fg:#1c1c1e; --muted:#6e6e73; --line:#e5e5ea; --soft:#f2f2f7;
-  --green:#34c759; --orange:#ff9500; --red:#ff3b30; --accent:#007aff; --teal:#30b0c7;
+  --bg:#f4f3fb; --card:#ffffff; --fg:#1d1b2e; --muted:#6b6880; --line:#e8e5f4; --soft:#f0eefb;
+  --green:#34c759; --orange:#ff9500; --red:#ff3b30; --accent:#7c5cff; --teal:#30b0c7;
   --green-t:#1e7b3a; --orange-t:#b25e00; --red-t:#d70015; --blue-t:#0062cc;
-  --green-soft:#e4f7ea; --orange-soft:#fff1dc; --red-soft:#ffe6e4; --blue-soft:#e5efff;
+  --green-soft:#e4f7ea; --orange-soft:#fff1dc; --red-soft:#ffe6e4; --blue-soft:#ece8ff;
   --deep:#3b6ee8; --rem:#af52de; --light:#7db4f5; --awake:#ffb340;
-  --fg2:#3a3a3c; --fill:#f2f2f7; --bar:rgba(255,255,255,.96);
+  --fg2:#3a3850; --fill:#efecfa; --bar:rgba(255,255,255,.96);
 }
 /* ===== mode sombre : réglage de l'iPhone, et automatiquement de 21 h à 7 h ===== */
 html.dark{color-scheme:dark;
-  --bg:#000; --card:#1c1c1e; --fg:#f2f2f7; --muted:#9a9aa0; --line:#38383a; --soft:#2c2c2e; --fill:#2c2c2e; --fg2:#d1d1d6; --bar:rgba(28,28,30,.94);
+  --bg:#0f0e17; --card:#1a1826; --fg:#f2f0ff; --muted:#a09cb8; --line:#2f2b45; --soft:#242134; --fill:#242134; --fg2:#d6d3e8; --bar:rgba(26,24,38,.94);
   --green-t:#4cd471; --orange-t:#ffb340; --red-t:#ff6961; --blue-t:#6aa8ff;
-  --green-soft:#16351f; --orange-soft:#3a2810; --red-soft:#3b1614; --blue-soft:#132848;
-  --deep:#5b8cff; --light:#4f86c9; --accent:#0a84ff;
+  --green-soft:#16351f; --orange-soft:#3a2810; --red-soft:#3b1614; --blue-soft:#2a2350;
+  --deep:#5b8cff; --light:#4f86c9; --accent:#9d85ff;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -506,6 +506,73 @@ h2{font-size:16px;font-weight:600}
 .appc .small{font-size:13px;color:var(--muted)}
 .appspin{width:30px;height:30px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:appspin .9s linear infinite;margin:6px auto}
 @keyframes appspin{to{transform:rotate(360deg)}}
+/* ===== REFONTE 2026 : un seul langage visuel pour toute l'appli ===== */
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;letter-spacing:-.003em}
+h1{font-size:30px;font-weight:800;letter-spacing:-.025em}
+.stack{gap:14px}
+.card{border:0;border-radius:24px;box-shadow:0 1px 2px rgba(60,40,120,.05),0 10px 30px rgba(60,40,120,.08)}
+html.dark .card{box-shadow:none;border:1px solid var(--line)}
+.sechead{gap:11px}
+.sechead h2{font-size:17px;font-weight:700;letter-spacing:-.01em;text-transform:none;color:var(--fg)}
+.sechead .ico{width:32px;height:32px;border-radius:11px}
+.card .sechead .ico[style*="#7c5cff"]{background:#ece8ff!important;color:#7c5cff!important}
+.card .sechead .ico[style*="#ff9f0a"]{background:#fff0d6!important;color:#e08a00!important}
+.card .sechead .ico[style*="#ff2d55"]{background:#ffe1e8!important;color:#ff2d55!important}
+.card .sechead .ico[style*="#5e5ce6"]{background:#e7e7ff!important;color:#5e5ce6!important}
+.card .sechead .ico[style*="#ff3b30"]{background:#ffe2df!important;color:#ff3b30!important}
+.card .sechead .ico[style*="#34c759"]{background:#dcf7e6!important;color:#1fa855!important}
+.card .sechead .ico[style*="#30b0c7"]{background:#dcf3f6!important;color:#1d93a8!important}
+.card .sechead .ico[style*="#ff9500"]{background:#ffead0!important;color:#e07e00!important}
+.card .sechead .ico[style*="#8e8e93"]{background:#eeeef4!important;color:#7a7a8c!important}
+.card .sechead .ico[style*="#af52de"]{background:#f3e3fb!important;color:#af52de!important}
+html.dark .card .sechead .ico{background:var(--soft)!important}
+.card .btn{background:var(--blue-soft);color:var(--accent);border-radius:99px;padding:9px 18px;width:auto;margin-top:12px;font-weight:700;font-size:14px}
+.moredet>summary,.moredet:not(.inner)>summary{background:var(--blue-soft);color:var(--accent);border-radius:20px;box-shadow:none;font-weight:700;padding:14px}
+.moredet.inner>summary{border-radius:16px}
+.seg{gap:7px}
+.seg button{min-height:46px;border-radius:15px;background:var(--fill);font-weight:700}
+.seg button.on{background:var(--accent);color:#fff;box-shadow:0 5px 14px rgba(124,92,255,.38)}
+.jchip{border-radius:99px;min-height:38px;background:var(--fill);font-weight:700}
+.jchip.on{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(124,92,255,.32)}
+.bigbtn{min-height:50px;border-radius:99px;font-weight:800;box-shadow:0 8px 20px rgba(124,92,255,.35)}
+.linkbtn{color:var(--accent);font-weight:700}
+.skipbtn{background:var(--blue-soft);color:var(--accent);font-weight:700}
+.chip.blue{background:var(--blue-soft);color:var(--accent)}
+.exb{border-radius:16px;background:var(--soft)}
+.remind{border-radius:20px;box-shadow:none;background:var(--blue-soft)}
+.remind.warn{background:var(--orange-soft)}
+.txtin,.phrow input,.cform textarea,input[type=time],input[type=date],select{border-radius:14px;border:1.5px solid var(--line);background:var(--card);color:var(--fg)}
+.txtin:focus,.phrow input:focus,.cform textarea:focus,input[type=time]:focus,input[type=date]:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,255,.2)}
+.cform textarea{background:var(--bg)}
+.cform button{background:var(--accent)!important;box-shadow:0 5px 14px rgba(124,92,255,.38)}
+.chead{background:var(--card)}
+.chead h2{font-weight:800;letter-spacing:-.01em}
+.chead button,.brhead button{background:var(--blue-soft);color:var(--accent);border-radius:99px;padding:8px 16px;font-weight:700;min-height:0}
+.cm{border-radius:20px}
+#chatfab{background:var(--accent);box-shadow:0 8px 22px rgba(124,92,255,.45)}
+#breathfab{color:var(--accent);box-shadow:0 6px 18px rgba(124,92,255,.28)}
+.tabbar{border-top:0;box-shadow:0 -6px 24px rgba(60,40,120,.08)}
+html.dark .tabbar{box-shadow:none;border-top:1px solid var(--line)}
+.tabbar button[aria-selected="true"]{color:var(--accent)}
+.tabbar button[aria-selected="true"] svg{stroke-width:2.4}
+.panel{border-radius:30px 30px 0 0}
+.phead{border-bottom:0;padding-bottom:8px}
+.ptitle h2{font-weight:800}
+.close{background:var(--blue-soft);color:var(--accent);font-weight:700}
+.pbody h3,.jh,.mph,.doseb b{color:var(--accent);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.doseb{border-radius:18px;background:var(--blue-soft)}
+.doseb.adapt{background:var(--orange-soft)}
+.prio i{background:var(--accent)}
+#brc{background:radial-gradient(circle at 35% 30%,#c9bbff,#7c5cff);box-shadow:0 16px 50px rgba(124,92,255,.4)}
+.brl{color:var(--accent)}
+.brbody .crow{display:flex;gap:10px;justify-content:center}
+.brbody .crow button,.brbody button:not(.jchip){min-height:50px;padding:0 24px;border:0;border-radius:99px;background:var(--blue-soft);color:var(--accent);font:800 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer}
+.brbody .crow button:active{transform:scale(.96)}
+.brbody .crow button.main{background:var(--accent);color:#fff;box-shadow:0 8px 20px rgba(124,92,255,.35)}
+.brstatic{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#c9bbff,#7c5cff);transform:scale(.6);box-shadow:0 16px 50px rgba(124,92,255,.35)}
+.calcell{border-radius:14px}
+.drow{border-bottom-color:var(--line)}
+.meter{border-radius:99px}
 </style>
 </head>
 <body>
@@ -1276,7 +1343,7 @@ var ICON={
   pen:'<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/>'
 };
-var ICOL={target:'#007aff',bulb:'#ff9f0a',pulse:'#ff2d55',moon:'#5e5ce6',heart:'#ff3b30',bars:'#34c759',cal:'#30b0c7',flag:'#ff9500',info:'#8e8e93',pen:'#af52de'};
+var ICOL={target:'#7c5cff',bulb:'#ff9f0a',pulse:'#ff2d55',moon:'#5e5ce6',heart:'#ff3b30',bars:'#34c759',cal:'#30b0c7',flag:'#ff9500',info:'#8e8e93',pen:'#af52de'};
 function ico(n,c){return '<span class="ico" style="background:'+(c||'var(--accent)')+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+ICON[n]+'</svg></span>'}
 var MID=0;
 var DET={},CHG={};
@@ -2688,7 +2755,7 @@ function todayItems(items){
   var order=[/card verdict hero/,/id="matchday"/,/card sec remind/],main=[],used={};
   order.forEach(function(re){for(var i=0;i<items.length;i++){if(!used[i]&&re.test(items[i])){used[i]=1;main.push(items[i]);break}}});
   var rest=items.filter(function(x,i){return !used[i]});
-  return main.concat(rest.length?['<details class="moredet" id="todaymore"><summary>Plus de détails : programme, sommeil, journal, analyse</summary><div class="stack" style="margin-top:12px">'+rest.join("")+'</div></details>']:[]);
+  return main.concat(rest.length?['<details class="moredet" id="todaymore"><summary>Plus de détails : programme, sommeil, journal, analyse</summary><div class="stack" style="margin-top:12px">'+rowify(rest,["Tes jambes"]).join("")+'</div></details>']:[]);
 }
 (function(){
   var tp=tourPhase(todayKey);if(!(tp&&tp.kind==="match"))return;
@@ -2991,7 +3058,7 @@ var APP=document.getElementById("app");
     var used={},main=[],rest=[];
     titles.forEach(function(t){for(var i=0;i<items.length;i++){if(!used[i]&&items[i].indexOf('<h2>'+t)>=0){used[i]=1;main.push(items[i]);break}}});
     items.forEach(function(x,i){if(!used[i])rest.push(x)});
-    return rest.length?main.concat(['<details class="moredet"><summary>'+label+'</summary><div class="stack" style="margin-top:12px">'+rest.join("")+'</div></details>']):main;
+    return rest.length?main.concat(['<details class="moredet"><summary>'+label+'</summary><div class="stack" style="margin-top:12px">'+rowify(rest,[]).join("")+'</div></details>']):main;
   }
   var streak=0;for(var si=0;si<60;si++){var sk=dkey(NOW-si*DAY),sr=HIST[sk];if(!sr||(nn(sr.hrv)&&nn(sr.sleepScore))){if(si===0)continue;break}
     if(mornLvlOf(SKIP[sk]?null:sr.hrv,sr.sleepScore)==="green")streak++;else break}
@@ -3033,7 +3100,7 @@ var APP=document.getElementById("app");
     {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:[bodyTop].concat(rowify(groupCards(TB.body,["Ton corps aujourd'hui","Signaux du corps","Le coach propose"],"Plus de détails : récupération, sommeil, leviers, VFC de journée, analyses, progrès"),["Ton corps aujourd'hui"]))},
     {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:[suiTop].concat(rowify(groupCards(TB.suivi,["Tes tendances (30 jours)","Calendrier de forme","Mes déclencheurs","Assiduité du mois","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours"),["Tes tendances","Calendrier de forme"]))},
     {k:"tour",lab:tourLab,title:nt?"Tournoi":"Cycle",ic:'<path d="M5 22V3M5 4h13l-2 4 2 4H5"/>',items:[tourTop].concat((function(){var all=(TB.ttop||[]).concat(TB.tour),top=[],rest=[];all.forEach(function(x){(/id="matchcard"|id="mentalcard"|id="goalcard"|Débrief du coach/.test(x)?top:rest).push(x)});
-      return /id="matchcard"/.test(top.join(""))&&rest.length?top.concat(['<details class="moredet"><summary>Plus de détails : frise, jours du tournoi, cycle</summary><div class="stack" style="margin-top:12px">'+rest.join("")+'</div></details>']):all})())}
+      return /id="matchcard"/.test(top.join(""))&&rest.length?top.concat(['<details class="moredet"><summary>Plus de détails : frise, jours du tournoi, cycle</summary><div class="stack" style="margin-top:12px">'+rowify(rest,[]).join("")+'</div></details>']):all})())}
   ];
   if(!window.__TAB){try{var tk=JSON.parse(localStorage.getItem("recup-tab")||"null");if(tk&&Date.now()-tk.at<3*H)window.__TAB=tk.k}catch(e){}}
   var cur=window.__TAB||"today";if(!TABS.some(function(x){return x.k===cur}))cur="today";
@@ -3343,7 +3410,7 @@ var raf=0,t0=0,dur=0,lock=null;
 function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function phr(){var a=window.__MYPHR;if(!a){try{a=JSON.parse(localStorage.getItem("recup-phrases")||"[]")}catch(e){a=[]}}return Array.isArray(a)?a.filter(function(x){return typeof x==="string"&&x.trim()}):[]}
 function head(btn){return '<div class="brhead"><h2>Respiration</h2><button type="button" data-b="close">'+btn+'</button></div>'}
-function screenStart(){box.innerHTML=head("Fermer")+'<div class="brbody"><p class="brtxt">Inspire 4 secondes par le nez, expire 6 secondes par la bouche. Relâche la mâchoire, les épaules et les mains. Choisis une durée :</p><div class="crow"><button type="button" data-b="go" data-m="1">1 min</button><button type="button" class="main" data-b="go" data-m="3">3 min</button><button type="button" data-b="go" data-m="5">5 min</button></div></div>'}
+function screenStart(){box.innerHTML=head("Fermer")+'<div class="brbody"><div class="brring"><div class="brstatic"></div></div><div class="brl">Un moment pour toi</div><p class="brtxt">Inspire 4 secondes par le nez, expire 6 secondes par la bouche. Relâche la mâchoire, les épaules et les mains. Choisis une durée :</p><div class="crow"><button type="button" data-b="go" data-m="1">1 min</button><button type="button" class="main" data-b="go" data-m="3">3 min</button><button type="button" data-b="go" data-m="5">5 min</button></div></div>'}
 function screenRun(){var p=phr()[0];box.innerHTML=head("Arrêter")+'<div class="brbody"><div class="brring"><div id="brc"></div></div><div id="brl" class="brl">Prépare-toi</div><div id="brt" class="brt"></div>'+(p?'<p class="brp">« '+esc(p)+' »</p>':'')+'</div>'}
 function screenEnd(){var a=phr();box.innerHTML=head("Fermer")+'<div class="brbody"><div id="brl" class="brl">Terminé</div><p class="brtxt">Respire normalement et garde les épaules basses.</p>'+(a.length?'<p class="brp">Ta phrase : « '+esc(a.join(" » · « "))+' »</p>':'')+'<div class="crow"><button type="button" class="main" data-b="close">Fermer</button></div></div>'}
 function stop(){cancelAnimationFrame(raf);raf=0;try{if(lock){lock.release();lock=null}}catch(e){}}
