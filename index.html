@@ -1646,7 +1646,6 @@ out.push('<section class="card verdict hero tap" role="button" tabindex="0" data
   var sum='';
   if(ts!=null)sum+='<div class="prow"><div class="pt">'+ft(ts)+'</div><div class="pb"><b>'+esc(ad.head)+'</b><span>'+esc(intens+ad.text)+'</span></div></div>';
   else sum+='<div class="prow"><div class="pt">Jour</div><div class="pb"><b>'+esc(ad.head)+'</b><span>'+esc(intens+ad.text)+'</span></div></div>';
-  sum+='<div class="prow"><div class="pt">'+bedTxt+'</div><div class="pb"><b>Au lit</b><span>'+esc(debt7H>0?fdur(debt7H)+" de sommeil à rattraper":"Pour environ "+hh(needH*60)+" de sommeil")+'</span></div></div>';
   if(planDay&&tagsT.indexOf("malade")<0&&((planDay.blocks||[]).length&&isRenfoK||ad.mult===0&&isRenfoK))sum+='<button class="bigbtn" type="button" data-day="'+todayKey+'">'+(ad.mult===0?"Voir la mobilité du jour":"Voir les exercices du "+esc(planDay.title))+'</button>';
   if(trainToday||skipT)sum+='<button type="button" class="linkbtn" data-skip="'+todayKey+'" style="margin-top:8px">'+(skipT?"Rétablir ma séance du jour":"Je ne peux pas m’entraîner aujourd’hui")+'</button>';
 
@@ -1810,7 +1809,6 @@ if(dowOf(todayKey)===0||dowOf(todayKey)===1)TB.week.push(bilanHtml());
 /* ----- raccourcis de l'écran du jour vers les autres onglets ----- */
 (function(){
   var tp=tourPhase(todayKey);
-  if(tp)out.splice(tp.kind==="match"?vIdx:out.length,0,'<button class="banner" type="button" data-tab="tour"><span><b>Mode tournoi '+esc(tp.label)+'</b> · '+esc(tourFocus(tp))+'</span>›</button>');
   if(dowOf(todayKey)===0||dowOf(todayKey)===1)out.push('<button class="banner blue" type="button" data-tab="week"><span><b>Bilan de la semaine prêt</b> · '+(dowOf(todayKey)===1?"semaine écoulée":"semaine en cours")+'</span>›</button>');
 })();
 
@@ -2293,7 +2291,7 @@ TB.wtop=[];
     s+='<text x="'+cx+'" y="'+(yEnd+20)+'" text-anchor="middle" class="'+(isT?"t-fg":"")+'" style="font-size:10px;'+(isT?"font-weight:700":"")+'">'+esc(fmt(d.t,{weekday:"short"}).replace(".","").slice(0,3))+' '+parseInt(d.k.slice(8),10)+'</text>';
   });
   var hgt=yEnd+26;
-  var head='<div class="wkstats"><div><b>'+greens+'/7</b><span>matins verts</span></div><div><b>'+(slp.length?hmSec(avg(slp)):"–")+'</b><span>sommeil moyen</span></div><div><b>'+Math.round(ld)+'</b><span>charge 7 j'+(LW?" · fenêtre "+Math.round(LW.lov)+"–"+Math.round(LW.hiv):ST.ok?" · hab. "+Math.round(ST.hab):"")+'</span></div><div><b>'+doneN+'/7</b><span>programmes faits</span></div></div>';
+  var head='<div class="wkstats"><div><b>'+doneN+'/7</b><span>programmes faits</span></div></div>';   /* matins verts, sommeil et charge sont déjà dans les anneaux de la semaine */
   var sum=head+svg(w,hgt,s,"Tes 7 derniers jours : matin, sommeil, séances, ressenti")+'<div class="legend"><span><i style="background:var(--green)"></i>bon</span><span><i style="background:var(--orange)"></i>moyen</span><span><i style="background:var(--red)"></i>à surveiller</span><span><i style="background:var(--deep)"></i>charge</span><span>chiffres : heures de sommeil, charge</span></div>';
   TB.wtop.push(card({key:"wk7",title:"Tes 7 derniers jours",icon:"cal",sum:sum}));
   var LV=lwVerdict();
@@ -2415,7 +2413,6 @@ TB.ttop=[];
     function ul(a){return '<ul class="mlistu">'+a.map(function(x){return '<li>'+x+'</li>'}).join("")+'</ul>'}
     var phr=function(t,a){return '<p class="mph"><b>'+t+'</b></p><ul class="mphr">'+a.map(function(x){return '<li>« '+x+' »</li>'}).join("")+'</ul>'};
     var html='<section class="card sec" id="mentalcard"><div class="sechead">'+ico("bulb",ICOL.bulb)+'<h2>Mental : rester détendu sous pression</h2></div>'+
-      '<button type="button" class="bigbtn" data-breath="3" style="margin:0 0 12px">Respiration guidée · 3 min</button>'+
       (MYP.length?'<p class="myp" style="margin:0 0 8px">« '+MYP.map(esc).join(' » · « ')+' »</p>':'<p class="small muted" style="margin:0 0 8px">Choisis ta phrase clé dans la boîte à outils ci-dessous.</p>')+'<details class="moredet inner" id="mentalbox"'+(window.__ROWSOPEN||window.__MPHROPEN?' open':'')+'><summary>Boîte à outils : phrases, avant le match, pression</summary><div class="mbody">'+'<p class="small" style="margin:0 0 10px;line-height:1.45">Détendu ne veut pas dire mou : <b>mâchoire, épaules et mains relâchées, jambes vives</b>. Le but est une concentration calme, pas l\'absence de nerfs : un peu de tension veut dire que ça compte, c\'est de l\'énergie à canaliser.</p>'+
       (function(){
         var mine=MYP.length?MYP.map(function(x){return '<p class="myp">« '+esc(x)+' »</p>'}).join(""):'<p class="small muted" style="margin:0 0 8px">Choisis une ou deux phrases ci-dessous, ou écris la tienne : elles apparaissent à l\'étape « Respiration » de ta journée de match.</p>';
@@ -2542,7 +2539,6 @@ out=TB.body;
   if(mk){var md=dDiff(mk,todayKey);R.push(['Premier match '+(md===0?"aujourd'hui":md===1?"demain":"le "+fmt(new Date(mk+"T12:00:00Z").getTime(),{weekday:"long",day:"numeric",month:"long"}))+' : heure non indiquée (9 h par défaut).','Indiquer','match']);window.__MK=mk}
   if(hadY&&!ye.legs&&!ye.done)R.push(['Retour d\'hier manquant (jambes, séance).','Saisir','yesterday']);
   var te=JR[todayKey]||{};
-  if(hr>=9&&hr<20&&!te.legs&&!nn((HIST[todayKey]||{}).sleepSec))R.push(['Pas encore de retour ce matin : tes jambes ?','Saisir','today']);
   if(hr>=20&&c&&c.bed){
     var restSoir=!c.trainToday&&!SS.some(function(x){return dkey(x.s)===todayKey}),nb=[];
     Object.keys(HIST).filter(function(k){return k>=dkey(NOW-60*DAY)&&k<=todayKey&&HIST[k].bedtime}).forEach(function(k){
@@ -2717,8 +2713,7 @@ TB.suivi=[];
       ringBox(sa==null?0:sa/(8*3600)*100,sCol,sa==null?"–":fr1(sa/3600).replace(",0",""),"Sommeil","heures par nuit")+
       ringBox(me?gr/me*100:0,me?(gr/me>=0.6?G:gr/me>=0.4?O:R):"var(--line)",me?gr+"/"+me:"–","Matins verts","sur 7 jours")+'</div>'+
       (function(){var n7=SS.filter(function(x){return x.s>NOW-7*DAY&&x.s<=NOW}).length,nt3=null;EVTS.forEach(function(T){if(!nt3&&T.end>=todayKey)nt3=T});
-        var parts=[n7+" séance"+(n7>1?"s":"")+" cette semaine"];if(LW)parts.push("charge "+({under:"sous ta fenêtre",in:"dans ta fenêtre",high:"au-dessus de ta fenêtre",over:"trop haute"})[LW.pos]);
-        if(nt3){var dn=dDiff(nt3.start,todayKey);parts.push(dn>0?nt3.name.replace(/^Tournoi (national )?(d')?/i,"")+" dans "+dn+" jour"+(dn>1?"s":""):"tournoi en cours")}
+        var parts=[n7+" séance"+(n7>1?"s":"")+" cette semaine"];
         return '<p class="facts">'+esc(parts.join(" · "))+'</p>'})();
     TB.wtop.push(card({key:"ringsW",title:"Cette semaine",icon:"cal",sum:sum}));
     var DOT=function(kd){return /^bad|^tournoi/.test(kd)?B:/^renfo/.test(kd)?"var(--rem)":/^velo|^course/.test(kd)?"var(--teal)":/^repos/.test(kd)?"var(--muted)":O};
@@ -2820,7 +2815,7 @@ TB.suivi=[];
     '<div class="debtlegend"><span>0</span><span>'+fdur(DEBT_MID)+' : à rattraper</span><span>'+fdur(DEBT_HI)+' : élevée</span></div>'+
     (c.wakeNext&&c.wakeDate?'<div class="wakerow"><label for="jwake">'+(c.wakeDate===todayKey?"Je me réveille à":"Je me réveille demain à")+'</label><input type="time" id="jwake" data-day="'+c.wakeDate+'" value="'+esc(c.wakeNext)+'" aria-label="Heure de réveil"><button type="button" class="jchip on" data-jwakesave="'+c.wakeDate+'">Valider</button></div>'+
       (c.wakeSet?'<p class="small muted" style="margin:0 0 6px">Heure choisie par toi. <button type="button" class="linkbtn" data-wakereset="'+c.wakeDate+'">Revenir à l\'heure habituelle ('+esc(c.wakeDef)+')</button></p>':'<p class="small muted" style="margin:0 0 6px">Heure habituelle, ou plus tôt si un événement l\'exige. Choisis une heure puis appuie sur Valider.</p>'):'')+wakeDays+
-    (c.bed?'<div class="prow"><div class="pt">'+esc(c.bed)+'</div><div class="pb"><b>Ce soir, au lit avant '+esc(c.bed)+'</b><span>Pour environ '+fdur((c.needMin||0)/60)+' de sommeil (ton besoin'+(DEBT>=DEBT_MID?", dette comprise":"")+'). C\'est ce coucher qui fait baisser ta dette.</span></div></div>':'')+
+    (c.bed?'<div class="prow"><div class="pt">'+esc(c.bed)+'</div><div class="pb"><b>Ce soir, au lit</b><span>Pour environ '+fdur((c.needMin||0)/60)+' de sommeil (ton besoin'+(DEBT>=DEBT_MID?", dette comprise":"")+'). C\'est ce coucher qui fait baisser ta dette.</span></div></div>':'')+
     (DEBT>=DEBT_MID?'<p class="small" style="margin:8px 0 0;line-height:1.45">En dormant <b>45 minutes de plus que ton besoin</b> chaque nuit, tu repasses sous '+fdur(DEBT_MID)+' en <b>environ '+n+' nuit'+(n>1?"s":"")+'</b>. Une sieste de 20 minutes avant 15 h rembourse aussi 20 minutes.</p>':
       '<p class="small" style="margin:8px 0 0;line-height:1.45">Garde un coucher régulier pour ne pas la recréer : une nuit courte pèse encore à moitié trois jours plus tard.</p>')+
     '<h3>7 dernières nuits</h3>'+bars+'<div class="legend"><span><i style="background:var(--red)"></i>dette ajoutée</span><span><i style="background:var(--green)"></i>dette rattrapée</span></div>';
@@ -3088,22 +3083,12 @@ window.__gearStatus=gearStatus;
   var run=0,flagged=false;
   rows.forEach(function(r,i){if(hardAt(occ,i)){run++;if(run>=3){r.light=true;flagged=true}}else run=0});
   if(window.__OVER&&!flagged){for(var i2=0;i2<7;i2++)if(hardAt(occ,i2)){rows[i2].light=true;flagged=true;break}}
-  var DOTC=function(kd){return /^bad|^tournoi/.test(kd)?"var(--deep)":/^renfo/.test(kd)?"var(--rem)":/^velo|^course|^activation/.test(kd)?"var(--teal)":"var(--muted)"};
-  var html="";
-  rows.forEach(function(r,i){var title,note="",kd=occ[i]?occ[i]:r.kd;
-    if(occ[i]){title=occT[i];if(r.moveFrom!=null)note="déplacée depuis "+wdl(rows[r.moveFrom].dk);if(r.light)note=(note?note+" · ":"")+"à alléger : version courte"}
-    else if(r.drop){title="Soirée prise";note="« "+r.dropT+" » sautée"}
-    else if(r.moveTo!=null){title="Soirée prise";note="« "+occT[r.moveTo]+" » déplacée au "+wdl(rows[r.moveTo].dk)}
-    else if(r.busy){title="Soirée prise";note="mobilité de 15 minutes si possible"}
-    else{title=r.skip?r.title:r.title;if(r.skip)note="annulée"}
-    html+='<div class="drow pln'+(r.moveFrom!=null||r.moveTo!=null||r.drop?' moved':'')+'" role="button" tabindex="0" data-day="'+r.dk+'"><div class="dd"><span>'+esc(fmt(new Date(r.dk+"T12:00:00Z").getTime(),{weekday:"short"}).replace(".",""))+'</span><b>'+parseInt(r.dk.slice(8),10)+'</b></div>'+
-      '<i class="ddot" style="background:'+DOTC(kd)+'"></i><div class="dt"><b>'+esc(title)+'</b>'+(note?'<div class="small muted">'+esc(note)+'</div>':'')+'</div>'+
-      '<button type="button" class="skipbtn" data-busy="'+r.dk+'" aria-pressed="'+r.busy+'">'+(r.busy?"Libre":"Occupé")+'</button></div>'});
-  var intro=busyN?(moves.length?'<ul class="mlistu" style="padding-left:18px;margin:0 0 10px">'+moves.map(function(x){return '<li>'+esc(x)+'</li>'}).join("")+'</ul>':'<p class="small" style="margin:0 0 10px">Aucune séance n’est touchée par tes soirées prises.</p>'):
-    '<p class="small" style="margin:0 0 10px;line-height:1.45">Touche <b>Occupé</b> sur les soirées où tu ne peux pas t’entraîner : je replace tes séances sur les jours libres, sans enchaîner trois séances dures et sans rien coller à la veille d’un tournoi.</p>';
-  var more=window.__OVER?'<p class="small" style="margin:10px 0 0">Charge trop haute : la séance marquée « à alléger » passe en version courte.</p>':'';
+  var lights=[];rows.forEach(function(r,i){if(r.light&&occ[i])lights.push("« "+occT[i]+" » du "+wdl(r.dk)+" : à alléger, version courte.")});
+  var chips='<div class="jchips" style="margin:0 0 10px">'+rows.map(function(r){return '<button type="button" class="jchip'+(r.busy?" on":"")+'" data-busy="'+r.dk+'" aria-pressed="'+r.busy+'">'+esc(fmt(new Date(r.dk+"T12:00:00Z").getTime(),{weekday:"short"}).replace(".",""))+' '+parseInt(r.dk.slice(8),10)+'</button>'}).join("")+'</div>';
+  var txt=moves.concat(lights);
+  var res=txt.length?'<ul class="mlistu" style="padding-left:18px;margin:0">'+txt.map(function(x){return '<li>'+esc(x)+'</li>'}).join("")+'</ul>':(busyN?'<p class="small" style="margin:0">Aucune séance n’est touchée par tes soirées prises.</p>':'');
   window.__PLANNER={moves:moves.length,busy:busyN};
-  TB.week.push(card({key:"planner",title:"Planifier ma semaine",icon:"target",chip:busyN?'<span class="chip" style="margin-left:auto">'+busyN+' soirée'+(busyN>1?'s':'')+' prise'+(busyN>1?'s':'')+'</span>':'',sum:intro+'<details class="moredet inner"'+(busyN?' open':'')+'><summary>'+(busyN?'Modifier mes soirées prises':'Choisir mes soirées prises')+'</summary><div class="dlist">'+html+'</div></details>'+more+'<p class="small muted" style="margin:8px 0 0">Proposition seulement : ton programme officiel ne change pas.</p>'}));
+  TB.week.push(card({key:"planner",title:"Planifier ma semaine",icon:"target",chip:busyN?'<span class="chip" style="margin-left:auto">'+busyN+' soirée'+(busyN>1?'s':'')+' prise'+(busyN>1?'s':'')+'</span>':'',sum:'<p class="small" style="margin:0 0 10px;line-height:1.45">Touche les soirées où tu ne peux pas t’entraîner (en violet) : je replace tes séances sur les jours libres, sans trois séances dures de suite ni rien la veille d’un tournoi.</p>'+chips+res+'<p class="small muted" style="margin:8px 0 0">Proposition seulement : ton programme officiel ne change pas.</p>'}));
 })();
 
 /* ----- compte à rebours de tournoi : J-7 à J-1, trois gestes par jour ----- */
@@ -3124,7 +3109,7 @@ window.__gearStatus=gearStatus;
   window.__CD={left:items.length-done.length,total:items.length};
   var nm=String(tp.T.name||"").replace(/^Tournoi (national )?(d’|d')?/i,"");
   TB.today.splice(Math.min(1,TB.today.length),0,card({key:"countdown",title:"Compte à rebours · "+tp.label,icon:"flag",chip:'<span class="chip'+(items.length&&done.length===items.length?' green':'')+'" style="margin-left:auto">'+done.length+'/'+items.length+'</span>',
-    sum:'<div class="cdstrip" aria-hidden="true">'+strip+'</div><p class="small" style="margin:0 0 8px">'+esc(TFOCUS[String(tp.off)]||"")+(nm?" · "+esc(nm):"")+'</p><ul class="exo exock">'+li+'</ul>'}));
+    sum:'<ul class="exo exock">'+li+'</ul>'}));
 })();
 
 /* ----- Maintenant : l'action du moment, et la frise matin / séance / soir / coucher ----- */
@@ -3147,11 +3132,10 @@ window.__gearStatus=gearStatus;
   var msg,chips=[],cd=window.__CD;
   if(!hasLegs&&nowMin<15*60){msg="Note tes jambes de ce matin";chips.push('<button type="button" class="nc" data-remind="today">Jambes</button>')}
   else if(tp&&tp.kind==="pre"&&!((te.detente||[]).length)){msg="Ta détente du jour : 3 minutes pour ton tournoi";chips.push('<button type="button" class="nc" data-breath="3">Respirer 3 min</button>');chips.push('<button type="button" class="nc" data-guide="relax">Relâcher 4 min</button>')}
-  else if(cd&&cd.left>0&&tp){msg="Compte à rebours "+tp.label+" : "+cd.left+" petit"+(cd.left>1?"s":"")+" geste"+(cd.left>1?"s":"")+" à cocher";chips.push('<span class="nc">Gestes '+(cd.total-cd.left)+'/'+cd.total+'</span>')}
-  else if(trainToday&&!sessStarted){msg=(c.head||"Séance")+(c.mult!=null&&c.mult>0?" · "+c.mult+" %":"")+(sessLab?" à "+sessLab:"");chips.push('<span class="nc">Séance'+(sessLab?" "+sessLab:"")+'</span>')}
+  else if(cd&&cd.left>0&&tp){msg="Compte à rebours "+tp.label+" : "+cd.left+" petit"+(cd.left>1?"s":"")+" geste"+(cd.left>1?"s":"")+" à cocher"}
+  else if(trainToday&&!sessStarted){msg=(c.head||"Séance")+(c.mult!=null&&c.mult>0?" · "+c.mult+" %":"")+(sessLab?" à "+sessLab:"")}
   else if(nowMin>=20*60){msg="Au lit avant "+c.bed+" pour rattraper ta dette";}
   else{msg=trainToday?"Séance faite : récupère, mange et bois bien":"Rien d’obligatoire : récupère";}
-  if(c.bed&&!/Au lit avant/.test(msg))chips.push('<span class="nc">Coucher '+esc(c.bed)+'</span>');
   var fr="";steps.forEach(function(s,i){
     fr+='<div class="fstep'+(s.done?" done":i===cur?" cur":"")+'"><span class="fdot2">'+(s.done?'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>':'')+'</span><span>'+esc(s.lab)+'</span></div>';
     if(i<steps.length-1)fr+='<div class="fline'+(s.done?" done":"")+'"></div>'});
@@ -3238,42 +3222,23 @@ var APP=document.getElementById("app");
   var streak=0;for(var si=0;si<60;si++){var sk=dkey(NOW-si*DAY),sr=HIST[sk];if(!sr||(nn(sr.hrv)&&nn(sr.sleepScore))){if(si===0)continue;break}
     if(mornLvlOf(SKIP[sk]?null:sr.hrv,sr.sleepScore)==="green")streak++;else break}
   /* carte violette + frise, comme sur l'accueil : chaque onglet commence par l'essentiel, en une phrase */
-  function dl(k){return ["D","L","M","M","J","V","S"][dowOf(k)]}
   function stp(cls,lab,inner){return '<div class="fstep '+cls+'"><span class="fdot2">'+(inner||"")+'</span><span>'+esc(lab)+'</span></div>'}
   var CK='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
   function topCard(id,lab,msg,chips,strip){
     return '<section class="nowwrap" id="'+id+'" aria-label="'+esc(lab)+'"><div class="nowtop"><div class="nowlab">'+esc(lab)+'</div><div class="nowmsg">'+esc(msg)+'</div><div class="nowchips">'+chips.filter(Boolean).map(function(c){return '<span class="nc">'+esc(c)+'</span>'}).join("")+'</div></div>'+(strip?'<div class="frise f7">'+strip+'</div>':'')+'</section>'}
-  var wkTop=(function(){
-    var dw=(dowOf(todayKey)+6)%7,mon=dAdd(todayKey,-dw),strip="",n=0,next=null,planned=0;
-    for(var i=0;i<7;i++){var k=dAdd(mon,i),has=SS.some(function(x){return dkey(x.s)===k}),pd=null;(PLAN.days||[]).forEach(function(x){if(x.date===k)pd=x});if(pauseOf(k))pd={date:k,title:"Pause",kind:"repos"};
-      var tpk=tourPhase(k),isT=!!(tpk&&tpk.kind==="match"),sess=!!(pd&&/^(bad|renfo|velo|course|activation)/.test(pd.kind||"")&&!(JR[k]||{}).skip);
-      if(has)n++;if(sess)planned++;
-      if(!next&&k>=todayKey&&(sess||isT)&&!(k===todayKey&&has))next={k:k,t:isT?"Tournoi":pd.title};
-      var cls=k<todayKey?(has||isT?"g":"n"):k===todayKey?"cur"+(has?" g":""):(isT?"t":sess?"b":"n");
-      strip+=stp(cls,dl(k),k<todayKey&&(has||isT)?CK:(k>todayKey&&isT?'<span style="color:#fff;font-size:10px;font-weight:700">⚑</span>':""))}
-    var msg=window.__OVER?"Charge trop haute : allège ta prochaine séance dure":next?"Prochaine séance : "+(next.k===todayKey?"aujourd’hui":fmt(new Date(next.k+"T12:00:00Z").getTime(),{weekday:"long"}))+", "+next.t:"Semaine calme : récupère";
-    return topCard("weektop","CETTE SEMAINE",msg,[n+" séance"+(n>1?"s":"")+" faite"+(n>1?"s":""),planned?planned+" prévue"+(planned>1?"s":""):"",LW?({under:"charge sous ta fenêtre",in:"charge dans ta fenêtre",high:"charge au-dessus",over:"charge trop haute"})[LW.pos]:""],strip)})();
-  var bodyTop=(function(){
-    var line={green:"Ton corps est prêt",orange:"Quelques signaux à surveiller",red:"Ton corps demande du repos"}[level]||"Ton corps aujourd’hui";
-    return topCard("bodytop","TON CORPS",line,[nn(TODAY.sleepSec)?"":"Sommeil "+hmSec(TODAY.sleepSec),nn(HRV)?"":"VFC "+Math.round(HRV)+" ms",debtSeen>=4?"Dette "+fdur(DEBT):""],"")})();
-  var suiTop=(function(){
-    var strip="",gr=0,me=0;
-    for(var i=6;i>=0;i--){var k=dkey(NOW-i*DAY),r=HIST[k]||{},lv=mornLvlOf(SKIP[k]?null:r.hrv,r.sleepScore);if(lv){me++;if(lv==="green")gr++}
-      strip+=stp((lv?({green:"g",orange:"o",red:"r"})[lv]:"n")+(k===todayKey?" cur":""),dl(k),"")}
-    return topCard("suivitop","TES 7 DERNIERS JOURS",me?gr+" matin"+(gr>1?"s":"")+" vert"+(gr>1?"s":"")+" sur "+me:"Pas encore de mesure cette semaine",[streak>=2?streak+" jours verts d’affilée":"",LW?({under:"charge sous ta fenêtre",in:"charge dans ta fenêtre",high:"charge au-dessus",over:"charge trop haute"})[LW.pos]:""],strip)})();
   var tourTop=(function(){
     if(!nt)return topCard("tourtop","CYCLE","Pas de tournoi à venir : construis ta base",[],"");
     var strip="";
     if(ntd!=null&&ntd<=7)for(var o=-7;o<=0;o++){var k=dAdd(nt.start,o),past=k<todayKey;strip+=stp(past?"g":k===todayKey?"cur":"n",o===0?"J":"J"+o,past?CK:"")}
     var nm=String(nt.name||"").replace(/^Tournoi (national )?(d’|d')?/i,""),cd=window.__CD;
     var msg=ntd>0?(nm||"Tournoi")+" dans "+ntd+" jour"+(ntd>1?"s":""):"Tournoi en cours : "+(nm||"");
-    return topCard("tourtop",(nt.league?"CHAMPIONNAT":"TOURNOI"),msg,[cd&&ntd>0?"Gestes "+(cd.total-cd.left)+"/"+cd.total:"",ntd>0&&ntd<=7&&tourPhase(todayKey)?tourFocus(tourPhase(todayKey)):""],strip)})();
+    return topCard("tourtop",(nt.league?"CHAMPIONNAT":"TOURNOI"),msg,[],strip)})();
   var bilanDay=dowOf(todayKey)<=1;
   var TABS=[
     {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:rowify(todayItems(TB.today),["Ton programme","Compte à rebours","Récupération après","Reprise progressive","Jour de match","Tes jambes"])},
-    {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:[wkTop].concat(rowify(groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Planifier ma semaine","Pause et vacances","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, statut":"Plus de détails : 7 derniers jours, charge, bilan, statut"),["Cette semaine","Ta semaine","Bilan de la semaine"]))},
-    {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:[bodyTop].concat(rowify(groupCards(TB.body,["Ton corps aujourd'hui","Signaux du corps","Le coach propose"],"Plus de détails : récupération, sommeil, leviers, VFC de journée, analyses, progrès"),["Ton corps aujourd'hui"]))},
-    {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:[suiTop].concat(rowify(groupCards(TB.suivi,["Tes tendances (30 jours)","Calendrier de forme","Mon heure de coucher idéale","Mes déclencheurs","Assiduité du mois","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours"),["Tes tendances","Calendrier de forme"]))},
+    {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:rowify(groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[]),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Planifier ma semaine","Pause et vacances","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, statut":"Plus de détails : 7 derniers jours, charge, bilan, statut"),["Cette semaine","Ta semaine","Bilan de la semaine"])},
+    {k:"body",lab:"Corps",title:"Corps",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:rowify(groupCards(TB.body,["Ton corps aujourd'hui","Signaux du corps","Le coach propose"],"Plus de détails : récupération, sommeil, leviers, VFC de journée, analyses, progrès"),["Ton corps aujourd'hui"])},
+    {k:"suivi",lab:"Suivi",title:"Suivi",ic:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',items:rowify(groupCards(TB.suivi,["Tes tendances (30 jours)","Calendrier de forme","Mon heure de coucher idéale","Mes déclencheurs","Assiduité du mois","Tes tournois"],"Plus de détails : comparer deux semaines, journal, charges, courbes sur 90 jours"),["Tes tendances","Calendrier de forme"])},
     {k:"tour",lab:tourLab,title:nt?"Tournoi":"Cycle",ic:'<path d="M5 22V3M5 4h13l-2 4 2 4H5"/>',items:[tourTop].concat((function(){var all=(TB.ttop||[]).concat(TB.tour),top=[],rest=[];all.forEach(function(x){(/id="matchcard"|id="detentecard"|id="mentalcard"|id="goalcard"|Débrief du coach/.test(x)?top:rest).push(x)});
       return /id="matchcard"/.test(top.join(""))&&rest.length?top.concat(['<details class="moredet"><summary>Plus de détails : frise, jours du tournoi, cycle</summary><div class="stack" style="margin-top:12px">'+rowify(rest,[]).join("")+'</div></details>']):all})())}
   ];
