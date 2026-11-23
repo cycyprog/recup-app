@@ -437,6 +437,25 @@ h2{font-size:16px;font-weight:600}
 .week7{display:flex;gap:7px;margin:4px 0 6px} .dd2{width:22px;height:22px;border-radius:50%;background:var(--line)} .dd2.on{background:#2fcf6b} .dd2.today{box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--accent)}
 #updbar{position:fixed;left:14px;right:14px;bottom:calc(78px + env(safe-area-inset-bottom,0px));z-index:70;display:flex;justify-content:space-between;align-items:center;gap:10px;background:#2a2350;color:#fff;border-radius:18px;padding:10px 12px 10px 16px;font-weight:600;box-shadow:0 8px 24px rgba(42,35,80,.35)}
 #updbar button{border:0;border-radius:99px;background:#fff;color:#4a2fc0;font:700 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:8px 14px;cursor:pointer}
+/* ===== menu (panneau latéral) ===== */
+.burger{flex:none;width:40px;height:40px;border-radius:13px;border:0;background:var(--card);box-shadow:0 1px 2px rgba(60,40,120,.06),0 6px 16px rgba(60,40,120,.08);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;margin-left:2px}
+.burger i{display:block;width:17px;height:2.2px;border-radius:2px;background:var(--accent)}
+html.dark .burger{box-shadow:none;border:1px solid var(--line)}
+#menu{position:fixed;inset:0;z-index:75}
+#menu[hidden]{display:none}
+.mscrim{position:absolute;inset:0;background:rgba(29,27,46,.38);opacity:0;transition:opacity .25s ease}
+.mpanel{position:absolute;top:0;right:0;bottom:0;width:min(90vw,400px);background:var(--bg);box-shadow:-12px 0 40px rgba(0,0,0,.2);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.2,.85,.25,1);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+#menu.open .mscrim{opacity:1}
+#menu.open .mpanel{transform:none}
+.mhead{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 8px}
+.mhead b{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.mhead button{border:0;border-radius:99px;background:var(--blue-soft);color:var(--accent);font:700 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:8px 16px;cursor:pointer}
+.mscroll{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 14px 30px}
+#menubody{display:flex;flex-direction:column;gap:12px}
+.mh{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 4px 0;font-weight:700}
+.mit{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;border-radius:16px;background:var(--card);color:var(--fg);padding:14px 16px;font:600 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer;text-align:left;margin-top:8px;box-shadow:0 1px 2px rgba(60,40,120,.05),0 6px 16px rgba(60,40,120,.06)}
+.mit i{font-style:normal;color:var(--muted);font-size:20px}
+.mnote{font-size:12.5px;color:var(--muted);margin:6px 4px 0}
 /* ===== lignes repliables ===== */
 .card.rowcard{padding:0}
 .rowcard>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr 24px;column-gap:8px;align-items:center;padding:15px 16px;-webkit-tap-highlight-color:transparent}
@@ -532,8 +551,8 @@ h2{font-size:16px;font-weight:600}
 #ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 4px);transform:translate(-50%,-44px);z-index:60;padding:7px 14px;border-radius:99px;background:var(--card);color:var(--fg);box-shadow:0 2px 12px rgba(0,0,0,.18);font:600 13px -apple-system,system-ui,sans-serif;opacity:0;pointer-events:none;transition:opacity .15s,transform .2s;white-space:nowrap}
 #appnote{display:none;margin:0 0 10px;padding:9px 12px;border-radius:12px;background:var(--soft);color:var(--muted);font-size:13px;line-height:1.35;text-align:center}
 #appnote.on{display:block} #appnote.warn{background:var(--orange-soft);color:var(--orange-t)}
-#appfoot{display:none;margin-top:18px;text-align:center;font-size:12.5px;color:var(--muted);line-height:1.6}
-#appfoot.on{display:block} #appfoot button{border:0;background:none;color:var(--accent);font:600 13px -apple-system,system-ui,sans-serif;padding:6px 8px;cursor:pointer}
+#appfoot{display:none}
+#appfoot.on{display:block}
 .appc{padding:18px;border-radius:20px;background:var(--card);display:flex;flex-direction:column;gap:12px}
 .appc h1{font-size:28px} .appc p{margin:0;font-size:15px;line-height:1.45} .appc .err{color:var(--red);font-weight:600} .appc .ok{color:var(--green);font-weight:600}
 .appc input{width:100%;box-sizing:border-box;font:16px/1.2 ui-monospace,Menlo,monospace;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
@@ -616,7 +635,7 @@ html.dark .tabbar{box-shadow:none;border-top:1px solid var(--line)}
 <body>
 <div id="appnote" role="status"></div>
 <div class="stack" id="app"></div>
-<div id="appfoot"></div>
+<div id="menu" hidden role="dialog" aria-modal="true" aria-label="Menu"><div class="mscrim" data-menu="close"></div><aside class="mpanel"><div class="mhead"><b>Menu</b><button type="button" data-menu="close">Fermer</button></div><div class="mscroll"><div id="menubody"></div><div id="appfoot"></div></div></aside></div>
 <button type="button" id="chatfab" aria-label="Demander au coach" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/></svg></button>
 <div id="chat" hidden role="dialog" aria-modal="true" aria-label="Coach"></div>
 <button type="button" id="breathfab" data-breath="0" aria-label="Respiration guidée" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.6"/><circle cx="12" cy="12" r="6.6"/><circle cx="12" cy="12" r="10.4"/></svg></button>
@@ -632,7 +651,7 @@ html.dark .tabbar{box-shadow:none;border-top:1px solid var(--line)}
 </div>
 <script>
 window.DATA = /*DATA*/null;
-window.__BUILD = "7ff6e67-1795445212";   /* remplacé à la publication par le numéro de version (voir publish-app.yml) */
+window.__BUILD = "993ed2e-1795446202";   /* remplacé à la publication par le numéro de version (voir publish-app.yml) */
 </script>
 <script id="boot">
 /* Mode « appli » : quand la page est ouverte hors Scriptable (window.DATA vide), elle charge elle-même les données
@@ -684,7 +703,7 @@ function paint(){
   if(left!=null&&left>0&&left<30*86400000){lines.push("Ton jeton GitHub expire dans "+Math.max(1,Math.ceil(left/86400000))+" jour"+(left>86400000*1.5?"s":"")+" : crée-en un nouveau (étapes dans docs/PWA.md), puis « Oublier le jeton » et colle le nouveau.");warn=true}
   if(loaded.calAt&&Date.now()-new Date(loaded.calAt).getTime()>CAL_STALE){lines.push("Agenda non mis à jour depuis plus de 24 h : ouvre Scriptable pour le synchroniser.");warn=true}
   NOTE.innerHTML=lines.map(esc).join("<br>");NOTE.className=lines.length?"on"+(warn||status!=="ok"?" warn":""):"";
-  FOOT.innerHTML='<div>Données de '+esc(when(loaded.at))+'</div><button type="button" data-app="refresh">Actualiser</button><button type="button" data-app="collect">Collecter maintenant</button><button type="button" data-app="export">Exporter le journal</button><button type="button" data-app="forget">Oublier le jeton</button>';
+  FOOT.innerHTML='<h3 class="mh">Données</h3><div class="mnote">Données de '+esc(when(loaded.at))+'</div><button type="button" class="mit" data-app="refresh"><span>Actualiser</span><i>›</i></button><button type="button" class="mit" data-app="collect"><span>Collecter maintenant</span><i>›</i></button><button type="button" class="mit" data-app="export"><span>Exporter le journal</span><i>›</i></button><h3 class="mh">Compte</h3><button type="button" class="mit" data-app="forget"><span>Oublier le jeton</span><i>›</i></button><div class="mnote">Version '+esc(String(window.__BUILD||"").indexOf("__BUILD")===0?"de développement":String(window.__BUILD||"").split("-")[0])+'</div>';
   FOOT.className="on";
 }
 /* ----- données ----- */
@@ -1420,7 +1439,7 @@ function dotsRow(arr){return '<div class="dots">'+arr.map(function(c){return '<i
 function tile(label,val,sub,vis,color,key){return '<div class="tile tap" role="button" tabindex="0" data-sheet="'+key+'"><span class="chev">›</span><div class="tl">'+label+'</div><div class="tv"'+(color?' style="color:'+color+'"':'')+'>'+val+'</div><div class="ts">'+sub+'</div>'+(vis||"")+'</div>'}
 function frat(x){return (x==null||!isFinite(x))?"–":x.toFixed(2).replace(".",",")}
 
-var TB={today:[],week:[],body:[],tour:[]};   /* contenu de chaque onglet */
+var TB={today:[],week:[],body:[],tour:[],menu:[]};   /* contenu de chaque onglet */
 var out=TB.today;
 var ageH=S.generatedAt?(NOW-new Date(S.generatedAt).getTime())/H:null;
 var TODAYD=TODAY;
@@ -2312,7 +2331,8 @@ TB.wtop=[];
 /* ===== onglet Tournoi : ta route jusqu'aux compétitions ===== */
 TB.ttop=[];
 (function(){
-  var nt=null;EVTS.forEach(function(T){if(!nt&&T.end>=todayKey)nt=T});if(!nt)return;
+  var nt=null;EVTS.forEach(function(T){if(!nt&&T.end>=todayKey)nt=T});
+  if(nt){   /* la carte « Ta route » n'existe que s'il y a un tournoi à venir ; l'Atelier détente, le Mental et l'objectif, eux, existent toujours */
   var d0=dDiff(nt.start,todayKey),last=nt;EVTS.forEach(function(T){if(T.start>last.start&&dDiff(T.start,todayKey)<=42)last=T});var span=Math.max(dDiff(last.end,todayKey)+3,10);
   var prevT=null;EVTS.forEach(function(T){if(T.end<todayKey)prevT=T});
   var c0=prevT?prevT.end:((PLAN.days&&PLAN.days.length)?PLAN.days[0].date:todayKey),tot=Math.max(1,dDiff(nt.start,c0)),pr=cl(dDiff(todayKey,c0)/tot*100);
@@ -2332,6 +2352,7 @@ TB.ttop=[];
   s+='<path d="M'+(X(0)+px/2)+' '+(y+20)+' l-4 6 h8 z" fill="var(--fg)"/>';
   var tl=svg(w,y+40,s,"Frise jusqu'aux compétitions")+'<div class="legend"><span><i style="background:var(--light)"></i>préparation</span><span><i style="background:var(--awake)"></i>affûtage J-7</span><span><i style="background:var(--orange)"></i>compétition</span><span><i style="background:var(--teal)"></i>récupération</span></div>';
   TB.ttop.push('<section class="card sec">'+hero+'<h3>Ta route</h3>'+tl+'</section>');
+  }
   /* ----- phrases clés personnelles (gardées sur cet appareil) ----- */
   var PHRASES=["Je respire, je relâche, je joue.","Je suis prêt : j'ai déjà joué ça cent fois.","Cette énergie, c'est du carburant.","Un point à la fois.","Le prochain point est le seul qui compte.","Je joue le volant, pas le score.","Point suivant.","Effacé, je reviens au placement.","Épaules basses, mains souples.","Prise légère, jambes vives.","Ce match vaut comme le troisième.","Même échauffement, mêmes gestes."];
   var MYP=(function(){var a=window.__MYPHR;if(!a){try{a=JSON.parse(localStorage.getItem("recup-phrases")||"[]")}catch(e){a=[]}}return Array.isArray(a)?a.filter(function(x){return typeof x==="string"&&x.trim()}).slice(0,2):[]})();
@@ -2808,11 +2829,14 @@ TB.suivi=[];
   bars='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Dette gagnée ou rattrapée chaque nuit"><line x1="0" x2="'+W+'" y1="'+mid+'" y2="'+mid+'" stroke="var(--line)"/>'+bars+'</svg>';
   var MW=getMyWake(),wkdRows=[[1,"Lundi"],[2,"Mardi"],[3,"Mercredi"],[4,"Jeudi"],[5,"Vendredi"],[6,"Samedi"],[0,"Dimanche"]].map(function(x){return '<div class="mrow" style="grid-template-columns:1fr auto"><label for="wkd-'+x[0]+'"><b>'+x[1]+'</b></label><input type="time" id="wkd-'+x[0]+'" data-dow="'+x[0]+'" value="'+esc(MW[String(x[0])]||"")+'" aria-label="Réveil habituel le '+x[1].toLowerCase()+'"></div>'}).join("");
   var wkBase="07:30";for(var wi0=1;wi0<=7;wi0++){var wv0=MW[String(wi0%7)];if(wv0){wkBase=wv0;break}}
-  var wakeDays='<details class="moredet inner"'+(window.__WKOPEN?" open":"")+'><summary>Mes réveils habituels</summary><div class="mbody"><p class="small muted" style="margin:0 0 8px;line-height:1.45">Choisis ton heure de réveil : l’appli en déduit ton coucher chaque soir. Rien n’est enregistré tant que tu n’appuies pas sur un bouton.</p>'+
+  var wakeInner='<div class="mbody"><p class="small muted" style="margin:0 0 8px;line-height:1.45">Choisis ton heure de réveil : l’appli en déduit ton coucher chaque soir. Rien n’est enregistré tant que tu n’appuies pas sur un bouton.</p>'+
     '<div class="wakerow"><label for="wk-all">Même heure pour</label><input type="time" id="wk-all" value="'+esc(wkBase)+'" aria-label="Heure de réveil à appliquer"></div>'+
     '<div class="jchips" style="margin-bottom:6px"><button type="button" class="jchip on" data-wkapply="all">Toute la semaine</button><button type="button" class="jchip" data-wkapply="week">Lun–ven</button><button type="button" class="jchip" data-wkapply="we">Sam–dim</button></div>'+
     '<h3 style="margin-top:14px">Ou jour par jour</h3>'+wkdRows+
-    '<button type="button" class="bigbtn" data-wksave="1" style="margin-top:10px">Enregistrer mes réveils</button><button type="button" class="linkbtn" data-wkclear="1" style="margin-top:4px">Tout effacer</button></div></details>';
+    '<button type="button" class="bigbtn" data-wksave="1" style="margin-top:10px">Enregistrer mes réveils</button><button type="button" class="linkbtn" data-wkclear="1" style="margin-top:4px">Tout effacer</button></div>';
+  window.__SUBS=window.__SUBS||{};(function(){var vs=[0,1,2,3,4,5,6].map(function(d){return MW[String(d)]||""}),set=vs.filter(Boolean);window.__SUBS["Réveils habituels"]=!set.length?"Pas encore réglés":set.every(function(v){return v===set[0]})&&set.length===7?"Tous les jours à "+set[0]:set.length+" jour"+(set.length>1?"s":"")+" réglé"+(set.length>1?"s":"")+" sur 7"})();
+  TB.menu.push(card({key:"wakes",title:"Réveils habituels",icon:"moon",sum:wakeInner}));
+  var wakeDays='<p class="small muted" style="margin:0 0 6px"><button type="button" class="linkbtn" data-menu="open" data-menu-item="Réveils habituels">Régler mes réveils habituels ›</button></p>';
   var c=window.__COACHB||{},meterH=meter([{to:DEBT_MID/mx*100,c:"var(--green)"},{to:DEBT_HI/mx*100,c:"var(--orange)"},{to:100,c:"var(--red)"}],[{p:Math.min(100,DEBT/mx*100)}]);
   var sum='<div class="debtbig"><b class="c-'+lv+'">'+fdur(DEBT)+'</b><span class="chip '+lv+'">'+lab+'</span></div>'+meterH+
     '<div class="debtlegend"><span>0</span><span>'+fdur(DEBT_MID)+' : à rattraper</span><span>'+fdur(DEBT_HI)+' : élevée</span></div>'+
@@ -2921,7 +2945,7 @@ window.__gearStatus=gearStatus;
     return '<div class="grow"><div class="gh"><b>'+g.name+'</b><span class="small muted">'+(g.last?(g.unit==="h"?Math.round(g.hrs)+' h':g.n+' séance'+(g.n>1?'s':''))+' depuis le '+esc(fmt(new Date(g.last+"T12:00:00Z").getTime(),{day:"numeric",month:"short"}))+' · repère '+g.limit+(g.unit==="h"?' h':' séances'):'pas encore suivi')+'</span></div>'+
       (g.last?meter([{to:80,c:"var(--green)"},{to:100,c:"var(--orange)"}],[{p:pc}]):'')+
       '<div class="gact"><button type="button" class="jchip" data-gear="'+g.id+'">Changé aujourd’hui</button><label class="small muted">ou le <input type="date" id="gd-'+g.id+'" data-geardate="'+g.id+'" class="txtin" style="width:auto;padding:6px 8px"></label></div></div>'}).join("");
-  TB.suivi.push(card({key:"gear",title:"Matériel",icon:"bars",sum:'<div class="glist">'+rows+'</div><p class="small muted" style="margin:8px 0 0">Compte tes séances de bad enregistrées par Garmin. Repères indicatifs : cordes toutes les 25 séances, grip toutes les 6, chaussures vers 120 h. Touche « Changé aujourd’hui » quand tu changes : un rappel apparaît sur l’accueil quand le repère est atteint.</p>'}));
+  TB.menu.push(card({key:"gear",title:"Matériel",icon:"bars",sum:'<div class="glist">'+rows+'</div><p class="small muted" style="margin:8px 0 0">Compte tes séances de bad enregistrées par Garmin. Repères indicatifs : cordes toutes les 25 séances, grip toutes les 6, chaussures vers 120 h. Touche « Changé aujourd’hui » quand tu changes : un rappel apparaît sur l’accueil quand le repère est atteint.</p>'}));
 })();
 
 /* ----- assiduité : séances d'entraînement faites contre prévues, ce mois-ci et le mois dernier ----- */
@@ -3188,7 +3212,8 @@ window.__gearStatus=gearStatus;
   else sum='<p class="small" style="margin:0 0 10px;line-height:1.45">Pars en vacances sans stress : pendant la pause, ni rappels, ni alertes, ni reproches, et l’assiduité ne compte pas ces jours-là. À la reprise, l’intensité remonte par paliers.</p>'+
     '<div style="display:flex;gap:8px;align-items:center"><label class="small muted" for="pz-to">Jusqu’au</label><input type="date" id="pz-to" class="txtin" style="flex:1" value="'+dAdd(todayKey,7)+'" min="'+todayKey+'"><button type="button" class="jchip on" data-pause="1">Mettre en pause</button></div>'+
     (rp?'<p class="small muted" style="margin:10px 0 0">Reprise en cours : jour '+(rp.idx+1)+'/'+rp.total+'.</p>':'');
-  TB.week.push(card({key:"pausec",title:"Pause et vacances",icon:"moon",chip:pz?'<span class="chip orange" style="margin-left:auto">en pause</span>':'',sum:sum}));
+  window.__SUBS=window.__SUBS||{};window.__SUBS["Pause et vacances"]=pz?"En pause jusqu’au "+pz.to.slice(8)+"/"+pz.to.slice(5,7):"Aucune pause en cours";
+  TB.menu.push(card({key:"pausec",title:"Pause et vacances",icon:"moon",chip:pz?'<span class="chip orange" style="margin-left:auto">en pause</span>':'',sum:sum}));
 })();
 
 /* ----- lignes repliables : les cartes secondaires deviennent une ligne (titre + résumé), qui se déplie au toucher ----- */
@@ -3204,6 +3229,7 @@ function rowify(items,openT){
     var sub=(t2.textContent||"").replace(/\s+/g," ").trim();
     if(t==="Dette de sommeil"&&typeof DEBT!=="undefined"&&window.__COACHB)sub="Dette "+fdur(DEBT)+" · coucher avant "+window.__COACHB.bed+(typeof window.__COACHB.wakeNext==="number"?" · réveil "+ftm(window.__COACHB.wakeNext):"");if(sub.length>72)sub=sub.slice(0,70).replace(/\s+\S*$/,"")+"…";
     if(t==="Débrief de ta séance"&&window.__DSUB)sub=window.__DSUB;
+    if(window.__SUBS&&window.__SUBS[t])sub=window.__SUBS[t];
     var open=(window.__ROWOPEN&&window.__ROWOPEN[t]!=null)?window.__ROWOPEN[t]:!!window.__ROWSOPEN;
     return '<details class="card sec rowcard"'+(s.id?' id="'+s.id+'"':'')+' data-row="'+esc(t)+'"'+(open?' open':'')+'><summary><div class="sechead">'+hdHtml+'</div>'+(sub?'<div class="rowsub">'+esc(sub)+'</div>':'')+'</summary><div class="rowbody">'+s.innerHTML+'</div></details>';
   });
@@ -3229,7 +3255,7 @@ var APP=document.getElementById("app");
   var allT=(TB.ttop||[]).concat(TB.tour),T_IDS=/id="matchcard"|id="detentecard"|id="mentalcard"|id="goalcard"|Débrief du coach/;
   var matchH=allT.filter(function(x){return /id="matchcard"/.test(x)}),detH=allT.filter(function(x){return /id="detentecard"/.test(x)}),mentH=allT.filter(function(x){return /id="mentalcard"/.test(x)}),goalH=allT.filter(function(x){return /id="goalcard"/.test(x)}),
     debH=allT.filter(function(x){return /Débrief du coach/.test(x)}),cycleH=allT.filter(function(x){return !T_IDS.test(x)});
-  var PROG_T=["Assiduité du mois","Tes tournois","Quand je performe","Progression des charges","Matériel"];
+  var PROG_T=["Assiduité du mois","Tes tournois","Quand je performe","Progression des charges"];
   function isProg(x){return PROG_T.some(function(t){return x.indexOf('<h2>'+t)>=0})}
   var sForme=(TB.suivi||[]).filter(function(x){return !isProg(x)}),sProg=(TB.suivi||[]).filter(isProg);
   var wkItems=rowify(groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[],cycleH),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Planifier ma semaine","Pause et vacances","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, cycle, statut":"Plus de détails : 7 derniers jours, charge, bilan, cycle, statut"),["Cette semaine","Ta semaine","Bilan de la semaine"]);
@@ -3238,7 +3264,7 @@ var APP=document.getElementById("app");
     {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:rowify(todayItems(TB.today.concat(inWin?matchH:[])),["Ton programme","Compte à rebours","Récupération après","Reprise progressive","Jour de match","Tes jambes"])},
     {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:wkItems},
     {k:"forme",lab:"Forme",title:"Forme",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:rowify(groupCards(TB.body.concat(sForme),["Ton corps aujourd'hui","Signaux du corps","Le coach propose","Tes tendances (30 jours)","Calendrier de forme","Mon heure de coucher idéale","Mes déclencheurs"],"Plus de détails : récupération, sommeil, comparaisons, journal"),["Ton corps aujourd'hui","Tes tendances","Calendrier de forme"])},
-    {k:"prog",lab:"Progrès",title:"Progrès",ic:'<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>',items:goalH.concat(detH,mentH,rowify(groupCards(debH.concat(sProg),["Débrief du coach","Assiduité du mois","Tes tournois","Quand je performe"],"Plus de détails : progression des charges, matériel"),[]))}
+    {k:"prog",lab:"Progrès",title:"Progrès",ic:'<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>',items:detH.concat(mentH,rowify(groupCards(debH.concat(sProg),["Débrief du coach","Assiduité du mois","Tes tournois","Quand je performe"],"Plus de détails : progression des charges"),[]))}
   ];
   if(!window.__TAB){try{var tk=JSON.parse(localStorage.getItem("recup-tab")||"null");if(tk&&Date.now()-tk.at<3*H)window.__TAB=tk.k}catch(e){}}
   var cur=window.__TAB||"today";if(!TABS.some(function(x){return x.k===cur}))cur="today";
@@ -3246,11 +3272,14 @@ var APP=document.getElementById("app");
   var streakChip=streak>=2?'<span class="streak" title="Matins verts d’affilée"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12c2-2.96 0-7-1-8 0 3.038-1.773 4.741-3 6-1.226 1.26-2 3.24-2 5a6 6 0 1 0 12 0c0-1.532-1.056-3.94-2-5-1.786 3-2.791 3-4 2z"/></svg> '+streak+' jours verts</span>':'';
   var html=TABS.map(function(T){
     return '<div class="tabpanel" data-panel="'+T.k+'" role="tabpanel"'+(T.k===cur?"":" hidden")+'>'+
-      '<header><div><div class="kicker">'+esc(dayName(NOW))+'</div><h1>'+T.title+'</h1></div><div class="hchips">'+streakChip+syncChip+'</div></header>'+
+      '<header><div><div class="kicker">'+esc(dayName(NOW))+'</div><h1>'+T.title+'</h1></div><div class="hchips">'+streakChip+syncChip+'</div><button type="button" class="burger" data-menu="open" aria-label="Ouvrir le menu" aria-haspopup="dialog"><i></i><i></i><i></i></button></header>'+
       T.items.join("")+'</div>'}).join("");
   html+='<nav class="tabbar" role="tablist" aria-label="Sections">'+TABS.map(function(T){
     return '<button type="button" role="tab" data-tab="'+T.k+'" aria-selected="'+(T.k===cur?"true":"false")+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+T.ic+'</svg>'+esc(T.lab)+'</button>'}).join("")+'</nav>';
   APP.innerHTML=html;
+  /* menu : l'objectif de classement, puis les réglages (réveils habituels, pause, matériel) en lignes repliables */
+  var mb=document.getElementById("menubody");
+  if(mb)mb.innerHTML=(goalH.length?goalH[0]:'')+'<h3 class="mh">Réglages</h3>'+rowify(TB.menu,[]).join("");
 })();
 window.__setTab=function(k){
   window.__TAB=k;try{localStorage.setItem("recup-tab",JSON.stringify({k:k,at:Date.now()}))}catch(e){}
@@ -3278,8 +3307,8 @@ window.__setTab=function(k){
 })();
 /* ----- messages au coach : gardés dans le journal du jour (msgs), lus par l'analyse du matin, qui répond dans analyse.json (reponses) ----- */
 function getMyWake(){var a=window.__MYWAKE;if(!a){try{a=JSON.parse(localStorage.getItem("recup-wake")||"{}")}catch(e){a={}}}return a&&typeof a==="object"?a:{}}
-window.__wakeDays=function(map){var a=JSON.parse(JSON.stringify(getMyWake()));Object.keys(map).forEach(function(d){var v=String(map[d]||"");if(v&&!/^\d\d:\d\d$/.test(v))return;if(v)a[String(d)]=v;else delete a[String(d)]});window.__MYWAKE=a;try{localStorage.setItem("recup-wake",JSON.stringify(a))}catch(e){}window.__WKOPEN=true;window.__rerun()};
-window.__wakeDay=function(d,v){var a=JSON.parse(JSON.stringify(getMyWake()));v=String(v||"");if(v&&!/^\d\d:\d\d$/.test(v))return;if(v)a[String(d)]=v;else delete a[String(d)];window.__MYWAKE=a;try{localStorage.setItem("recup-wake",JSON.stringify(a))}catch(e){}window.__WKOPEN=true;window.__rerun()};
+window.__wakeDays=function(map){var a=JSON.parse(JSON.stringify(getMyWake()));Object.keys(map).forEach(function(d){var v=String(map[d]||"");if(v&&!/^\d\d:\d\d$/.test(v))return;if(v)a[String(d)]=v;else delete a[String(d)]});window.__MYWAKE=a;try{localStorage.setItem("recup-wake",JSON.stringify(a))}catch(e){}window.__rerun()};
+window.__wakeDay=function(d,v){var a=JSON.parse(JSON.stringify(getMyWake()));v=String(v||"");if(v&&!/^\d\d:\d\d$/.test(v))return;if(v)a[String(d)]=v;else delete a[String(d)];window.__MYWAKE=a;try{localStorage.setItem("recup-wake",JSON.stringify(a))}catch(e){}window.__rerun()};
 window.__jcomptxt=function(date,key,v){var e=JSON.parse(JSON.stringify(JR[date]||{}));e.comp=e.comp||{};v=String(v||"").trim().slice(0,200);if((e.comp[key]||"")===v)return;if(v)e.comp[key]=v;else delete e.comp[key];if(!Object.keys(e.comp).length)delete e.comp;
   /* enregistre sans redessiner la page : sinon, en passant d'un champ à l'autre, le second perdrait le focus */
   e.at=new Date().toISOString();window.__JRX=window.__JRX||{};window.__JRX[date]=e;JR[date]=e;
@@ -3455,7 +3484,7 @@ document.addEventListener("keydown",function(e){
   if((e.key==="Enter"||e.key===" ")&&e.target.getAttribute&&e.target.getAttribute("data-sheet")){e.preventDefault();window.__openSheet(e.target.getAttribute("data-sheet"))}
   if((e.key==="Enter"||e.key===" ")&&e.target.getAttribute&&e.target.getAttribute("data-day")){e.preventDefault();window.__openSheet("day:"+e.target.getAttribute("data-day"))}
 });
-APP.addEventListener("click",function(e){
+var appClick=function(e){
   var t=e.target,b=t.closest?t.closest("button"):null;
   var jb=t.closest?t.closest("[data-j]"):null;
   var mok=t.closest?t.closest("[data-matchok]"):null;if(mok){window.__jmatch(mok.getAttribute("data-matchok"),"09:00");return}
@@ -3493,7 +3522,8 @@ APP.addEventListener("click",function(e){
   if(t.closest&&t.closest("details,a,summary"))return;
   var card=t.closest?t.closest(".sec.tap"):null;
   if(card){var tb=card.querySelector("button[data-t]");if(tb)setOpen(tb,tb.getAttribute("aria-expanded")!=="true")}
-});
+};
+APP.addEventListener("click",appClick);var mbd=document.getElementById("menubody");if(mbd)mbd.addEventListener("click",appClick);   /* les actions du menu (réveils, pause, matériel) passent par le même gestionnaire */
 }
 })();
 </script>
@@ -3631,6 +3661,21 @@ document.addEventListener("click",function(e){var b=e.target.closest?e.target.cl
 box.addEventListener("click",function(e){var b=e.target.closest?e.target.closest("[data-g]"):null;if(!b)return;var a=b.getAttribute("data-g");if(a==="close")close();else if(a==="go")go();else if(a==="next")next()});
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!box.hidden)close()});
 window.__guide={open:open,close:close,finish:function(){if(cur)end()}};
+})();
+</script>
+<script id="menujs">
+/* Menu en haut à droite : l'objectif, les réglages et les actions rares (actualiser, collecter, exporter, jeton). */
+(function(){
+var m=document.getElementById("menu");if(!m)return;
+function other(){var sh=document.getElementById("sheet"),ch=document.getElementById("chat"),br=document.getElementById("breath"),gu=document.getElementById("guide");return (sh&&!sh.hidden)||(ch&&!ch.hidden)||(br&&!br.hidden)||(gu&&!gu.hidden)}
+function open(item){m.hidden=false;document.body.classList.add("lock");requestAnimationFrame(function(){m.classList.add("open")});
+  if(item){var r=m.querySelector('[data-row="'+item+'"]');if(r){r.open=true;setTimeout(function(){r.scrollIntoView&&r.scrollIntoView({block:"nearest"})},300)}}}
+function close(){m.classList.remove("open");setTimeout(function(){if(!m.classList.contains("open")){m.hidden=true;if(!other())document.body.classList.remove("lock")}},280)}
+document.addEventListener("click",function(e){var t=e.target;if(!t||!t.closest)return;
+  var b=t.closest("[data-menu]");if(b){var a=b.getAttribute("data-menu");if(a==="open"){e.preventDefault();open(b.getAttribute("data-menu-item"))}else if(a==="close")close();return}
+  var d=t.closest("#appfoot [data-app]");if(d&&d.getAttribute("data-app")!=="forget")close()});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!m.hidden)close()});
+window.__menu={open:open,close:close};
 })();
 </script>
 <script id="updatejs">
