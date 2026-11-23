@@ -462,6 +462,57 @@ html.dark .burger{box-shadow:none;border:1px solid var(--line)}
 .mctool .prac{flex:1;min-width:0}
 .mcf{display:flex;flex-direction:column;gap:8px}
 textarea.txtin{min-height:54px;resize:vertical;font:15px/1.35 -apple-system,system-ui,sans-serif}
+/* ===== accueil compact, pleine page ===== */
+#chatfab,#breathfab{display:none!important}
+.hbtn{flex:none;width:38px;height:38px;border-radius:13px;border:0;background:var(--card);color:var(--accent);box-shadow:0 1px 2px rgba(60,40,120,.06),0 6px 16px rgba(60,40,120,.08);display:flex;align-items:center;justify-content:center;cursor:pointer}
+html.dark .hbtn{box-shadow:none;border:1px solid var(--line)}
+.burger{width:38px;height:38px}
+header{gap:8px}
+header h1{font-size:27px}
+.hchips{gap:4px}
+.syncchip,.streak{font-size:11px;white-space:nowrap;padding:3px 8px}
+.card.hero{display:block;padding:12px 14px}
+.hero .herotop{display:flex;align-items:center;gap:12px;padding-right:18px}
+.hero .heroring{flex:none;width:56px}
+.hero .heroring svg{width:56px;height:56px;display:block}
+.hero .heroti{flex:1;min-width:0}
+.hero .vlab{font-size:11px;margin:0}
+.hero .vtitle{font-size:17px;line-height:1.2;margin:1px 0 0}
+.hero .minis{display:flex;justify-content:space-between;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.hero .mini{display:flex;align-items:center;gap:7px;min-width:0}
+.hero .mini svg.mr{width:30px;height:30px;margin:0;flex:none}
+.hero .mini span{display:block;font-size:inherit;color:inherit}
+.hero .mini small{display:block;font-size:10.5px;color:var(--muted);line-height:1.1;margin:0}
+.hero .mini b{display:block;font-size:14px;font-weight:600;margin:0;line-height:1.2}
+.nowtop{display:grid;grid-template-columns:1fr auto;column-gap:10px;align-items:center;padding:9px 14px}
+.nowtop .nowlab{grid-column:1/3;margin:0}
+.nowtop .nowmsg{margin:1px 0 0;font-size:14.5px}
+.nowtop .nowchips{margin:0;justify-content:flex-end;flex-wrap:nowrap}
+.frise{padding:8px 16px 0}
+.frise .fstep>span:last-child{display:none}
+.frise .fstep{min-width:0}
+.frise .fdot2{width:14px;height:14px}
+.frise .fdot2 svg{width:9px;height:9px}
+.frise .fstep.cur .fdot2{border-width:3px}
+.frise .fline{margin-top:6px}
+.jlist{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 1px 2px rgba(60,40,120,.05),0 8px 22px rgba(60,40,120,.07)}
+html.dark .jlist{box-shadow:none;border:1px solid var(--line)}
+.jr{border-top:1px solid var(--line);background:none;border-radius:0;padding:0;margin:0}
+.jr:first-child{border-top:0}
+.jr>summary{list-style:none;display:flex;align-items:center;gap:11px;padding:8px 14px;min-height:52px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.jr>summary::-webkit-details-marker{display:none}
+.jcoach .jr>summary{min-height:52px}
+.jic{width:26px;height:26px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center}
+.jic.ok{background:#2fcf6b}
+.jic.now{border:3px solid #ff7a1a}
+.jic.todo{border:2px solid #cfc9ee}
+.jm{flex:1;min-width:0;display:flex;flex-direction:column}
+.jm b{font-size:14.5px;font-weight:600;line-height:1.25}
+.jm small{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jch{width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);flex:none;margin:0 4px 0 2px;transition:transform .2s}
+.jr[open]>summary .jch{transform:rotate(45deg)}
+.jbody{padding:6px 14px 14px;border-top:1px solid var(--line)}
+.jsep{height:12px}
 /* ===== lignes repliables ===== */
 .card.rowcard{padding:0}
 .rowcard>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr 24px;column-gap:8px;align-items:center;padding:15px 16px;-webkit-tap-highlight-color:transparent}
@@ -657,7 +708,7 @@ html.dark .tabbar{box-shadow:none;border-top:1px solid var(--line)}
 </div>
 <script>
 window.DATA = /*DATA*/null;
-window.__BUILD = "c2144dc-1795447258";   /* remplacé à la publication par le numéro de version (voir publish-app.yml) */
+window.__BUILD = "13a8788-1795450791";   /* remplacé à la publication par le numéro de version (voir publish-app.yml) */
 </script>
 <script id="boot">
 /* Mode « appli » : quand la page est ouverte hors Scriptable (window.DATA vide), elle charge elle-même les données
@@ -1556,16 +1607,15 @@ var heroPct=Math.round(Math.max(0,Math.min(100,pctNow))),heroCol=LVC[level]||"va
 function mini(l,v,s){return '<div class="mini"><span>'+l+'</span><b>'+v+'</b>'+(s?'<small>'+s+'</small>':'')+'</div>'}
 var heroLoad=LW?Math.round(LW.a):(ST&&ST.ok?Math.round(ST.acute):null);
 function miniRing(pct,col){var r=17,c=2*Math.PI*r,p=Math.max(0,Math.min(100,pct||0))/100*c;return '<svg class="mr" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="17" fill="none" stroke="var(--line)" stroke-width="7"/><circle cx="22" cy="22" r="17" fill="none" stroke="'+col+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+p.toFixed(1)+' '+c.toFixed(1)+'" transform="rotate(-90 22 22)"/></svg>'}
-function miniR(l,v,s,pct,col){return '<div class="mini">'+miniRing(pct,col)+'<span>'+l+'</span><b>'+v+'</b>'+(s?'<small>'+s+'</small>':'')+'</div>'}
+function miniR(l,v,s,pct,col){return '<div class="mini">'+miniRing(pct,col)+'<span><small>'+l+'</small><b>'+v+'</b></span></div>'}
 var hr_slP=nn(TODAY.sleepSec)?0:TODAY.sleepSec/(8*3600)*100,hr_slC=nn(TODAY.sleepSec)?"var(--line)":(!nn(heroSc)?(heroSc>=75?"var(--green)":heroSc>=60?"var(--orange)":"var(--red)"):(TODAY.sleepSec>=7*3600?"var(--green)":TODAY.sleepSec>=6.5*3600?"var(--orange)":"var(--red)"));
 var hr_hvP=(nn(HRV)||!hrvB)?0:HRV/(hrvB*1.25)*100,hr_hvC=nn(HRV)?"var(--line)":((hrvB&&HRV>=hrvB*0.95)||HRV>=P.hrvLow+8?"var(--green)":HRV>=P.hrvLow?"var(--orange)":"var(--red)");
 var hr_ldP=LW?LW.a/LW.hiv*100:0,hr_ldC=LW?({under:"var(--blue)",in:"var(--green)",high:"var(--orange)",over:"var(--red)"})[LW.pos]||"var(--blue)":"var(--line)";
 out.push('<section class="card verdict hero tap" role="button" tabindex="0" data-sheet="reflexion" aria-label="Pourquoi ce verdict"><span class="chev">›</span>'+
-  '<div class="herotop"><div class="heroring">'+ringSvg(heroPct,heroCol,heroPct+"%")+'<small>récupération</small></div><div class="heroti"><div class="vlab c-'+level+'">Feu '+LBL[level].toLowerCase()+'</div><div class="vtitle">'+esc(vTitle)+'</div></div></div>'+
-  '<p class="vwhy">'+esc(vWhy)+'</p>'+
-  '<div class="minis">'+miniR("Sommeil",nn(TODAY.sleepSec)?"–":hmSec(TODAY.sleepSec),debtSeen>=4?"dette "+fdur(DEBT):nn(heroSc)?"":"score "+Math.round(heroSc),hr_slP,hr_slC)+
-    miniR("VFC",nn(HRV)?"–":Math.round(HRV)+" ms",hrvB?"base "+Math.round(hrvB):"",hr_hvP,hr_hvC)+
-    miniR("Charge 7 j",heroLoad==null?"–":String(heroLoad),LW?"fenêtre "+Math.round(LW.lov)+"–"+Math.round(LW.hiv):"",hr_ldP,hr_ldC)+'</div></section>');
+  '<div class="herotop"><div class="heroring">'+ringSvg(heroPct,heroCol,heroPct+"%")+'</div><div class="heroti"><div class="vlab c-'+level+'">Feu '+LBL[level].toLowerCase()+'</div><div class="vtitle">'+esc(vTitle)+'</div></div></div>'+
+  '<div class="minis">'+miniR("Sommeil",nn(TODAY.sleepSec)?"–":hmSec(TODAY.sleepSec),"",hr_slP,hr_slC)+
+    miniR("VFC",nn(HRV)?"–":Math.round(HRV)+" ms","",hr_hvP,hr_hvC)+
+    miniR("Charge",heroLoad==null?"–":String(heroLoad),"",hr_ldP,hr_ldC)+'</div></section>');
 
 /* ----- plan de ta journée (coach du matin) ----- */
 (function(){
@@ -2601,9 +2651,9 @@ out=TB.body;
   var html='<section class="card sec remind" aria-label="Rappels">'+R.map(function(r){return '<div class="rem"><span>'+r[0]+'</span>'+(r[1]?'<button type="button" class="jchip" data-remind="'+r[2]+'">'+r[1]+'</button>':'')+'</div>'}).join("")+'</section>';
   TB.today.splice(Math.min(1,TB.today.length),0,html);
   window.__remind=function(w){
-    if(w==="match"){window.__setTab("today");var m=document.getElementById("jm-"+window.__MK)||document.getElementById("matchcard");if(m&&m.scrollIntoView)m.scrollIntoView({block:"center"});if(m&&m.focus)m.focus();return}
+    if(w==="match"){window.__setTab("today");var tr=document.getElementById("tourrow");if(tr&&tr.tagName==="DETAILS")tr.open=true;var m=document.getElementById("jm-"+window.__MK)||document.getElementById("matchcard");if(m&&m.scrollIntoView)m.scrollIntoView({block:"center"});if(m&&m.focus)m.focus();return}
     window.__setTab("today");if(w==="yesterday"){window.__JDATE=yk;window.__JOPEN=true}else{window.__JDATE=null;window.__JOPEN=false}
-    window.__rerun();var j=document.getElementById("journal");if(j&&j.scrollIntoView)j.scrollIntoView({block:"start"})};
+    window.__rerun();var j=document.getElementById("journal");if(j&&j.tagName==="DETAILS")j.open=true;if(j&&j.scrollIntoView)j.scrollIntoView({block:"start"})};
 })();
 
 /* ===== onglet Suivi : tendances, comparaison de semaines, journal, progression des charges ===== */
@@ -2875,19 +2925,6 @@ TB.suivi=[];
 })();
 
 /* ----- jour de match : l'accueil se réduit à l'essentiel ----- */
-function todayItems(items){
-  var tp=tourPhase(todayKey);
-  if(!(tp&&tp.kind==="match")){
-    /* ordre de lecture : verdict, alertes et rappels, étape du jour (compte à rebours, récupération), programme, journal, le reste (sommeil...), analyse du coach */
-    var PR=[/id="nowcard"/,/card verdict hero/,/id="(trendbanner|overbanner|illbanner)"|card sec remind/,/data-cd=|data-post=|data-reprise=/,/id="matchcard"/,/<h2>Débrief de ta séance/,/<h2>Ton programme/,/id="journal"/,null,/<h2>L'analyse du coach/];
-    function rk(x){for(var i=0;i<PR.length;i++)if(PR[i]&&PR[i].test(x))return i;return PR.indexOf(null)}
-    return items.map(function(x,i){return {x:x,i:i,r:rk(x)}}).sort(function(a,b){return a.r-b.r||a.i-b.i}).map(function(o){return o.x});
-  }
-  var order=[/card verdict hero/,/id="matchday"/,/card sec remind/],main=[],used={};
-  order.forEach(function(re){for(var i=0;i<items.length;i++){if(!used[i]&&re.test(items[i])){used[i]=1;main.push(items[i]);break}}});
-  var rest=items.filter(function(x,i){return !used[i]});
-  return main.concat(rest.length?['<details class="moredet" id="todaymore"><summary>Plus de détails : programme, sommeil, journal, analyse</summary><div class="stack" style="margin-top:12px">'+rowify(rest,["Tes jambes"]).join("")+'</div></details>']:[]);
-}
 (function(){
   var tp=tourPhase(todayKey);if(!(tp&&tp.kind==="match"))return;
   var e=JR[todayKey]||{},c=e.comp||{},fm0=e.match||"09:00",P5=[["1","1"],["2","2"],["3","3"],["4","4"],["5","5"]],mp=window.__MYPNOW||[];
@@ -3185,9 +3222,8 @@ window.__gearStatus=gearStatus;
   var cur=-1;steps.forEach(function(s,i){if(cur<0&&!s.done)cur=i});
   var msg,chips=[],cd=window.__CD;
   if(!hasLegs&&nowMin<15*60){msg="Note tes jambes de ce matin";chips.push('<button type="button" class="nc" data-remind="today">Jambes</button>')}
-  else if(tp&&tp.kind==="pre"&&!((te.detente||[]).length)&&!((te.mental||[]).length)){msg="Une observation pour ton carnet mental ?";chips.push('<button type="button" class="nc" data-tab="prog">Ouvrir le carnet</button>')}
   else if(cd&&cd.left>0&&tp){msg="Compte à rebours "+tp.label+" : "+cd.left+" petit"+(cd.left>1?"s":"")+" geste"+(cd.left>1?"s":"")+" à cocher"}
-  else if(trainToday&&!sessStarted){msg=(c.head||"Séance")+(c.mult!=null&&c.mult>0?" · "+c.mult+" %":"")+(sessLab?" à "+sessLab:"")}
+  else if(trainToday&&!sessStarted){msg=(c.head||"Séance")+(c.mult!=null&&c.mult>0?" · "+c.mult+" %":"")+(sessLab?" à "+sessLab:"");if(planDay&&(planDay.blocks||[]).length&&ad.mult!==0)chips.push('<button type="button" class="nc" data-day="'+todayKey+'">Exercices</button>')}
   else if(nowMin>=20*60){msg="Au lit avant "+c.bed+" pour rattraper ta dette";}
   else{msg=trainToday?"Séance faite : récupère, mange et bois bien":"Rien d’obligatoire : récupère";}
   var fr="";steps.forEach(function(s,i){
@@ -3261,7 +3297,7 @@ function rowify(items,openT){
     return '<details class="card sec rowcard"'+(s.id?' id="'+s.id+'"':'')+' data-row="'+esc(t)+'"'+(open?' open':'')+'><summary><div class="sechead">'+hdHtml+'</div>'+(sub?'<div class="rowsub">'+esc(sub)+'</div>':'')+'</summary><div class="rowbody">'+s.innerHTML+'</div></details>';
   });
 }
-document.addEventListener("toggle",function(e){var t=e.target;if(t&&t.classList&&t.classList.contains("rowcard")){window.__ROWOPEN=window.__ROWOPEN||{};window.__ROWOPEN[t.getAttribute("data-row")]=t.open}},true);
+document.addEventListener("toggle",function(e){var t=e.target;if(t&&t.classList&&(t.classList.contains("rowcard")||t.classList.contains("jr"))){window.__ROWOPEN=window.__ROWOPEN||{};window.__ROWOPEN[t.getAttribute("data-row")]=t.open}},true);
 
 var APP=document.getElementById("app");
 /* ----- assemblage : un panneau par onglet + barre d'onglets ----- */
@@ -3278,6 +3314,55 @@ var APP=document.getElementById("app");
   /* Chaque information vit à un seul endroit :
      Aujourd'hui = quoi faire maintenant (et la préparation du tournoi quand il approche) ; Semaine = le programme et la charge ;
      Forme = l'état du corps et ses tendances ; Progrès = ce qui te fait avancer (objectif, détente, mental, tournois, assiduité). */
+  /* ----- accueil : verdict, « Maintenant », alertes, puis « ma journée » en lignes qui s'ouvrent au toucher ----- */
+  var CHK='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+  function parseCard(x){
+    var d=document.createElement("div");d.innerHTML=x;var s=d.firstElementChild;if(!s)return null;
+    var hd=s.querySelector(".sechead"),h2=hd&&hd.querySelector("h2"),ch=hd&&hd.querySelector(".chip"),t=h2?h2.textContent.trim():"";
+    var cc=ch?((/\b(green|orange|red|blue)\b/.exec(ch.className)||[])[1]||""):"";
+    if(hd&&hd.parentNode)hd.parentNode.removeChild(hd);
+    var tx=s.cloneNode(true);Array.prototype.forEach.call(tx.querySelectorAll(".btn,button,.more,script,svg"),function(n){n.parentNode.removeChild(n)});
+    var t2=document.createElement("div");t2.innerHTML=tx.innerHTML.replace(/<[^>]+>/g," ");
+    var sub=(t2.textContent||"").replace(/\s+/g," ").trim();if(sub.length>72)sub=sub.slice(0,70).replace(/\s+\S*$/,"")+"…";
+    return {id:s.id||"",title:t,chip:ch?ch.textContent.trim():"",cc:cc,sub:sub,body:s.innerHTML};
+  }
+  function jrow(p,o){
+    o=o||{};var key=o.key||p.title,open=(window.__ROWOPEN&&window.__ROWOPEN[key]!=null)?window.__ROWOPEN[key]:(!!window.__ROWSOPEN||!!o.open);
+    var title=o.title!=null?o.title:p.title,detail=o.detail!=null?o.detail:p.sub,chip=o.chip!=null?o.chip:p.chip,cc=o.cc!=null?o.cc:p.cc,st=o.st||"todo",id=o.id||p.id;
+    return '<details class="jr" data-row="'+esc(key)+'"'+(id?' id="'+esc(id)+'"':'')+(open?' open':'')+'><summary><span class="jic '+st+'">'+(st==="ok"?CHK:"")+'</span><span class="jm"><b>'+esc(title)+'</b>'+(detail?'<small>'+esc(detail)+'</small>':'')+'</span>'+(chip?'<span class="chip'+(cc?' '+cc:'')+'">'+esc(chip)+'</span>':'')+'<i class="jch" aria-hidden="true"></i></summary><div class="jbody">'+(o.body!=null?o.body:p.body)+'</div></details>';
+  }
+  function firstSent(t){var m=String(t||"").match(/^[^.!?]*[.!?]?/);var s=m?m[0].trim():String(t||"");return s.length>70?s.slice(0,68).replace(/\s+\S*$/,"")+"…":s}
+  function homeItems(all){
+    var hero=[],nowc=[],alerts=[],pool=[];
+    all.forEach(function(x){
+      if(/id="nowcard"/.test(x))nowc.push(x);
+      else if(/card verdict hero/.test(x))hero.push(x);
+      else if(/id="(trendbanner|overbanner|illbanner|collectbanner)"|card sec remind|class="banner/.test(x.slice(0,200)))alerts.push(x);
+      else pool.push(x)});
+    function take(re){var i=-1;pool.some(function(x,k){if(re.test(x)){i=k;return true}return false});return i>=0?pool.splice(i,1)[0]:null}
+    var mday=take(/id="matchday"/),post=take(/data-post=/),rep2=take(/data-reprise=/),jr0=take(/id="journal"/),prog=take(/<h2>Ton programme/),cd=take(/data-cd=/),mc=take(/id="matchcard"/),dette=take(/<h2>Dette de sommeil/),deb=take(/<h2>Débrief de ta séance/),coach=take(/<h2>L'analyse du coach/);
+    var c=window.__COACHB||{},te=JR[todayKey]||{},tp0=tourPhase(todayKey),rows=[],p;
+    var sessStarted=SS.some(function(x){return dkey(x.s)===todayKey})||te.done==="oui"||te.done==="partiel";
+    if(mday&&(p=parseCard(mday)))rows.push(jrow(p,{key:"Jour de match",st:"now",open:true}));
+    if(post&&(p=parseCard(post)))rows.push(jrow(p,{st:"now",open:true}));
+    if(rep2&&(p=parseCard(rep2)))rows.push(jrow(p,{st:"now",open:true}));
+    if(jr0&&(p=parseCard(jr0))){var lg=te.legs,lgn={fresh:"fraîches",ok:"normales",heavy:"lourdes"}[lg];
+      rows.push(jrow(p,{key:"journal",id:"journal",title:"Journal",detail:lg?"Jambes "+lgn:"Jambes à noter",chip:"",st:lg?"ok":"now"}))}
+    if(prog&&(p=parseCard(prog))){var hd2=String(ad.head||"").split(" · "),trn=!!c.trainToday&&!te.skip;
+      rows.push(jrow(p,{key:"Ton programme",title:(trn&&c.session?c.session+" · ":"")+hd2[0],detail:hd2[1]||firstSent(ad.text),chip:ad.mult!=null&&ad.mult>0?ad.mult+" %":"",cc:"",st:sessStarted?"ok":(trn?"now":"todo")}))}
+    if(cd||mc){var pcd=cd?parseCard(cd):null,pmc=mc?parseCard(mc):null,cdv=window.__CD,TT=tp0&&tp0.T?tp0.T:null;
+      var nmT=TT?String(TT.name||"").replace(/^Tournoi (national )?(d’|d')?/i,""):(pmc?pmc.title:"");
+      var dtT=TT?fmt(new Date(TT.start+"T12:00:00Z").getTime(),{weekday:"long",day:"numeric",month:"long"}):"";
+      rows.push(jrow({id:"tourrow",title:"Tournoi",chip:"",cc:"",sub:"",body:""},{key:"Tournoi",id:"tourrow",title:"Tournoi"+(tp0?" "+tp0.label:""),detail:[nmT,dtT].filter(Boolean).join(" · "),
+        chip:cdv?(cdv.total-cdv.left)+"/"+cdv.total:"",cc:cdv&&cdv.left===0?"green":"orange",st:cdv&&cdv.left===0?"ok":"now",body:(pcd?pcd.body:"")+(pmc?'<div class="jsep"></div><div id="matchcard">'+pmc.body+'</div>':"")}))}
+    if(dette&&(p=parseCard(dette)))rows.push(jrow(p,{key:"Dette de sommeil",title:c.bed?"Coucher avant "+c.bed:"Sommeil",detail:DEBT>0?"Dette de sommeil "+fdur(DEBT):"Pas de dette de sommeil",chip:"",st:"todo"}));
+    if(deb&&(p=parseCard(deb)))rows.push(jrow(p,{key:"Débrief de ta séance",detail:window.__DSUB||p.sub,st:"todo"}));
+    pool.forEach(function(x){var q=parseCard(x);if(q&&q.title)rows.push(jrow(q,{st:"todo"}))});
+    var out=hero.concat(nowc,alerts);
+    if(rows.length)out.push('<div class="jlist">'+rows.join("")+'</div>');
+    if(coach&&(p=parseCard(coach)))out.push('<div class="jlist jcoach">'+jrow(p,{key:"L'analyse du coach",title:"Analyse du coach",st:"todo"})+'</div>');
+    return out;
+  }
   var inWin=!!tourPhase(todayKey);
   var allT=(TB.ttop||[]).concat(TB.tour),T_IDS=/id="matchcard"|id="carnetcard"|id="mentalcard"|id="goalcard"|Débrief du coach/;
   var matchH=allT.filter(function(x){return /id="matchcard"/.test(x)}),detH=allT.filter(function(x){return /id="carnetcard"/.test(x)}),mentH=allT.filter(function(x){return /id="mentalcard"/.test(x)}),goalH=allT.filter(function(x){return /id="goalcard"/.test(x)}),
@@ -3288,7 +3373,7 @@ var APP=document.getElementById("app");
   var wkItems=rowify(groupCards((TB.wtop||[]).concat(TB.week,TB.wstat||[],cycleH),["Cette semaine"].concat(bilanDay?["Bilan de la semaine"]:[],["Ta semaine","Planifier ma semaine","Pause et vacances","Le bilan du coach"]),bilanDay?"Plus de détails : 7 derniers jours, charge, cycle, statut":"Plus de détails : 7 derniers jours, charge, bilan, cycle, statut"),["Cette semaine","Ta semaine","Bilan de la semaine"]);
   if(!inWin&&matchH.length)wkItems.splice(1,0,matchH[0]);
   var TABS=[
-    {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:rowify(todayItems(TB.today.concat(inWin?matchH:[])),["Ton programme","Compte à rebours","Récupération après","Reprise progressive","Jour de match","Tes jambes"])},
+    {k:"today",lab:"Aujourd'hui",title:"Aujourd'hui",ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',items:homeItems(TB.today.concat(inWin?matchH:[]))},
     {k:"week",lab:"Semaine",title:"Semaine",ic:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',items:wkItems},
     {k:"forme",lab:"Forme",title:"Forme",ic:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',items:rowify(groupCards(TB.body.concat(sForme),["Ton corps aujourd'hui","Signaux du corps","Le coach propose","Tes tendances (30 jours)","Calendrier de forme","Mon heure de coucher idéale","Mes déclencheurs"],"Plus de détails : récupération, sommeil, comparaisons, journal"),["Ton corps aujourd'hui","Tes tendances","Calendrier de forme"])},
     {k:"prog",lab:"Progrès",title:"Progrès",ic:'<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>',items:detH.concat(mentH,rowify(groupCards(debH.concat(sProg),["Débrief du coach","Assiduité du mois","Tes tournois","Quand je performe"],"Plus de détails : progression des charges"),[]))}
@@ -3299,18 +3384,31 @@ var APP=document.getElementById("app");
   var streakChip=streak>=2?'<span class="streak" title="Matins verts d’affilée"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12c2-2.96 0-7-1-8 0 3.038-1.773 4.741-3 6-1.226 1.26-2 3.24-2 5a6 6 0 1 0 12 0c0-1.532-1.056-3.94-2-5-1.786 3-2.791 3-4 2z"/></svg> '+streak+' jours verts</span>':'';
   var html=TABS.map(function(T){
     return '<div class="tabpanel" data-panel="'+T.k+'" role="tabpanel"'+(T.k===cur?"":" hidden")+'>'+
-      '<header><div><div class="kicker">'+esc(dayName(NOW))+'</div><h1>'+T.title+'</h1></div><div class="hchips">'+streakChip+syncChip+'</div><button type="button" class="burger" data-menu="open" aria-label="Ouvrir le menu" aria-haspopup="dialog"><i></i><i></i><i></i></button></header>'+
+      '<header><div><div class="kicker">'+esc(dayName(NOW))+'</div><h1>'+T.title+'</h1></div><div class="hchips">'+streakChip+syncChip+'</div><button type="button" class="hbtn chatbtn" data-chat="1" aria-label="Écrire au coach"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/></svg></button><button type="button" class="burger" data-menu="open" aria-label="Ouvrir le menu" aria-haspopup="dialog"><i></i><i></i><i></i></button></header>'+
       T.items.join("")+'</div>'}).join("");
   html+='<nav class="tabbar" role="tablist" aria-label="Sections">'+TABS.map(function(T){
     return '<button type="button" role="tab" data-tab="'+T.k+'" aria-selected="'+(T.k===cur?"true":"false")+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+T.ic+'</svg>'+esc(T.lab)+'</button>'}).join("")+'</nav>';
   APP.innerHTML=html;
+  if(window.__fitRows)window.__fitRows();
   /* menu : l'objectif de classement, puis les réglages (réveils habituels, pause, matériel) en lignes repliables */
   var mb=document.getElementById("menubody");
-  if(mb)mb.innerHTML=(goalH.length?goalH[0]:'')+'<h3 class="mh">Réglages</h3>'+rowify(TB.menu,[]).join("");
+  if(mb)mb.innerHTML=(goalH.length?goalH[0]:'')+'<button type="button" class="mit" data-breath="3"><span>Respiration guidée · 3 min</span><i>›</i></button><h3 class="mh">Réglages</h3>'+rowify(TB.menu,[]).join("");
 })();
+/* la liste « ma journée » s’étire jusqu’à la barre du bas : on mesure la place disponible (écran, coach, barre) et on la répartit entre les lignes */
+window.__fitRows=function(){
+  var p=document.querySelector('.tabpanel[data-panel="today"]');if(!p||p.hidden)return;
+  var l=p.querySelector(".jlist:not(.jcoach)");if(!l)return;
+  var rows=[].slice.call(l.children).filter(function(r){return r.classList.contains("jr")});if(!rows.length)return;
+  rows.forEach(function(r){r.firstElementChild.style.minHeight=""});
+  var tb=document.querySelector(".tabbar"),tbh=tb?tb.offsetHeight:64,co=p.querySelector(".jcoach"),coh=co?co.offsetHeight+14:0;
+  var avail=window.innerHeight-l.getBoundingClientRect().top-coh-tbh-26,hh=Math.floor(avail/rows.length);
+  if(hh>52)rows.forEach(function(r){r.firstElementChild.style.minHeight=hh+"px"});
+};
+if(!window.__fitWired){window.__fitWired=1;window.addEventListener("resize",function(){if(window.__fitRows)window.__fitRows()});window.addEventListener("orientationchange",function(){setTimeout(function(){if(window.__fitRows)window.__fitRows()},250)})}
+window.__fitRows();requestAnimationFrame(function(){window.__fitRows()});
 window.__setTab=function(k){
   window.__TAB=k;try{localStorage.setItem("recup-tab",JSON.stringify({k:k,at:Date.now()}))}catch(e){}
-  [].forEach.call(document.querySelectorAll("[data-panel]"),function(p){p.hidden=p.getAttribute("data-panel")!==k});
+  [].forEach.call(document.querySelectorAll("[data-panel]"),function(p){p.hidden=p.getAttribute("data-panel")!==k});if(window.__fitRows)window.__fitRows();
   [].forEach.call(document.querySelectorAll(".tabbar [data-tab]"),function(b){b.setAttribute("aria-selected",b.getAttribute("data-tab")===k?"true":"false")});
   window.scrollTo(0,0);
 };
@@ -3620,6 +3718,7 @@ function send(){
   render();var m=document.getElementById("cmsgs");if(m)m.scrollTop=m.scrollHeight;
 }
 fab.addEventListener("click",openChat);
+document.addEventListener("click",function(e){var b=e.target.closest?e.target.closest("[data-chat]"):null;if(b){e.preventDefault();openChat()}});
 panel.addEventListener("input",function(e){if(e.target&&e.target.id==="cin")draft=e.target.value});
 panel.addEventListener("click",function(e){var b=e.target.closest?e.target.closest("[data-c]"):null;if(!b)return;var a=b.getAttribute("data-c");if(a==="close")closeChat();else if(a==="send")send()});
 panel.addEventListener("keydown",function(e){if(e.target&&e.target.id==="cin"&&e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();send()}});
