@@ -421,20 +421,15 @@ h2{font-size:16px;font-weight:600}
 .gdbody .crow{display:flex;gap:10px;justify-content:center;width:100%;max-width:420px}
 .gdbody .crow button{min-height:50px;padding:0 24px;border:0;border-radius:99px;background:var(--blue-soft);color:var(--accent);font:800 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer}
 .gdbody .crow button.main{background:var(--accent);color:#fff;box-shadow:0 8px 20px rgba(124,92,255,.35)}
-.gdstep{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .gdt{font-size:32px;font-weight:800;color:var(--accent);line-height:1.15}
 .gdx{margin:0;font-size:18px;line-height:1.5;max-width:420px}
 .gdc{font-size:46px;font-weight:700;font-variant-numeric:tabular-nums}
-.gdbar{width:min(80vw,320px);height:8px;border-radius:99px;background:var(--line)}
-.gdbar i{display:block;height:8px;border-radius:99px;background:var(--accent);transition:width .4s}
-.gdlist{margin:0;padding-left:22px;text-align:left;font-size:15px;line-height:1.6;color:var(--fg2)}
 .pracs{display:flex;flex-direction:column;gap:8px;margin:10px 0 4px}
 .prac{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;border-radius:18px;background:var(--blue-soft);color:var(--fg);padding:12px 14px;cursor:pointer;font:inherit}
 .prac .pt{flex:1;display:flex;flex-direction:column}
 .prac .pt b{font-weight:700;color:var(--accent)} .prac .pt small{color:var(--muted);font-size:12.5px}
 .prac .pc{font-size:20px;font-weight:700;color:var(--accent)}
 .prac.done{background:#dcf7e6} .prac.done .pt b,.prac.done .pc{color:#1fa855}
-.week7{display:flex;gap:7px;margin:4px 0 6px} .dd2{width:22px;height:22px;border-radius:50%;background:var(--line)} .dd2.on{background:#2fcf6b} .dd2.today{box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--accent)}
 #updbar{position:fixed;left:14px;right:14px;bottom:calc(78px + env(safe-area-inset-bottom,0px));z-index:70;display:flex;justify-content:space-between;align-items:center;gap:10px;background:#2a2350;color:#fff;border-radius:18px;padding:10px 12px 10px 16px;font-weight:600;box-shadow:0 8px 24px rgba(42,35,80,.35)}
 #updbar button{border:0;border-radius:99px;background:#fff;color:#4a2fc0;font:700 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:8px 14px;cursor:pointer}
 /* ===== menu (panneau latéral) ===== */
@@ -456,6 +451,17 @@ html.dark .burger{box-shadow:none;border:1px solid var(--line)}
 .mit{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;border-radius:16px;background:var(--card);color:var(--fg);padding:14px 16px;font:600 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer;text-align:left;margin-top:8px;box-shadow:0 1px 2px rgba(60,40,120,.05),0 6px 16px rgba(60,40,120,.06)}
 .mit i{font-style:normal;color:var(--muted);font-size:20px}
 .mnote{font-size:12.5px;color:var(--muted);margin:6px 4px 0}
+/* ===== carnet mental ===== */
+.mcins{display:flex;gap:8px;align-items:center;margin:6px 0}
+.mcins input{flex:1;min-width:0}
+.mcx{flex:none;width:32px;height:32px;border:0;border-radius:50%;background:var(--soft);color:var(--muted);font:700 18px/1 -apple-system,system-ui,sans-serif;cursor:pointer}
+.mcobs{border-top:1px solid var(--line);padding:9px 0}
+.mch{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
+.mch .mcx{margin-left:auto}
+.mctool{display:flex;gap:8px;align-items:center;margin:6px 0}
+.mctool .prac{flex:1;min-width:0}
+.mcf{display:flex;flex-direction:column;gap:8px}
+textarea.txtin{min-height:54px;resize:vertical;font:15px/1.35 -apple-system,system-ui,sans-serif}
 /* ===== lignes repliables ===== */
 .card.rowcard{padding:0}
 .rowcard>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr 24px;column-gap:8px;align-items:center;padding:15px 16px;-webkit-tap-highlight-color:transparent}
@@ -651,7 +657,7 @@ html.dark .tabbar{box-shadow:none;border-top:1px solid var(--line)}
 </div>
 <script>
 window.DATA = /*DATA*/null;
-window.__BUILD = "993ed2e-1795446202";   /* remplacé à la publication par le numéro de version (voir publish-app.yml) */
+window.__BUILD = "c2144dc-1795447258";   /* remplacé à la publication par le numéro de version (voir publish-app.yml) */
 </script>
 <script id="boot">
 /* Mode « appli » : quand la page est ouverte hors Scriptable (window.DATA vide), elle charge elle-même les données
@@ -1047,6 +1053,10 @@ if(!reasons.length)reasons.push("aucun signal d'alerte");
 var todayKey = dkey(NOW);
 var planDay = null; (PLAN.days||[]).forEach(function(d){if(d.date===todayKey)planDay=d});
 /* ----- pause (vacances) : journal.days[AAAA-MM-JJ].pause = {to:"AAAA-MM-JJ"} sur le jour de début ----- */
+/* ----- carnet mental : journal.days[date].mc = {ins:[{id,t}], tools:[{id,t,x,min,breath?}]} ; le jour le plus récent qui a mc fait foi (comme goal) ----- */
+var MC_SEED=[{id:"s1",t:"Respiration 3 minutes",x:"Inspire 4 secondes par le nez, expire 6 secondes par la bouche.",min:0,breath:true},{id:"s2",t:"Mon 3e match",x:"Jouer comme au 3e match : même échauffement, mêmes gestes, rien à prouver.",min:0},{id:"s3",t:"Ce que je contrôle",x:"Mon échauffement, mon attitude, mon plan de jeu, mon énergie. Pas : l’adversaire, l’arbitre, le classement, le regard des autres.",min:0}];
+function mcGet(){var c=null;Object.keys(JR).sort().forEach(function(k){if(JR[k]&&JR[k].mc)c=JR[k].mc});
+  return {ins:(c&&Array.isArray(c.ins))?c.ins:[],tools:(c&&Array.isArray(c.tools))?c.tools:MC_SEED.map(function(x){return Object.assign({},x)})}}
 function pauseOf(dk){var best=null;Object.keys(JR).forEach(function(k){var p=JR[k]&&JR[k].pause;if(p&&p.to&&k<=dk&&dk<=p.to&&(!best||k>best.from))best={from:k,to:p.to}});return best}
 function repriseOf(dk){
   var best=null;Object.keys(JR).forEach(function(k){var p=JR[k]&&JR[k].pause;if(p&&p.to&&p.to<dk&&(!best||p.to>best.to))best={from:k,to:p.to}});
@@ -2407,27 +2417,42 @@ TB.ttop=[];
     TB.ttop.splice(0,0,c0);
   })();
 
-  /* ----- Atelier détente : pratiquer la détente avant le tournoi, et noter à partir de quel match tu es détendu ----- */
+  /* ----- Carnet mental : ce que j'ai compris sur moi, mes observations, mes outils (tout est modifiable) ----- */
   (function(){
-    var td=(JR[todayKey]||{}).detente||[],week=[],n=0,goal=4;
-    for(var i=6;i>=0;i--){var k=dAdd(todayKey,-i),c=((JR[k]||{}).detente||[]).length;if(c)n++;week.push({k:k,c:c})}
-    var dots=week.map(function(d){return '<span class="dd2'+(d.c?" on":"")+(d.k===todayKey?" today":"")+'" title="'+esc(d.k)+'"></span>'}).join("");
-    function pr(kind,lab,sub,attr){var done=td.some(function(x){return x.k===kind});return '<button type="button" class="prac'+(done?" done":"")+'" '+attr+'><span class="pt"><b>'+lab+'</b><small>'+sub+'</small></span><span class="pc">'+(done?"✓":"›")+'</span></button>'}
+    var M=mcGet(),MOM=[["avant","Avant un match"],["pendant","Pendant un match"],["apres","Après un match"],["entr","Entraînement"],["autre","Autre"]],MOML={};MOM.forEach(function(x){MOML[x[0]]=x[1]});
+    var all=[];Object.keys(JR).forEach(function(k){((JR[k]||{}).mental||[]).forEach(function(o){all.push({k:k,o:o})})});
+    all.sort(function(a,b){var x=String(a.o.at||a.k),y=String(b.o.at||b.k);return x<y?1:x>y?-1:0});
+    var n7=0;for(var i=0;i<7;i++){var e7=JR[dAdd(todayKey,-i)]||{};n7+=(e7.mental||[]).length+(e7.detente||[]).length}
+    var st={},np=0;all.forEach(function(a){if(a.o.p){np++;var s=st[a.o.m]=st[a.o.m]||{n:0,t:0};s.n++;s.t+=a.o.p}});
+    var stl=MOM.filter(function(x){return st[x[0]]}).map(function(x){var s=st[x[0]];return x[1].toLowerCase()+" "+String(Math.round(s.t/s.n*10)/10).replace(".",",")+" ("+s.n+")"});
+    var stH=np>=3?'<p class="small muted" style="margin:8px 0 0;line-height:1.45">Pression moyenne : '+esc(stl.join(" · "))+'.</p>':'';
+    function obsH(a){var o=a.o,ms=new Date(a.k+"T12:00:00Z").getTime(),L=[];
+      if(o.pense)L.push('<div class="small"><b>Je pensais :</b> '+esc(o.pense)+'</div>');
+      if(o.aide)L.push('<div class="small"><b>Ce qui m’a aidé :</b> '+esc(o.aide)+'</div>');
+      if(o.note)L.push('<div class="small">'+esc(o.note)+'</div>');
+      return '<div class="mcobs"><div class="mch"><b>'+esc(fmt(ms,{weekday:"short",day:"numeric",month:"short"}))+'</b><span class="small muted">'+esc(MOML[o.m]||"Autre")+'</span>'+(o.p?'<span class="chip '+(o.p>=4?"red":o.p===3?"orange":"green")+'">Pression '+o.p+'/5</span>':'')+'<button type="button" class="mcx" data-mc="obsdel" data-d="'+esc(a.k)+'" data-at="'+esc(o.at||"")+'" aria-label="Supprimer cette observation">×</button></div>'+L.join("")+'</div>'}
+    var insH=M.ins.map(function(x){return '<div class="mcins"><input type="text" id="mc-ins-'+esc(x.id)+'" class="txtin" maxlength="160" value="'+esc(x.t)+'" aria-label="Ce que j’ai compris sur moi"><button type="button" class="mcx" data-mc="insdel" data-id="'+esc(x.id)+'" aria-label="Supprimer cette phrase">×</button></div>'}).join("");
+    var toolsH=M.tools.map(function(t){return '<div class="mctool"><button type="button" class="prac" data-tool="'+esc(t.id)+'"><span class="pt"><b>'+esc(t.t)+'</b><small>'+esc((function(s){return s.length>70?s.slice(0,68).replace(/s+S*$/,"")+"…":s})(String(t.x||"")))+(t.min?" · "+t.min+" min":"")+'</small></span><span class="pc">›</span></button><button type="button" class="mcx" data-mc="tooldel" data-id="'+esc(t.id)+'" aria-label="Supprimer l’outil">×</button></div>'}).join("");
+    var addTool='<details class="moredet inner" style="margin-top:8px"><summary>Ajouter un outil</summary><div class="mbody mcf"><input type="text" id="mc-tool-t" class="txtin" maxlength="60" placeholder="Titre (ex. : mon rituel avant le match)" aria-label="Titre de l’outil"><textarea id="mc-tool-x" class="txtin" maxlength="400" rows="3" placeholder="Ce que je lis ou ce que je me dis" aria-label="Texte de l’outil"></textarea><label class="small muted" for="mc-tool-min">Minuteur</label><select id="mc-tool-min" class="txtin"><option value="0">Sans minuteur</option><option value="1">1 minute</option><option value="2">2 minutes</option><option value="3">3 minutes</option><option value="5">5 minutes</option></select><button type="button" class="bigbtn" data-mc="tooladd">Ajouter l’outil</button></div></details>';
+    /* « détendu à partir de quel match » : gardé, pour suivre le progrès d'un tournoi à l'autre */
     var vals=[];Object.keys(JR).forEach(function(k){var d=((JR[k]||{}).comp||{}).detente;if(d)vals.push(+d)});
     var avgN=vals.length?String(Math.round(avg(vals)*10)/10).replace(".",","):null;
-    var constat=vals.length?'<p class="small" style="margin:0 0 8px;line-height:1.45">Sur '+vals.length+' tournoi'+(vals.length>1?"s":"")+' noté'+(vals.length>1?"s":"")+', tu te détends en moyenne <b>au match n°'+avgN+'</b>. Objectif : dès le premier.</p>':
-      '<p class="small muted" style="margin:0 0 8px;line-height:1.45">Après un tournoi, indique ci-dessous à partir de quel match tu étais détendu : l’appli suit tes progrès.</p>';
+    var constat=vals.length?'<p class="small" style="margin:0 0 8px;line-height:1.45">Sur '+vals.length+' tournoi'+(vals.length>1?"s":"")+' noté'+(vals.length>1?"s":"")+', tu te détends en moyenne <b>au match n°'+avgN+'</b>. Objectif : dès le premier.</p>':'<p class="small muted" style="margin:0 0 8px;line-height:1.45">Après un tournoi, indique à partir de quel match tu étais détendu : l’appli suit ton évolution.</p>';
     var dd=dAdd(todayKey,-1);for(var j=0;j<14;j++){var kk=dAdd(todayKey,-j),tpp=tourPhase(kk);if(tpp&&tpp.kind==="match"){dd=kk;break}}
     var cur=(((JR[dd]||{}).comp||{}).detente)||"";
     var seg='<div class="seg" style="margin-top:6px">'+[["1","Dès le 1er"],["2","Au 2e"],["3","Au 3e"],["4","Au 4e ou +"]].map(function(x){return '<button type="button" class="'+(cur===x[0]?"on":"")+'" data-detente="'+x[0]+'">'+x[1]+'</button>'}).join("")+'</div>';
-    var routine=['Réveil : un verre d’eau et 3 expirations longues.','1 h 15 avant le premier match : respiration 3 minutes (une notification te le rappelle).','1 h avant : relâchement express 4 minutes, à l’écart.','45 min avant : échauffement qui monte en intensité, avec de vrais volants rapides.','15 min avant : 3 grandes expirations, ta phrase clé, un objectif de jeu.','Entre deux matchs : reset de 90 secondes.'];
-    var html='<section class="card sec" id="detentecard"><div class="sechead">'+ico("moon",ICOL.moon)+'<h2>Atelier détente</h2><span class="chip'+(n>=goal?" green":"")+'" style="margin-left:auto">'+n+'/'+goal+' cette semaine</span></div>'+
-      '<p class="small" style="margin:0 0 8px;line-height:1.45">Se détendre se travaille comme le smash : un peu chaque jour, pour que le jour J l’état arrive tout seul, dès le premier match.</p>'+
-      '<div class="week7" aria-label="Pratiques des 7 derniers jours">'+dots+'</div>'+
-      '<div class="pracs">'+pr("resp","Respiration","3 minutes · calme le corps",'data-breath="3"')+pr("relax","Relâchement express","4 minutes · des mains au visage",'data-guide="relax"')+pr("visu","Visualisation du premier match","3 minutes · répéter un début calme",'data-guide="visu"')+pr("reset","Reset entre deux matchs","90 secondes · repartir à zéro",'data-guide="reset"')+'</div>'+
-      '<h3 style="margin:14px 0 6px">Détendu à partir de quel match ?</h3>'+constat+
-      '<div style="display:flex;gap:8px;align-items:center"><label class="small muted" for="dt-date">Tournoi du</label><input type="date" id="dt-date" class="txtin" style="flex:1" value="'+dd+'" max="'+todayKey+'"></div>'+seg+
-      '<details class="moredet inner" style="margin-top:12px"><summary>Ma routine du jour J</summary><div class="mbody"><ul class="mlistu">'+routine.map(function(x){return '<li>'+x+'</li>'}).join("")+'</ul><p class="small muted" style="margin:8px 0 0;line-height:1.45">Pourquoi : au troisième match, ton corps est chaud et l’enjeu t’a quitté. On reproduit cet état avant le premier match.</p></div></details></section>';
+    var detB='<details class="moredet inner" style="margin-top:12px"><summary>Après un tournoi : à partir de quel match j’étais détendu</summary><div class="mbody">'+constat+'<div style="display:flex;gap:8px;align-items:center"><label class="small muted" for="dt-date">Tournoi du</label><input type="date" id="dt-date" class="txtin" style="flex:1" value="'+dd+'" max="'+todayKey+'"></div>'+seg+'</div></details>';
+    var html='<section class="card sec" id="carnetcard"><div class="sechead">'+ico("moon",ICOL.moon)+'<h2>Carnet mental</h2><span class="chip'+(n7?" green":"")+'" style="margin-left:auto">'+n7+' cette semaine</span></div>'+
+      '<p class="small" style="margin:0 0 8px;line-height:1.45">Un espace à toi, qui évolue avec ce que tu comprends de toi : tu notes, tu corriges, tu gardes ce qui t’aide.</p>'+
+      '<h3 style="margin:10px 0 6px">Ce que j’ai compris sur moi</h3>'+(insH||'<p class="small muted" style="margin:0 0 6px;line-height:1.45">Rien pour l’instant. Écris une phrase quand tu comprends quelque chose : elle s’affichera avant tes matchs.</p>')+
+      '<div class="mcins"><input type="text" id="mc-ins-new" class="txtin" maxlength="160" placeholder="Ex. : quand je pense au classement, mes jambes se bloquent" aria-label="Nouvelle phrase"><button type="button" class="jchip on" data-mc="insadd">Ajouter</button></div>'+
+      '<h3 style="margin:16px 0 6px">Nouvelle observation</h3>'+
+      '<div class="jchips">'+MOM.map(function(x){return '<button type="button" class="jchip" data-mcm="'+x[0]+'">'+x[1]+'</button>'}).join("")+'</div>'+
+      '<div class="small muted" style="margin:10px 0 4px">Pression ressentie (1 = serein, 5 = très forte), facultatif</div><div class="seg">'+[1,2,3,4,5].map(function(n){return '<button type="button" data-mcp="'+n+'">'+n+'</button>'}).join("")+'</div>'+
+      '<div class="mcf" style="margin-top:8px"><textarea id="mc-pense" class="txtin" rows="2" maxlength="400" placeholder="Ce que je pensais" aria-label="Ce que je pensais"></textarea><textarea id="mc-aide" class="txtin" rows="2" maxlength="400" placeholder="Ce qui m’a aidé" aria-label="Ce qui m’a aidé"></textarea><textarea id="mc-note" class="txtin" rows="2" maxlength="400" placeholder="Autre chose à noter" aria-label="Autre chose à noter"></textarea></div>'+
+      '<button type="button" class="bigbtn" data-mc="obsadd">Enregistrer l’observation</button>'+
+      (all.length?'<h3 style="margin:16px 0 4px">Mes observations</h3>'+all.slice(0,6).map(obsH).join("")+(all.length>6?'<details class="moredet inner"><summary>Voir les '+(Math.min(all.length,30)-6)+' autres</summary>'+all.slice(6,30).map(obsH).join("")+'</details>':'')+stH:'')+
+      '<h3 style="margin:16px 0 6px">Mes outils</h3>'+(toolsH||'<p class="small muted" style="margin:0 0 6px">Aucun outil pour l’instant.</p>')+addTool+detB+'</section>';
     TB.ttop.push(html);
   })();
 
@@ -2867,7 +2892,9 @@ function todayItems(items){
   var tp=tourPhase(todayKey);if(!(tp&&tp.kind==="match"))return;
   var e=JR[todayKey]||{},c=e.comp||{},fm0=e.match||"09:00",P5=[["1","1"],["2","2"],["3","3"],["4","4"],["5","5"]],mp=window.__MYPNOW||[];
   function qseg(list,cur,kind){return '<div class="seg">'+list.map(function(x){return '<button type="button" class="'+(cur===x[0]?"on":"")+'" data-j="comp.'+kind+':'+x[0]+'">'+x[1]+'</button>'}).join("")+'</div>'}
-  var html='<section class="card sec" id="matchday"><div class="sechead">'+ico("flag",ICOL.flag)+'<h2>Jour de match</h2><span class="chip orange" style="margin-left:auto">1er match '+esc(fm0)+'</span></div>'+(window.__MATCHNX||'')+'<div class="jchips" style="margin:2px 0 10px"><button type="button" class="jchip" data-breath="3">Respirer 3 min</button><button type="button" class="jchip" data-guide="relax">Relâchement 4 min</button><button type="button" class="jchip" data-guide="reset">Reset 90 s</button></div>'+
+  var html='<section class="card sec" id="matchday"><div class="sechead">'+ico("flag",ICOL.flag)+'<h2>Jour de match</h2><span class="chip orange" style="margin-left:auto">1er match '+esc(fm0)+'</span></div>'+(window.__MATCHNX||'')+(function(){var mg=mcGet(),tl=mg.tools.filter(function(t){return !t.breath}).slice(0,2),ins=mg.ins.slice(0,3);
+    return '<div class="jchips" style="margin:2px 0 10px"><button type="button" class="jchip" data-breath="3">Respirer 3 min</button>'+tl.map(function(t){return '<button type="button" class="jchip" data-tool="'+esc(t.id)+'">'+esc(t.t)+'</button>'}).join("")+'</div>'+
+      (ins.length?'<div class="doseb"><b>Ce que j’ai compris sur moi</b><span>'+ins.map(function(x){return esc(x.t)}).join(" · ")+'</span></div>':'')})()+
     (mp.length?'<p class="myp" style="margin:6px 0 10px">« '+mp.map(esc).join(' » · « ')+' »</p>':'')+
     '<div class="small muted" style="margin:8px 0 4px">Pression avant le match (1 = serein, 5 = très forte)</div>'+qseg(P5,c.pression,"pression")+
     '<div class="small muted" style="margin:8px 0 4px">Repas avant le premier match</div>'+qseg([["bon","Bien mangé"],["leger","Léger"],["rien","Presque rien"]],c.repas,"repas")+
@@ -3158,7 +3185,7 @@ window.__gearStatus=gearStatus;
   var cur=-1;steps.forEach(function(s,i){if(cur<0&&!s.done)cur=i});
   var msg,chips=[],cd=window.__CD;
   if(!hasLegs&&nowMin<15*60){msg="Note tes jambes de ce matin";chips.push('<button type="button" class="nc" data-remind="today">Jambes</button>')}
-  else if(tp&&tp.kind==="pre"&&!((te.detente||[]).length)){msg="Ta détente du jour : 3 minutes pour ton tournoi";chips.push('<button type="button" class="nc" data-breath="3">Respirer 3 min</button>');chips.push('<button type="button" class="nc" data-guide="relax">Relâcher 4 min</button>')}
+  else if(tp&&tp.kind==="pre"&&!((te.detente||[]).length)&&!((te.mental||[]).length)){msg="Une observation pour ton carnet mental ?";chips.push('<button type="button" class="nc" data-tab="prog">Ouvrir le carnet</button>')}
   else if(cd&&cd.left>0&&tp){msg="Compte à rebours "+tp.label+" : "+cd.left+" petit"+(cd.left>1?"s":"")+" geste"+(cd.left>1?"s":"")+" à cocher"}
   else if(trainToday&&!sessStarted){msg=(c.head||"Séance")+(c.mult!=null&&c.mult>0?" · "+c.mult+" %":"")+(sessLab?" à "+sessLab:"")}
   else if(nowMin>=20*60){msg="Au lit avant "+c.bed+" pour rattraper ta dette";}
@@ -3219,7 +3246,7 @@ window.__gearStatus=gearStatus;
 /* ----- lignes repliables : les cartes secondaires deviennent une ligne (titre + résumé), qui se déplie au toucher ----- */
 function rowify(items,openT){
   return items.map(function(x){
-    if(x.indexOf('<section class="card sec')!==0||x.indexOf('<h2>')<0||/^<section class="card sec" id="(matchcard|detentecard|mentalcard|goalcard)"/.test(x))return x;
+    if(x.indexOf('<section class="card sec')!==0||x.indexOf('<h2>')<0||/^<section class="card sec" id="(matchcard|carnetcard|mentalcard|goalcard)"/.test(x))return x;
     var m=/<h2>([^<]*)<\/h2>/.exec(x),t=m?m[1]:"";
     if(openT.some(function(o){return t.indexOf(o)===0}))return x;
     var d=document.createElement("div");d.innerHTML=x;var s=d.firstElementChild,hd=s&&s.querySelector(".sechead");if(!hd)return x;
@@ -3252,8 +3279,8 @@ var APP=document.getElementById("app");
      Aujourd'hui = quoi faire maintenant (et la préparation du tournoi quand il approche) ; Semaine = le programme et la charge ;
      Forme = l'état du corps et ses tendances ; Progrès = ce qui te fait avancer (objectif, détente, mental, tournois, assiduité). */
   var inWin=!!tourPhase(todayKey);
-  var allT=(TB.ttop||[]).concat(TB.tour),T_IDS=/id="matchcard"|id="detentecard"|id="mentalcard"|id="goalcard"|Débrief du coach/;
-  var matchH=allT.filter(function(x){return /id="matchcard"/.test(x)}),detH=allT.filter(function(x){return /id="detentecard"/.test(x)}),mentH=allT.filter(function(x){return /id="mentalcard"/.test(x)}),goalH=allT.filter(function(x){return /id="goalcard"/.test(x)}),
+  var allT=(TB.ttop||[]).concat(TB.tour),T_IDS=/id="matchcard"|id="carnetcard"|id="mentalcard"|id="goalcard"|Débrief du coach/;
+  var matchH=allT.filter(function(x){return /id="matchcard"/.test(x)}),detH=allT.filter(function(x){return /id="carnetcard"/.test(x)}),mentH=allT.filter(function(x){return /id="mentalcard"/.test(x)}),goalH=allT.filter(function(x){return /id="goalcard"/.test(x)}),
     debH=allT.filter(function(x){return /Débrief du coach/.test(x)}),cycleH=allT.filter(function(x){return !T_IDS.test(x)});
   var PROG_T=["Assiduité du mois","Tes tournois","Quand je performe","Progression des charges"];
   function isProg(x){return PROG_T.some(function(t){return x.indexOf('<h2>'+t)>=0})}
@@ -3322,6 +3349,20 @@ window.__jgear=function(id,date){date=date||todayKey;if(!date)return;var e=JSON.
 window.__jpost=function(i){var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.post=e.post||[];var k=e.post.indexOf(i);if(k>=0)e.post.splice(k,1);else e.post.push(i);e.post.sort(function(a,b){return a-b});if(!e.post.length)delete e.post;window.__jcommit(todayKey,e)};
 window.__detenteLog=function(k,m){var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.detente=(e.detente||[]).concat([{k:String(k).slice(0,12),m:m||1,at:new Date().toISOString()}]).slice(-12);window.__jcommit(todayKey,e)};
 window.__jdetente=function(date,val){date=String(date||"");val=String(val||"");if(!/^\d{4}-\d\d-\d\d$/.test(date)||date>todayKey||!/^[1-4]$/.test(val))return;var e=JSON.parse(JSON.stringify(JR[date]||{}));e.comp=e.comp||{};if(e.comp.detente===val)delete e.comp.detente;else e.comp.detente=val;if(!Object.keys(e.comp).length)delete e.comp;window.__jcommit(date,e)};
+function mcUid(){return Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36)}
+function mcSet(next,quiet){var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.mc={ins:next.ins.slice(0,12),tools:next.tools.slice(0,12)};if(quiet)window.__jsaveq(todayKey,e);else window.__jcommit(todayKey,e)}
+window.__mcEdit=function(id,val){var m=mcGet();val=String(val||"").trim().slice(0,160);m.ins.forEach(function(x){if(x.id===id)x.t=val});m.ins=m.ins.filter(function(x){return x.t});mcSet(m,true)};   /* sans redessiner : le champ garde le focus */
+window.__mcInsAdd=function(){var el=document.getElementById("mc-ins-new"),v=el?String(el.value||"").trim().slice(0,160):"";if(!v)return false;var m=mcGet();m.ins.push({id:mcUid(),t:v});mcSet(m,false);return true};
+window.__mcInsDel=function(id){var m=mcGet();m.ins=m.ins.filter(function(x){return x.id!==id});mcSet(m,false)};
+window.__mcToolAdd=function(){var g=function(id){var el=document.getElementById(id);return el?String(el.value||"").trim():""};var t=g("mc-tool-t").slice(0,60),x=g("mc-tool-x").slice(0,400),mn=+g("mc-tool-min")||0;if(!t)return false;var m=mcGet();m.tools.push({id:mcUid(),t:t,x:x,min:mn});mcSet(m,false);return true};
+window.__mcToolDel=function(id){var m=mcGet();m.tools=m.tools.filter(function(x){return x.id!==id});mcSet(m,false)};
+window.__mcObs=function(){var g=function(id){var el=document.getElementById(id);return el?String(el.value||"").trim().slice(0,400):""};
+  var o={at:new Date().toISOString(),m:window.__MCM||"autre"},p=+window.__MCP;if(p>=1&&p<=5)o.p=p;
+  var a=g("mc-pense"),b=g("mc-aide"),c=g("mc-note");if(a)o.pense=a;if(b)o.aide=b;if(c)o.note=c;
+  if(!o.p&&!a&&!b&&!c)return false;
+  var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.mental=(e.mental||[]).concat([o]).slice(-30);window.__MCM=null;window.__MCP=null;window.__jcommit(todayKey,e);return true};
+window.__mcObsDel=function(d,at){var e=JSON.parse(JSON.stringify(JR[d]||{}));e.mental=(e.mental||[]).filter(function(o){return String(o.at||"")!==at});if(!e.mental.length)delete e.mental;window.__jcommit(d,e)};
+window.__toolRun=function(id){var t=mcGet().tools.filter(function(x){return x.id===id})[0];if(!t)return;if(t.breath){if(window.__breath)window.__breath.open(3);return}if(window.__guide)window.__guide.openCustom({title:t.t,text:t.x,sec:(+t.min||0)*60})};
 window.__jpause=function(to){to=String(to||"");if(!/^\d{4}-\d\d-\d\d$/.test(to)||to<todayKey||pauseOf(todayKey))return;var e=JSON.parse(JSON.stringify(JR[todayKey]||{}));e.pause={to:to};window.__jcommit(todayKey,e)};
 window.__jresume=function(){var pz=pauseOf(todayKey);if(!pz)return;var e=JSON.parse(JSON.stringify(JR[pz.from]||{}));if(pz.from>=todayKey)delete e.pause;else e.pause={to:dAdd(todayKey,-1)};window.__jcommit(pz.from,e)};
 window.__jbusy=function(date){var e=JSON.parse(JSON.stringify(JR[date]||{}));if(e.busy)delete e.busy;else e.busy=true;window.__jcommit(date,e)};
@@ -3478,7 +3519,7 @@ SHEET.addEventListener("click",function(e){var t=e.target;if(!t.closest)return;i
   var ts=t.closest("[data-test-save]");if(ts){var tdk=ts.getAttribute("data-test-save"),vals={};SHEET.querySelectorAll('[data-test^="'+tdk+'|"]').forEach(function(inp){var v=parseFloat(String(inp.value).replace(",","."));if(isFinite(v)&&v>0)vals[inp.getAttribute("data-test").split("|")[1]]=v});window.__jexo(tdk,"tests",vals);return}
   if(x){var q=x.getAttribute("data-exo").split("|");window.__jexo(q[0],"exo",q[1],+q[2])}
   else if(y){var q2=y.getAttribute("data-exo-done").split("|");window.__jexo(q2[0],"done",q2[1])}});
-document.addEventListener("change",function(e){var t=e.target;if(!t||!t.id)return;if(t.id==="jnote")window.__jnote(t.value);if(t.id==="jmatch"||t.id.indexOf("jm-")===0)window.__jmatch(t.getAttribute("data-day"),t.value);if(t.id==="cmp-bien")window.__jcomptxt(t.getAttribute("data-day"),"bien",t.value);if(t.id&&t.id.indexOf("gd-")===0&&t.value)window.__jgear(t.getAttribute("data-geardate"),t.value);if(t.id==="goal-now")window.__jgoal("now",t.value);if(t.id==="goal-goal")window.__jgoal("goal",t.value);if(t.id==="goal-date")window.__jgoal("date",t.value);if(t.id==="cmp-change")window.__jcomptxt(t.getAttribute("data-day"),"change",t.value);if(t.id==="jdate")window.__jdate(t.value);if(t.id==="wcmpa"||t.id==="wcmpb"){window[t.id==="wcmpa"?"__WCA":"__WCB"]=t.value;window.__rerun()}});
+document.addEventListener("change",function(e){var t=e.target;if(!t||!t.id)return;if(t.id.indexOf("mc-ins-")===0&&t.id!=="mc-ins-new"){window.__mcEdit(t.id.slice(7),t.value);return}if(t.id==="jnote")window.__jnote(t.value);if(t.id==="jmatch"||t.id.indexOf("jm-")===0)window.__jmatch(t.getAttribute("data-day"),t.value);if(t.id==="cmp-bien")window.__jcomptxt(t.getAttribute("data-day"),"bien",t.value);if(t.id&&t.id.indexOf("gd-")===0&&t.value)window.__jgear(t.getAttribute("data-geardate"),t.value);if(t.id==="goal-now")window.__jgoal("now",t.value);if(t.id==="goal-goal")window.__jgoal("goal",t.value);if(t.id==="goal-date")window.__jgoal("date",t.value);if(t.id==="cmp-change")window.__jcomptxt(t.getAttribute("data-day"),"change",t.value);if(t.id==="jdate")window.__jdate(t.value);if(t.id==="wcmpa"||t.id==="wcmpb"){window[t.id==="wcmpa"?"__WCA":"__WCB"]=t.value;window.__rerun()}});
 document.addEventListener("keydown",function(e){
   if(e.key==="Escape"&&!SHEET.hidden)closeSheet();
   if((e.key==="Enter"||e.key===" ")&&e.target.getAttribute&&e.target.getAttribute("data-sheet")){e.preventDefault();window.__openSheet(e.target.getAttribute("data-sheet"))}
@@ -3488,6 +3529,11 @@ var appClick=function(e){
   var t=e.target,b=t.closest?t.closest("button"):null;
   var jb=t.closest?t.closest("[data-j]"):null;
   var mok=t.closest?t.closest("[data-matchok]"):null;if(mok){window.__jmatch(mok.getAttribute("data-matchok"),"09:00");return}
+  var mcb=t.closest?t.closest("[data-mc]"):null;if(mcb){var mca=mcb.getAttribute("data-mc");
+    if(mca==="insadd")window.__mcInsAdd();else if(mca==="insdel")window.__mcInsDel(mcb.getAttribute("data-id"));else if(mca==="obsadd")window.__mcObs();else if(mca==="obsdel")window.__mcObsDel(mcb.getAttribute("data-d"),mcb.getAttribute("data-at"));else if(mca==="tooladd")window.__mcToolAdd();else if(mca==="tooldel")window.__mcToolDel(mcb.getAttribute("data-id"));return}
+  var mcm=t.closest?t.closest("[data-mcm]"):null;if(mcm){window.__MCM=mcm.getAttribute("data-mcm");[].forEach.call(mcm.parentNode.children,function(x){x.classList.toggle("on",x===mcm)});return}
+  var mcp=t.closest?t.closest("[data-mcp]"):null;if(mcp){var pv=mcp.getAttribute("data-mcp");window.__MCP=window.__MCP===pv?null:pv;[].forEach.call(mcp.parentNode.children,function(x){x.classList.toggle("on",window.__MCP!=null&&x.getAttribute("data-mcp")===window.__MCP)});return}
+  var mct=t.closest?t.closest("[data-tool]"):null;if(mct){window.__toolRun(mct.getAttribute("data-tool"));return}
   var wa=t.closest?t.closest("[data-wkapply]"):null;if(wa&&window.__wakeDays){var wai=document.getElementById("wk-all"),wav=wai?wai.value:"";if(!wav)return;var wset={all:[0,1,2,3,4,5,6],week:[1,2,3,4,5],we:[6,0]}[wa.getAttribute("data-wkapply")]||[],wmp={};wset.forEach(function(d){wmp[d]=wav});window.__wakeDays(wmp);return}
   var wsv=t.closest?t.closest("[data-wksave]"):null;if(wsv&&window.__wakeDays){var wmp2={};for(var wd2=0;wd2<7;wd2++){var wie=document.getElementById("wkd-"+wd2);if(wie)wmp2[wd2]=wie.value}window.__wakeDays(wmp2);return}
   var wcl=t.closest?t.closest("[data-wkclear]"):null;if(wcl&&window.__wakeDays){var wmp3={};for(var wd3=0;wd3<7;wd3++)wmp3[wd3]="";window.__wakeDays(wmp3);return}
@@ -3619,48 +3665,25 @@ setInterval(syncB,700);syncB();
 })();
 </script>
 <script id="guidejs">
-/* Exercices guidés de détente (relâchement, visualisation, reset entre deux matchs) : minuteur par étapes, hors ligne.
-   À la fin, la pratique est notée dans le journal du jour (detente) pour le suivi de l'Atelier détente. */
+/* Lecteur d'outils du carnet mental : un texte, avec un minuteur facultatif, hors ligne.
+   À la fin, l'usage est noté dans le journal du jour (detente, k = outil) pour le compteur de la semaine. */
 (function(){
 var box=document.getElementById("guide");if(!box)return;
-var R={
- relax:{title:"Relâchement express",dur:"4 min",intro:"Tu contractes puis tu relâches, des mains jusqu’au visage. À faire à l’écart, 1 h avant ton premier match ou chaque soir de la semaine précédente.",steps:[
-  {t:"Les mains",d:30,x:"Serre les poings 5 secondes, puis ouvre-les d’un coup. Sens la chaleur dans les doigts."},
-  {t:"Les avant-bras",d:30,x:"Imagine tenir ta raquette trop fort : serre, puis laisse tomber la main. Prise légère, comme un oiseau."},
-  {t:"Les épaules",d:40,x:"Monte les épaules vers les oreilles 5 secondes, puis laisse-les tomber. Recommence une fois."},
-  {t:"Mâchoire et visage",d:40,x:"Serre les dents 5 secondes, puis desserre : langue au palais, lèvres entrouvertes, front lisse."},
-  {t:"Les jambes",d:40,x:"Pousse les talons dans le sol 5 secondes, puis relâche. Sens les cuisses devenir lourdes et chaudes."},
-  {t:"La respiration",d:60,x:"Inspire 4 secondes par le nez, expire 6 secondes par la bouche. À chaque expiration, laisse partir une tension."}]},
- visu:{title:"Visualisation du premier match",dur:"3 min",intro:"Tu répètes dans ta tête le début de match que tu veux : calme, à l’aise, déjà au niveau du troisième match.",steps:[
-  {t:"Arriver calme",d:30,x:"Tu entres dans la salle, épaules basses, respiration lente. Tout est prêt : sac, raquettes, eau."},
-  {t:"L’échauffement",d:30,x:"Tes volants sont rapides et propres, tes jambes vives. Tu te sens chaud et à l’aise."},
-  {t:"Le premier service",d:40,x:"Tu sers calmement, après une expiration longue. Tu vois le volant partir exactement où tu veux."},
-  {t:"Un bon échange",d:40,x:"Tu te déplaces facilement, ton jeu est simple et précis. Tu apprécies ce que tu fais."},
-  {t:"Une erreur, puis le reset",d:40,x:"Tu rates un point. Expire, relâche les épaules, dis ta phrase clé. Point suivant, comme si de rien n’était."},
-  {t:"La fin du match",d:30,x:"Tu finis détendu, jambes vives. Tu étais au niveau du troisième match dès le premier échange."}]},
- reset:{title:"Reset entre deux matchs",dur:"90 s",intro:"Pour repartir à zéro entre deux matchs, ou pendant une pause : le match précédent est fini, bon ou mauvais.",steps:[
-  {t:"Expire",d:15,x:"Trois grandes expirations : inspire 3 secondes, expire 6 secondes. Le point précédent est fini."},
-  {t:"Relâche",d:25,x:"Épaules basses, mâchoire desserrée, prise de raquette légère. Secoue les mains."},
-  {t:"Ta phrase",d:25,x:"Redis ta phrase clé trois fois dans ta tête, par exemple « Un point à la fois »."},
-  {t:"Un plan simple",d:25,x:"Choisis un seul objectif pour le prochain échange : où tu sers, où tu te places. Rien de plus."}]}
-};
-var cur=null,i=0,left=0,timer=0,lock=null;
+var cur=null,left=0,timer=0,lock=null;
 function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
-function head(btn){return '<div class="brhead"><h2>'+esc(R[cur].title)+'</h2><button type="button" data-g="close">'+btn+'</button></div>'}
-function total(){return R[cur].steps.reduce(function(a,s){return a+s.d},0)}
-function intro(){var r=R[cur];box.innerHTML=head("Fermer")+'<div class="gdbody"><div class="brring"><div class="brstatic"></div></div><div class="brl">'+esc(r.dur)+'</div><p class="brtxt">'+esc(r.intro)+'</p><ol class="gdlist">'+r.steps.map(function(s){return '<li>'+esc(s.t)+'</li>'}).join("")+'</ol><div class="crow"><button type="button" class="main" data-g="go">Commencer</button></div></div>'}
-function show(){var r=R[cur],s=r.steps[i];box.innerHTML=head("Arrêter")+'<div class="gdbody"><div class="gdbar" aria-hidden="true"><i style="width:'+Math.round(i/r.steps.length*100)+'%"></i></div><div class="gdstep">Étape '+(i+1)+' sur '+r.steps.length+'</div><div class="gdt">'+esc(s.t)+'</div><p class="gdx">'+esc(s.x)+'</p><div id="gdc" class="gdc">'+left+' s</div><div class="crow"><button type="button" data-g="next">'+(i===r.steps.length-1?"Terminer":"Étape suivante")+'</button></div></div>'}
+function fm(s){return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")}
+function head(btn){return '<div class="brhead"><h2>'+esc(cur.title)+'</h2><button type="button" data-g="close">'+btn+'</button></div>'}
+function intro(){box.innerHTML=head("Fermer")+'<div class="gdbody"><div class="brring"><div class="brstatic"></div></div><div class="brl">'+(cur.sec?esc(fm(cur.sec)):"À lire")+'</div><p class="gdx">'+esc(cur.text)+'</p><div class="crow"><button type="button" class="main" data-g="'+(cur.sec?"go":"end")+'">'+(cur.sec?"Commencer":"C’est fait")+'</button></div></div>'}
+function run(){box.innerHTML=head("Arrêter")+'<div class="gdbody"><div class="gdt">'+esc(cur.title)+'</div><p class="gdx">'+esc(cur.text)+'</p><div id="gdc" class="gdc">'+esc(fm(left))+'</div><div class="crow"><button type="button" data-g="end">Terminer</button></div></div>'}
 function stop(){if(timer){clearInterval(timer);timer=0}try{if(lock){lock.release();lock=null}}catch(e){}}
-function end(){stop();var m=Math.max(1,Math.round(total()/60)),k=cur;box.innerHTML=head("Fermer")+'<div class="gdbody"><div class="brring"><div class="brstatic"></div></div><div class="brl">Bien joué</div><p class="brtxt">Respire normalement. Tu viens de pratiquer ta détente : c’est comme ça qu’elle devient automatique le jour du tournoi.</p><div class="crow"><button type="button" class="main" data-g="close">Fermer</button></div></div>';if(window.__detenteLog)window.__detenteLog(k,m)}
-function next(){i++;if(i>=R[cur].steps.length){end();return}left=R[cur].steps[i].d;show()}
-function tick(){left--;if(left<=0){next();return}var c=document.getElementById("gdc");if(c)c.textContent=left+" s"}
-function go(){i=0;left=R[cur].steps[0].d;show();stop();timer=setInterval(tick,1000);try{if(navigator.wakeLock)navigator.wakeLock.request("screen").then(function(w){lock=w}).catch(function(){})}catch(e){}}
+function end(){stop();var m=Math.max(1,Math.round((cur.sec||60)/60));box.innerHTML=head("Fermer")+'<div class="gdbody"><div class="brring"><div class="brstatic"></div></div><div class="brl">Noté</div><p class="brtxt">Cet outil est compté dans ton carnet mental.</p><div class="crow"><button type="button" class="main" data-g="close">Fermer</button></div></div>';if(window.__detenteLog)window.__detenteLog("outil",m)}
+function tick(){left--;if(left<=0){end();return}var c=document.getElementById("gdc");if(c)c.textContent=fm(left)}
+function go(){left=cur.sec;run();stop();timer=setInterval(tick,1000);try{if(navigator.wakeLock)navigator.wakeLock.request("screen").then(function(w){lock=w}).catch(function(){})}catch(e){}}
 function close(){stop();box.hidden=true;cur=null;var sh=document.getElementById("sheet"),ch=document.getElementById("chat"),br=document.getElementById("breath");if((!sh||sh.hidden)&&(!ch||ch.hidden)&&(!br||br.hidden))document.body.classList.remove("lock")}
-function open(k){if(!R[k])return;cur=k;box.hidden=false;document.body.classList.add("lock");intro()}
-document.addEventListener("click",function(e){var b=e.target.closest?e.target.closest("[data-guide]"):null;if(b){e.preventDefault();open(b.getAttribute("data-guide"))}});
-box.addEventListener("click",function(e){var b=e.target.closest?e.target.closest("[data-g]"):null;if(!b)return;var a=b.getAttribute("data-g");if(a==="close")close();else if(a==="go")go();else if(a==="next")next()});
+function openCustom(o){cur={title:String(o&&o.title||"Outil"),text:String(o&&o.text||""),sec:Math.max(0,+(o&&o.sec)||0)};box.hidden=false;document.body.classList.add("lock");intro()}
+box.addEventListener("click",function(e){var b=e.target.closest?e.target.closest("[data-g]"):null;if(!b)return;var a=b.getAttribute("data-g");if(a==="close")close();else if(a==="go")go();else if(a==="end")end()});
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!box.hidden)close()});
-window.__guide={open:open,close:close,finish:function(){if(cur)end()}};
+window.__guide={openCustom:openCustom,close:close,finish:function(){if(cur)end()}};
 })();
 </script>
 <script id="menujs">
